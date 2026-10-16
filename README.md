@@ -50,3 +50,11 @@ src/
 Feature folders contain only the API clients, components, hooks, pages and schemas they actually use. `@/` maps to `src/` in both TypeScript and Vite. See [architecture](docs/ARCHITECTURE.md) and [browser testing](docs/TESTING.md).
 
 The refactor preserves current product functionality. It does not resolve all existing launch requirements; see the server's readiness report for the remaining clinical, privacy, provider and product limitations.
+
+## Production domains
+
+Frontend: https://madhublood.vercel.app. Backend: https://madhublood-server.onrender.com.
+
+In the Vercel project set `VITE_API_URL=https://madhublood-server.onrender.com/api/v1`, then rebuild/redeploy: Vite reads this value at build time. Use the client directory as the project root, `npm run build` and output `dist`. For local production builds, copy `.env.production.example` to `.env.production` on a fresh checkout. Keep the local development value `/api/v1` to use Vite's proxy. The browser-facing variable is public and must never contain database/provider secrets.
+
+The Render server must allow exactly `CLIENT_ORIGIN=https://madhublood.vercel.app`, with production cookie settings. These are different sites: production sessions use Secure/HttpOnly/SameSite=None and Axios sends credentials. Browsers that block third-party cookies may still prevent persistent login; verify the target browsers or use same-site custom domains before public release. Configure SPA route fallback in the hosting project and test refreshing a nested page. Hosting dashboard changes are separate from local file changes.
