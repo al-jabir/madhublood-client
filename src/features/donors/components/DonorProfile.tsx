@@ -1,0 +1,110 @@
+import { donorsApi } from "@/features/donors/api/donors.api";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { qc } from "@/lib/query-client";
+import { groups } from "@/features/donors/constants/blood-groups";
+import { Loading } from "@/components/feedback/Loading";
+import { Failure } from "@/components/feedback/Failure";
+import { Field } from "@/components/ui/Field";
+import { errorText } from "@/utils/error-text";
+
+export function DonorProfile() {
+  const q = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => donorsApi.me(),
+  });
+  const [busy, setBusy] = useState(false);
+  if (q.isPending) return <Loading />;
+  if (q.isError) return <Failure error={q.error} />;
+  const d = q.data;
+  return (
+    <form
+      className="panel form-grid"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        setBusy(true);
+        try {
+          await donorsApi.update({
+            bloodGroup: form.get("bloodGroup"),
+            area: form.get("area"),
+            available: form.get("available") === "on",
+            directoryConsent: form.get("directoryConsent") === "on",
+            contactConsent: form.get("contactConsent") === "on",
+            notificationConsent: form.get("notificationConsent") === "on",
+            ...(form.get("lastDonation")
+              ? { lastDonation: form.get("lastDonation") }
+              : {}),
+          });
+          toast.success("Profile saved");
+          qc.invalidateQueries({ queryKey: ["profile"] });
+        } catch (e) {
+          toast.error(errorText(e));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <Field label="Blood group">
+        <select name="bloodGroup" defaultValue={d?.bloodGroup}>
+          {groups.map((g) => (
+            <option key={g}>{g}</option>
+          ))}
+        </select>
+      </Field>
+      <Field label="General area (never your home address)">
+        <input
+          name="area"
+          defaultValue={d?.area ?? "Madhupur, Tangail"}
+          required
+          maxLength={100}
+        />
+      </Field>
+      <Field label="Last donation date (optional)">
+        <input
+          type="date"
+          name="lastDonation"
+          defaultValue={d?.lastDonation}
+          max={new Date().toISOString().slice(0, 10)}
+        />
+      </Field>
+      {[
+        ["available", "I am available to receive requests"],
+        [
+          "directoryConsent",
+          "Show my name and general area in the public donor directory",
+        ],
+        [
+          "contactConsent",
+          "Share my phone with request owners only when I accept",
+        ],
+        ["notificationConsent", "Receive in-app matching request alerts"],
+      ].map(([name, label]) => (
+        <label key={name} className="checkbox span2">
+          <input
+            name={name}
+            type="checkbox"
+            defaultChecked={Boolean(
+              d?.[
+                name as
+                  | "available"
+                  | "directoryConsent"
+                  | "contactConsent"
+                  | "notificationConsent"
+              ],
+            )}
+          />
+          {label}
+        </label>
+      ))}
+      <p className="notice span2">
+        Availability expresses willingness, not medical eligibility. A qualified
+        clinician must assess each donation.
+      </p>
+      <button className="button" disabled={busy}>
+        Save profile & consent
+      </button>
+    </form>
+  );
+}
