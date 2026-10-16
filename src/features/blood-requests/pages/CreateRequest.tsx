@@ -12,6 +12,7 @@ import { errorText } from "@/utils/error-text";
 import { DraftsPanel } from "../components/DraftsPanel";
 import type { RequestDraft } from "../api/blood-requests.api";
 import { qc } from "@/lib/query-client";
+import { LocationSelector } from "@/features/locations/components/LocationSelector";
 
 export function CreateRequest() {
   const { en } = usePrefs();
@@ -158,12 +159,7 @@ export function CreateRequest() {
             <input name="hospital" minLength={3} maxLength={150} required />
           </Field>
           <Field label="এলাকা · Area">
-            <input
-              name="area"
-              defaultValue="Madhupur, Tangail"
-              required
-              maxLength={100}
-            />
+            <LocationSelector />
           </Field>
           <Field label="প্রয়োজনের সময় · Required by">
             <input type="datetime-local" name="requiredAt" required />

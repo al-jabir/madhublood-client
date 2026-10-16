@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 import { errorText } from "@/utils/error-text";
+import { LocationSelector } from "@/features/locations/components/LocationSelector";
 export function EditRequest() {
   const { id } = useParams();
   const nav = useNavigate();
@@ -61,7 +62,6 @@ export function EditRequest() {
           ["representative", "Representative", "text"],
           ["contact", "Mobile number", "tel"],
           ["hospital", "Hospital", "text"],
-          ["area", "Area", "text"],
           ["units", "Units", "number"],
           ["requiredAt", "Required by", "datetime-local"],
         ].map(([name, label, type]) => (
@@ -86,6 +86,13 @@ export function EditRequest() {
             />
           </label>
         ))}
+        <label className="field">
+          Area
+          <LocationSelector
+            defaultLocationId={d.locationId}
+            defaultArea={d.area}
+          />
+        </label>
         <label className="field">
           Blood group
           <select name="bloodGroup" defaultValue={d.bloodGroup}>

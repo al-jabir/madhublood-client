@@ -8,6 +8,7 @@ import { Loading } from "@/components/feedback/Loading";
 import { Failure } from "@/components/feedback/Failure";
 import { Field } from "@/components/ui/Field";
 import { errorText } from "@/utils/error-text";
+import { LocationSelector } from "@/features/locations/components/LocationSelector";
 
 export function DonorProfile() {
   const q = useQuery({
@@ -27,6 +28,7 @@ export function DonorProfile() {
         setBusy(true);
         try {
           await donorsApi.update({
+            locationId: form.get("locationId") || undefined,
             bloodGroup: form.get("bloodGroup"),
             area: form.get("area"),
             available: form.get("available") === "on",
@@ -54,11 +56,9 @@ export function DonorProfile() {
         </select>
       </Field>
       <Field label="General area (never your home address)">
-        <input
-          name="area"
-          defaultValue={d?.area ?? "Madhupur, Tangail"}
-          required
-          maxLength={100}
+        <LocationSelector
+          defaultLocationId={d?.locationId}
+          defaultArea={d?.area}
         />
       </Field>
       <Field label="Last donation date (optional)">

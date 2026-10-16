@@ -37,6 +37,7 @@ export interface DonorProfile {
   displayName: string;
   bloodGroup: string;
   area: string;
+  locationId?: string;
   available: boolean;
   verified: boolean;
   directoryConsent: boolean;
@@ -55,6 +56,7 @@ export interface BloodRequest {
   units: number;
   hospital: string;
   area: string;
+  locationId?: string;
   requiredAt: string;
   urgency: string;
   status: string;
@@ -94,6 +96,7 @@ export interface LocationRecord {
   _id: string;
   name: string;
   kind: string;
+  parent?: string;
   sourceUrl: string;
   verifiedAt: string;
 }

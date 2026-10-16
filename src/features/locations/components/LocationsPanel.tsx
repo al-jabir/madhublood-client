@@ -7,7 +7,7 @@ export function LocationsPanel() {
   const client = useQueryClient();
   const q = useQuery({
     queryKey: ["operations", "locations"],
-    queryFn: locationsApi.list,
+    queryFn: () => locationsApi.list(100),
   });
   if (q.isPending) return <p role="status">Loading…</p>;
   if (q.isError) return <Failure error={q.error} />;
@@ -35,7 +35,7 @@ export function LocationsPanel() {
         <label className="field">
           Type
           <select name="kind">
-            {["district", "upazila", "union", "locality"].map((value) => (
+            {["district", "upazila", "union", "municipality", "locality"].map((value) => (
               <option key={value}>{value}</option>
             ))}
           </select>

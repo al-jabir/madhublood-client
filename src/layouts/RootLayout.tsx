@@ -1,6 +1,7 @@
 import { useDocumentPreferences } from "@/hooks/useDocumentPreferences";
 import { useState, Suspense } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   Droplets,
   ArrowUpRight,
@@ -10,11 +11,13 @@ import {
   Sun,
   Moon,
   Languages,
+  Bell,
 } from "lucide-react";
 import { Toaster } from "sonner";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { useMe } from "@/features/auth/hooks/useMe";
+import { notificationsApi } from "@/features/notifications/api/notifications.api";
 import { Loading } from "@/components/feedback/Loading";
 import { content } from "@/i18n/content";
 import { PlatformNotice } from "@/features/super-admin/components/PlatformNotice";
@@ -24,6 +27,16 @@ export function RootLayout() {
   const { en, dark, toggleLang, toggleTheme } = usePrefs();
   const [open, setOpen] = useState(false);
   const { data: me } = useMe();
+
+  const { data: notificationsData } = useQuery({
+    queryKey: ["notifications", "badge"],
+    enabled: !!me,
+    queryFn: () => notificationsApi.list(),
+    refetchInterval: 30000,
+  });
+
+  const unreadCount =
+    notificationsData?.items?.filter((n) => !n.read).length ?? 0;
 
   return (
     <>
@@ -100,6 +113,40 @@ export function RootLayout() {
           >
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+          {me && (
+            <Link
+              to="/dashboard?tab=notifications"
+              className="icon"
+              aria-label={t(en, "বিজ্ঞপ্তি", "Notifications")}
+              title={t(en, "বিজ্ঞপ্তি", "Notifications")}
+              style={{ position: "relative" }}
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: "4px",
+                    background: "var(--color-primary, #dc2626)",
+                    color: "#ffffff",
+                    borderRadius: "999px",
+                    fontSize: "0.65rem",
+                    minWidth: "16px",
+                    height: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0 3px",
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
           <Link className="button small" to={me ? "/dashboard" : "/register"}>
             {me
               ? t(en, "ড্যাশবোর্ড", "Dashboard")

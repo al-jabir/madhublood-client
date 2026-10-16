@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   Droplets,
   ArrowUpRight,
@@ -15,11 +16,19 @@ import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
 import { t } from "@/i18n/translate";
 import { RequestList } from "@/features/blood-requests/components/RequestList";
+import { locationsApi } from "@/features/locations/api/locations.api";
 
 export function Home() {
   const { en } = usePrefs();
   const [blood, setBlood] = useState("");
+  const [area, setArea] = useState("");
   const nav = useNavigate();
+
+  const locQ = useQuery({
+    queryKey: ["locations", 50],
+    queryFn: () => locationsApi.list(50),
+    staleTime: 1000 * 60 * 10,
+  });
   return (
     <>
       <section className="hero">
@@ -148,18 +157,32 @@ export function Home() {
               ))}
             </select>
           </label>
-          <span className="area-pill">
+          <label className="select-wrap">
             <MapPin size={18} />
-            {t(en, "মধুপুর, টাঙ্গাইল", "Madhupur, Tangail")}
-          </span>
+            <select
+              aria-label="Area"
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+            >
+              <option value="">
+                {t(en, "সকল এলাকা (মধুপুর)", "All Madhupur")}
+              </option>
+              {locQ.data?.items?.map((l) => (
+                <option key={l._id} value={l.name}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             className="button"
-            onClick={() =>
-              nav(
-                "/donors" +
-                  (blood ? "?bloodGroup=" + encodeURIComponent(blood) : ""),
-              )
-            }
+            onClick={() => {
+              const sp = new URLSearchParams();
+              if (blood) sp.set("bloodGroup", blood);
+              if (area) sp.set("area", area);
+              const qs = sp.toString();
+              nav("/donors" + (qs ? "?" + qs : ""));
+            }}
           >
             <Search size={18} />
             {t(en, "খুঁজুন", "Search")}

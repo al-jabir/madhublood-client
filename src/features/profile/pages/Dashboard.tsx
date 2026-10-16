@@ -3,7 +3,7 @@ import { CursorPager } from "@/components/common/CursorPager";
 import { authApi } from "@/features/auth/api/auth.api";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -33,12 +33,15 @@ export function Dashboard() {
   const pagination = useCursorNavigation("");
   const { data: me } = useMe();
   const nav = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "overview";
+  const setTab = (t: string) => setSearchParams({ tab: t });
+
   const q = useQuery({
     queryKey: ["my-requests", pagination.after],
     enabled: !!me,
     queryFn: async () => requestsApi.mine(pagination.after),
   });
-  const [tab, setTab] = useState("overview");
   return (
     <RequireUser>
       <section className="page">

@@ -12,19 +12,30 @@ import { Empty } from "@/components/feedback/Empty";
 import { Pager } from "@/components/ui/Pager";
 import { PageHeading } from "@/components/common/PageHeading";
 
+import { locationsApi } from "@/features/locations/api/locations.api";
+
 export function Donors() {
   const { en } = usePrefs();
   const [params] = useSearchParams();
   const [group, setGroup] = useState(params.get("bloodGroup") ?? "");
+  const [area, setArea] = useState(params.get("area") ?? "");
   const [available, setAvailable] = useState(false);
   const [verified, setVerified] = useState(false);
   const [page, setPage] = useState(1);
+
+  const locQ = useQuery({
+    queryKey: ["locations", 50],
+    queryFn: () => locationsApi.list(50),
+    staleTime: 1000 * 60 * 10,
+  });
+
   const q = useQuery({
-    queryKey: ["donors", group, available, verified, page],
+    queryKey: ["donors", group, area, available, verified, page],
     queryFn: async ({ signal }) =>
       donorsApi.search(
         {
           bloodGroup: group || undefined,
+          area: area || undefined,
           available: available ? "true" : undefined,
           verified: verified ? "true" : undefined,
           page,
@@ -55,6 +66,23 @@ export function Donors() {
             <option value="">{t(en, "সব গ্রুপ", "All groups")}</option>
             {groups.map((g) => (
               <option key={g}>{g}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t(en, "এলাকা", "Area")}
+          <select
+            value={area}
+            onChange={(e) => {
+              setArea(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t(en, "সব এলাকা", "All areas")}</option>
+            {locQ.data?.items?.map((l) => (
+              <option key={l._id} value={l.name}>
+                {l.name} ({l.kind})
+              </option>
             ))}
           </select>
         </label>
