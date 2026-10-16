@@ -504,7 +504,9 @@ nav a.active:after {
   box-shadow: 0 9px 20px #4e393908;
   gap: 20px;
 }
-.overline {
+.eyebrow-label {
+  text-decoration: none;
+  border: 0;
   font-size: 10px;
   font-weight: 700;
   color: var(--red);
@@ -762,7 +764,7 @@ nav a.active:after {
       transparent 20.6%
     );
 }
-.join .overline {
+.join .eyebrow-label {
   color: #eec5c9;
   font-size: 9px;
 }
@@ -1160,7 +1162,10 @@ html.dark textarea,
   color: #f8fafc;
   border: 1px solid #374151;
   border-radius: 8px;
-  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
 }
 
 [data-theme="dark"] input:hover,
@@ -1536,7 +1541,7 @@ html.dark .badge,
   .quick-search h2 {
     font-size: 21px;
   }
-  .overline {
+  .eyebrow-label {
     font-size: 9px;
   }
   .values {

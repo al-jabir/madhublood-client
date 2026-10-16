@@ -140,7 +140,7 @@ export function LocationSelector({
             <optgroup label={t(en, "মধুপুরের ইউনিয়নসমূহ", "Madhupur Unions")}>
               {unions.map((l) => (
                 <option key={l._id} value={l._id}>
-                  {l.name} ইউনিয়ন
+                  {l.name} {t(en, "ইউনিয়ন", "Union")}
                 </option>
               ))}
             </optgroup>

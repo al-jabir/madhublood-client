@@ -1,3 +1,6 @@
+import { CommunityStats } from "../components/CommunityStats";
+import { DemoExamples } from "@/features/demo/DemoExamples";
+import { helpFaq, helpSteps } from "@/i18n/help";
 import { useState, useMemo, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +25,9 @@ import { groups } from "@/features/donors/constants/blood-groups";
 import { t } from "@/i18n/translate";
 import { locationsApi } from "@/features/locations/api/locations.api";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
+import { Failure } from "@/components/feedback/Failure";
+import { Empty } from "@/components/feedback/Empty";
+import { Loading } from "@/components/feedback/Loading";
 import { donorsApi } from "@/features/donors/api/donors.api";
 
 export function Home() {
@@ -36,7 +42,7 @@ export function Home() {
 
   // Dark Search Box State
   const [searchBlood, setSearchBlood] = useState("");
-  const [searchUnion, setSearchUnion] = useState("");
+  const [locationType, setLocationType] = useState("");
   const [searchArea, setSearchArea] = useState("");
   const [onlyAvailable, setOnlyAvailable] = useState(true);
   const [onlyVerified, setOnlyVerified] = useState(true);
@@ -46,8 +52,8 @@ export function Home() {
 
   // Live Queries from Server
   const locations = useQuery({
-    queryKey: ["locations", 100],
-    queryFn: () => locationsApi.list(100),
+    queryKey: ["locations", 50],
+    queryFn: () => locationsApi.list(50),
     staleTime: 600000,
   });
 
@@ -71,12 +77,16 @@ export function Home() {
   // Handlers
   function handleQuickRequestSubmit(e: FormEvent) {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (quickBlood) params.set("bloodGroup", quickBlood);
-    if (quickPhone) params.set("contact", quickPhone);
-    if (quickUnits) params.set("units", String(quickUnits));
-    if (quickHospital) params.set("hospital", quickHospital);
-    nav(`/requests/new?${params.toString()}`);
+    nav("/requests/new", {
+      state: {
+        prefill: {
+          bloodGroup: quickBlood,
+          contact: quickPhone,
+          units: quickUnits,
+          hospital: quickHospital,
+        },
+      },
+    });
   }
 
   function handleDarkSearchSubmit(e: FormEvent) {
@@ -84,10 +94,13 @@ export function Home() {
     const params = new URLSearchParams();
     if (searchBlood) params.set("bloodGroup", searchBlood);
 
-    const effectiveArea = searchArea || searchUnion;
-    if (effectiveArea) params.set("area", effectiveArea);
-    if (searchUnion) params.set("union", searchUnion);
-    if (searchArea) params.set("locality", searchArea);
+    if (searchArea) {
+      params.set("area", searchArea);
+      const selected = locations.data?.items.find(
+        (item) => item.name === searchArea,
+      );
+      params.set(selected?.kind === "union" ? "union" : "locality", searchArea);
+    }
 
     if (onlyAvailable) params.set("available", "true");
     if (onlyVerified) params.set("verified", "true");
@@ -95,45 +108,6 @@ export function Home() {
   }
 
   // Location helpers
-  const defaultUnions = [
-    "মধুপুর পৌরসভা",
-    "গোলাবাড়ী",
-    "মির্জাবাড়ী",
-    "আলোকদিয়া",
-    "আউশনারা",
-    "অরণখোলা",
-    "শোলাকুড়ী",
-    "কুড়াগাছা",
-    "কুড়ালিয়া",
-    "মহিষমারা",
-    "ফুলবাগচালা",
-    "বেরীবাইদ",
-  ];
-
-  const defaultLocalities = [
-    "জটাবাড়ী",
-    "দুর্গাপুর",
-    "গোসাইবাড়ী",
-    "নাগবাড়ী",
-    "পোদ্দারবাড়ী",
-    "মধুপুর",
-    "টেকী",
-    "বিপ্রবাড়ী",
-    "কাইতকাই",
-    "গোপিনাথপুর",
-    "টুনিয়াবাড়ী",
-    "দামপাড়া",
-    "পান্ডুরা",
-    "বোয়ালী",
-    "আকাশী",
-    "টেংরী",
-    "নরকোনা",
-    "আশুরা",
-    "গোপদ",
-    "অলিপুর",
-    "মালাউড়ি",
-  ];
-
   const municipalities = useMemo(
     () => locations.data?.items?.filter((l) => l.kind === "municipality") || [],
     [locations.data?.items],
@@ -149,99 +123,26 @@ export function Home() {
     [locations.data?.items],
   );
 
-  // Fallback demo data if database is fresh
-  const sampleRequests = [
-    {
-      id: "sample-1",
-      bloodGroup: "O-",
-      urgency: "জরুরি",
-      units: 1,
-      hospital: "মধুপুর উপজেলা স্বাস্থ্য কমপ্লেক্স",
-      area: "টাঙ্গাইল, মধুপুর পৌরসভা",
-      timeText: "আজই, বিকাল ৪:০০টার মধ্যে",
-    },
-    {
-      id: "sample-2",
-      bloodGroup: "B+",
-      urgency: "অতি জরুরি",
-      units: 2,
-      hospital: "মধুপুর জেনারেল হাসপাতাল",
-      area: "মাস্টারপাড়া, মধুপুর",
-      timeText: "আগামীকাল সকাল ১০:০০টা",
-    },
-    {
-      id: "sample-3",
-      bloodGroup: "AB+",
-      urgency: "জরুরি",
-      units: 1,
-      hospital: "আলোকদিয়া কম্যুনিটি ক্লিনিক",
-      area: "আলোকদিয়া ইউনিয়ন, মধুপুর",
-      timeText: "জরুরি ভিত্তিতে প্রয়োজন",
-    },
-  ];
-
-  const sampleDonors = [
-    {
-      id: "donor-1",
-      bloodGroup: "A+",
-      name: "তানভীর আহমেদ",
-      role: "নিয়মিত রক্তদাতা, মধুপুর",
-      donations: "৩ বার",
-      area: "মধুপুর পৌরসভা",
-    },
-    {
-      id: "donor-2",
-      bloodGroup: "O+",
-      name: "রফিকুল ইসলাম",
-      role: "স্বেচ্ছাসেবী রক্তযোদ্ধা",
-      donations: "৫ বার",
-      area: "অরণখোলা ইউনিয়ন",
-    },
-    {
-      id: "donor-3",
-      bloodGroup: "B+",
-      name: "শামীমা আক্তার",
-      role: "নিবন্ধিত রক্তদাতা",
-      donations: "২ বার",
-      area: "আলোকদিয়া",
-    },
-    {
-      id: "donor-4",
-      bloodGroup: "AB-",
-      name: "মুস্তাফিজুর রহমান",
-      role: "জরুরি রক্তযোদ্ধা",
-      donations: "৪ বার",
-      area: "গোলাবাড়ী",
-    },
-  ];
-
-  const displayedRequests =
-    urgentRequests.data?.items && urgentRequests.data.items.length > 0
-      ? urgentRequests.data.items.slice(0, 3).map((r) => ({
-          id: r.id || r._id || "req",
-          bloodGroup: r.bloodGroup,
-          urgency: r.urgency === "critical" ? "অতি জরুরি" : "জরুরি",
-          units: r.units || 1,
-          hospital: r.hospital,
-          area: r.area,
-          timeText: new Date(r.requiredAt).toLocaleString(
-            en ? "en-BD" : "bn-BD",
-            { dateStyle: "medium", timeStyle: "short" },
-          ),
-        }))
-      : sampleRequests;
-
-  const displayedDonors =
-    activeDonors.data?.items && activeDonors.data.items.length > 0
-      ? activeDonors.data.items.slice(0, 4).map((d, index) => ({
-          id: d.id,
-          bloodGroup: d.bloodGroup,
-          name: d.name,
-          role: "স্বেচ্ছাসেবী রক্তদাতা, মধুপুর",
-          donations: `${(index % 3) + 2} বার`,
-          area: d.area,
-        }))
-      : sampleDonors;
+  const displayedRequests = (urgentRequests.data?.items ?? [])
+    .slice(0, 3)
+    .map((request) => ({
+      id: request.id,
+      bloodGroup: request.bloodGroup,
+      urgency:
+        request.urgency === "critical"
+          ? t(en, "অতি জরুরি", "Critical")
+          : request.urgency === "urgent"
+            ? t(en, "জরুরি", "Urgent")
+            : t(en, "সাধারণ", "Routine"),
+      units: request.units,
+      hospital: request.hospital,
+      area: request.area,
+      timeText: new Date(request.requiredAt).toLocaleString(
+        en ? "en-BD" : "bn-BD",
+        { dateStyle: "medium", timeStyle: "short" },
+      ),
+    }));
+  const displayedDonors = (activeDonors.data?.items ?? []).slice(0, 4);
 
   return (
     <>
@@ -281,16 +182,14 @@ export function Home() {
             <div className="hero-action-buttons">
               <Link to="/donors" className="btn-primary-red">
                 <Search size={18} />
-                <span>{t(en, "রক্তদাতা খুঁজুন (Find Donors)", "Find Donors")}</span>
+                <span>
+                  {t(en, "রক্তদাতা খুঁজুন (Find Donors)", "Find Donors")}
+                </span>
               </Link>
               <Link to="/register" className="btn-outline-donor">
                 <Heart size={18} color="#dc2626" />
                 <span>
-                  {t(
-                    en,
-                    "রক্তদাতা হিসেবে নিবন্ধন করুন",
-                    "Register as a Donor",
-                  )}
+                  {t(en, "রক্তদাতা হিসেবে নিবন্ধন করুন", "Register as a Donor")}
                 </span>
               </Link>
             </div>
@@ -319,19 +218,25 @@ export function Home() {
                   <div className="card-icon-wrap">
                     <Droplets size={18} />
                   </div>
-                  <span>{t(en, "জরুরি রক্তের অনুরোধ", "Emergency Request")}</span>
+                  <span>
+                    {t(en, "জরুরি রক্তের অনুরোধ", "Emergency Request")}
+                  </span>
                 </div>
                 <span className="badge-emergency">
                   {t(en, "জরুরি সেবা", "Emergency")}
                 </span>
               </div>
 
-              <form onSubmit={handleQuickRequestSubmit} className="quick-form-grid">
+              <form
+                onSubmit={handleQuickRequestSubmit}
+                className="quick-form-grid"
+              >
                 <div className="quick-field-group">
-                  <label className="quick-field-label">
+                  <label htmlFor="quick-blood" className="quick-field-label">
                     {t(en, "প্রয়োজনীয় রক্তের গ্রুপ", "Required Blood Group")}
                   </label>
                   <select
+                    id="quick-blood"
                     value={quickBlood}
                     onChange={(e) => setQuickBlood(e.target.value)}
                     className="quick-field-select"
@@ -347,23 +252,31 @@ export function Home() {
 
                 <div className="quick-two-cols">
                   <div className="quick-field-group">
-                    <label className="quick-field-label">
+                    <label
+                      htmlFor="quick-contact"
+                      className="quick-field-label"
+                    >
                       {t(en, "মোবাইল নম্বর", "Mobile Number")}
                     </label>
                     <input
+                      id="quick-contact"
                       type="tel"
                       value={quickPhone}
                       onChange={(e) => setQuickPhone(e.target.value)}
-                      placeholder="+8801XXXXXXXXX"
+                      placeholder="01XXXXXXXXX"
                       className="quick-field-input"
+                      pattern="01[3-9][0-9]{8}"
+                      maxLength={11}
+                      autoComplete="tel"
                       required
                     />
                   </div>
                   <div className="quick-field-group">
-                    <label className="quick-field-label">
+                    <label htmlFor="quick-units" className="quick-field-label">
                       {t(en, "ব্যাগের সংখ্যা", "Units (Bags)")}
                     </label>
                     <input
+                      id="quick-units"
                       type="number"
                       min={1}
                       max={20}
@@ -376,10 +289,11 @@ export function Home() {
                 </div>
 
                 <div className="quick-field-group">
-                  <label className="quick-field-label">
+                  <label htmlFor="quick-hospital" className="quick-field-label">
                     {t(en, "হাসপাতালের নাম ও এলাকা", "Hospital & Area")}
                   </label>
                   <input
+                    id="quick-hospital"
                     type="text"
                     value={quickHospital}
                     onChange={(e) => setQuickHospital(e.target.value)}
@@ -444,15 +358,19 @@ export function Home() {
           <form onSubmit={handleDarkSearchSubmit} className="dark-search-form">
             {/* Field 1: Blood Group */}
             <div>
-              <label className="dark-field-label">
+              <label htmlFor="search-blood" className="dark-field-label">
                 {t(en, "রক্তের গ্রুপ", "Blood Group")}
               </label>
               <select
+                id="search-blood"
+                aria-label="Blood group"
                 value={searchBlood}
                 onChange={(e) => setSearchBlood(e.target.value)}
                 className="dark-select"
               >
-                <option value="">{t(en, "সকল রক্তের গ্রুপ", "All Groups")}</option>
+                <option value="">
+                  {t(en, "সকল রক্তের গ্রুপ", "All Groups")}
+                </option>
                 {groups.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -461,70 +379,85 @@ export function Home() {
               </select>
             </div>
 
-            {/* Field 2: Municipality & Wards (পৌরসভার লিস্ট আগে) */}
             <div>
-              <label className="dark-field-label">
-                {t(en, "পৌরসভা ও ওয়ার্ড / এলাকা", "Municipality & Wards")}
+              <label
+                htmlFor="search-location-type"
+                className="dark-field-label"
+              >
+                {t(en, "এলাকার ধরন", "Area type")}
               </label>
               <select
-                value={searchArea}
-                onChange={(e) => {
-                  setSearchArea(e.target.value);
-                  if (e.target.value) setSearchUnion("");
-                }}
+                id="search-location-type"
                 className="dark-select"
+                value={locationType}
+                onChange={(e) => {
+                  setLocationType(e.target.value);
+                  setSearchArea("");
+                }}
               >
-                <option value="">
-                  {t(en, "সকল পৌর এলাকা ও ওয়ার্ড", "All Municipality Wards")}
+                <option value="">{t(en, "সব এলাকা", "All areas")}</option>
+                <option value="municipality">
+                  {t(en, "পৌরসভা / ওয়ার্ড", "Municipality / wards")}
                 </option>
-                {municipalities.map((m) => (
-                  <option key={m._id} value={m.name}>
-                    {m.name} (সম্পূর্ণ পৌরসভা)
-                  </option>
-                ))}
-                <optgroup label={t(en, "পৌরসভার ২১টি ওয়ার্ড ও মহল্লা", "Municipality Wards & Localities")}>
-                  {localities.length > 0
-                    ? localities.map((l) => (
-                        <option key={l._id} value={l.name}>
-                          {l.name}
-                        </option>
-                      ))
-                    : defaultLocalities.map((loc) => (
-                        <option key={loc} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                </optgroup>
+                <option value="union">{t(en, "ইউনিয়ন", "Union")}</option>
               </select>
             </div>
-
-            {/* Field 3: Unions (তারপরে ইউনিয়নসমূহ) */}
             <div>
-              <label className="dark-field-label">
-                {t(en, "ইউনিয়নসমূহ (১১টি)", "Unions (11)")}
+              <label htmlFor="search-locality" className="dark-field-label">
+                {t(en, "এলাকা নির্বাচন", "Choose area")}
               </label>
               <select
-                value={searchUnion}
-                onChange={(e) => {
-                  setSearchUnion(e.target.value);
-                  if (e.target.value) setSearchArea("");
-                }}
+                id="search-locality"
                 className="dark-select"
+                value={searchArea}
+                required={Boolean(locationType) && !locations.isError}
+                disabled={locations.isPending || locations.isError}
+                onChange={(e) => setSearchArea(e.target.value)}
               >
                 <option value="">
-                  {t(en, "সকল ইউনিয়ন (মধুপুর)", "All Unions (Madhupur)")}
+                  {locations.isPending
+                    ? t(en, "এলাকা লোড হচ্ছে…", "Loading areas…")
+                    : locationType
+                      ? t(en, "একটি এলাকা বেছে নিন", "Select an area")
+                      : t(en, "মধুপুরের সব এলাকা", "Anywhere in Madhupur")}
                 </option>
-                {unions.length > 0
-                  ? unions.map((u) => (
-                      <option key={u._id} value={u.name}>
-                        {u.name}
-                      </option>
-                    ))
-                  : defaultUnions.map((u) => (
-                      <option key={u} value={u}>
-                        {u}
-                      </option>
-                    ))}
+                {locationType ? (
+                  (locationType === "union"
+                    ? unions
+                    : [...municipalities, ...localities]
+                  ).map((item) => (
+                    <option key={item._id} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    {locationType !== "union" && (
+                      <optgroup
+                        label={t(
+                          en,
+                          "পৌরসভা ও ওয়ার্ড",
+                          "Municipality & wards",
+                        )}
+                      >
+                        {[...municipalities, ...localities].map((item) => (
+                          <option key={item._id} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {locationType !== "municipality" && (
+                      <optgroup label={t(en, "ইউনিয়ন", "Unions")}>
+                        {unions.map((item) => (
+                          <option key={item._id} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </>
+                )}
               </select>
             </div>
 
@@ -534,6 +467,15 @@ export function Home() {
               <span>{t(en, "খুঁজুন", "Search")}</span>
             </button>
           </form>
+
+          {locations.isError && (
+            <span className="search-location-error" role="status">
+              {t(en, "এলাকা লোড হয়নি।", "Could not load areas.")}{" "}
+              <button type="button" onClick={() => void locations.refetch()}>
+                {t(en, "আবার চেষ্টা করুন", "Retry")}
+              </button>
+            </span>
+          )}
 
           {/* Bottom Checkboxes and Note */}
           <div className="dark-checkbox-row">
@@ -547,8 +489,8 @@ export function Home() {
                 <span>
                   {t(
                     en,
-                    "শুধুমাত্র প্রস্তুত ও যোগ্য রক্তদাতা",
-                    "Only ready & eligible donors",
+                    "শুধুমাত্র প্রস্তুত রক্তদাতা",
+                    "Only available donors",
                   )}
                 </span>
               </label>
@@ -582,6 +524,7 @@ export function Home() {
         </div>
       </section>
 
+      <CommunityStats />
       {/* ======================================================================
           3. EMERGENCY BLOOD REQUESTS (জরুরি রক্তের প্রয়োজন)
           ====================================================================== */}
@@ -590,7 +533,9 @@ export function Home() {
           <div>
             <div className="section-pill-tag">
               <Droplets size={14} />
-              <span>{t(en, "জরুরি রক্তের প্রয়োজন", "Urgent Blood Needed")}</span>
+              <span>
+                {t(en, "জরুরি রক্তের প্রয়োজন", "Urgent Blood Needed")}
+              </span>
             </div>
             <h2 className="section-title">
               {t(en, "জরুরি রক্তের অনুরোধসমূহ", "Emergency Blood Requests")}
@@ -609,6 +554,19 @@ export function Home() {
           </Link>
         </div>
 
+        {urgentRequests.isPending ? (
+          <Loading />
+        ) : urgentRequests.isError ? (
+          <Failure error={urgentRequests.error} />
+        ) : displayedRequests.length === 0 ? (
+          <Empty
+            text={t(
+              en,
+              "এই মুহূর্তে কোনো সক্রিয় রক্তের অনুরোধ নেই।",
+              "There are no active blood requests right now.",
+            )}
+          />
+        ) : null}
         <div className="urgent-requests-grid">
           {displayedRequests.map((req) => (
             <div className="urgent-req-card" key={req.id}>
@@ -659,7 +617,11 @@ export function Home() {
               <span>{t(en, "প্রস্তুত রক্তদাতা", "Ready Blood Donors")}</span>
             </div>
             <h2 className="section-title">
-              {t(en, "আমাদের নিবেদিত রক্তযোদ্ধাগণ", "Our Dedicated Blood Heroes")}
+              {t(
+                en,
+                "আমাদের নিবেদিত রক্তযোদ্ধাগণ",
+                "Our Dedicated Blood Heroes",
+              )}
             </h2>
             <p className="section-subtitle">
               {t(
@@ -675,6 +637,19 @@ export function Home() {
           </Link>
         </div>
 
+        {activeDonors.isPending ? (
+          <Loading />
+        ) : activeDonors.isError ? (
+          <Failure error={activeDonors.error} />
+        ) : displayedDonors.length === 0 ? (
+          <Empty
+            text={t(
+              en,
+              "এই মুহূর্তে প্রস্তুত রক্তদাতার তালিকা খালি।",
+              "No available donors are listed right now.",
+            )}
+          />
+        ) : null}
         <div className="donors-showcase-grid">
           {displayedDonors.map((donor) => (
             <div className="donor-showcase-card" key={donor.id}>
@@ -694,12 +669,10 @@ export function Home() {
               </div>
 
               <div className="donor-name">{donor.name}</div>
-              <div className="donor-role-title">{donor.role}</div>
-
-              <div className="donor-meta-row">
-                <span>{t(en, "মোট রক্তদান", "Donations")}</span>
-                <span className="donor-meta-val">{donor.donations}</span>
+              <div className="donor-role-title">
+                {t(en, "স্বেচ্ছাসেবী রক্তদাতা", "Voluntary blood donor")}
               </div>
+
               <div className="donor-meta-row">
                 <span>{t(en, "এলাকা", "Area")}</span>
                 <span className="donor-meta-val">{donor.area}</span>
@@ -717,20 +690,22 @@ export function Home() {
         </div>
       </section>
 
+      <div className="section-wrapper">
+        <DemoExamples />
+      </div>
       {/* ======================================================================
-          5. HOW IT WORKS (সহজ ৩টি ধাপে রক্তদান ও রক্ত গ্রহণ)
+          5. HOW IT WORKS (সহজ ৪টি ধাপে শুরু করুন)
           ====================================================================== */}
-      <section className="section-wrapper how-it-works-section" style={{ marginTop: 64 }}>
+      <section
+        className="section-wrapper how-it-works-section"
+        style={{ marginTop: 64 }}
+      >
         <div className="section-pill-tag">
           <Clock size={14} />
           <span>{t(en, "কার্যপদ্ধতি", "How It Works")}</span>
         </div>
         <h2 className="section-title">
-          {t(
-            en,
-            "সহজ ৩টি ধাপে রক্তদান ও রক্ত গ্রহণ",
-            "Simple 3 Steps to Donate or Receive Blood",
-          )}
+          {t(en, "সহজ ৪টি ধাপে শুরু করুন", "Get started in 4 clear steps")}
         </h2>
         <p className="section-subtitle">
           {t(
@@ -741,47 +716,17 @@ export function Home() {
         </p>
 
         <div className="how-steps-grid">
-          <div className="how-step-card">
-            <div className="step-number-circle">০১</div>
-            <h3 className="how-step-title">
-              {t(en, "রক্তদাতা খুঁজুন বা অনুরোধ করুন", "Find Donors or Post Request")}
-            </h3>
-            <p className="how-step-desc">
-              {t(
-                en,
-                "আপনার প্রয়োজনীয় রক্তের গ্রুপ ও মধুপুরের এলাকা সিলেক্ট করে রক্তদাতা খুঁজুন অথবা সরাসরি রক্তের অনুরোধ পোস্ট করুন।",
-                "Select blood group and union/area to search active voluntary donors, or post an emergency request directly.",
-              )}
-            </p>
-          </div>
-
-          <div className="how-step-card">
-            <div className="step-number-circle">০২</div>
-            <h3 className="how-step-title">
-              {t(en, "সম্মতি ও দ্রুত যোগাযোগ", "Consent & Quick Connection")}
-            </h3>
-            <p className="how-step-desc">
-              {t(
-                en,
-                "স্বেচ্ছাসেবী রক্তদাতা অনুরোধে সাড়া দিলে গোপনীয়তা বজায় রেখে সরাসরি তার সাথে যোগাযোগের ব্যবস্থা করে দেওয়া হয়।",
-                "When a voluntary donor accepts your request, direct contact details are shared with mutual consent.",
-              )}
-            </p>
-          </div>
-
-          <div className="how-step-card">
-            <div className="step-number-circle">০৩</div>
-            <h3 className="how-step-title">
-              {t(en, "হাসপাতালে রক্তদান ও জীবন রক্ষা", "Donate & Save a Precious Life")}
-            </h3>
-            <p className="how-step-desc">
-              {t(
-                en,
-                "হাসপাতালের ডাক্তার ও ল্যাব বিশেষজ্ঞদের উপস্থিতিতে নিরাপদ রক্তদান সম্পন্ন হয় এবং একজন মানুষের জীবন রক্ষা পায়।",
-                "Donation is completed safely under medical supervision at the hospital, saving someone's life.",
-              )}
-            </p>
-          </div>
+          {helpSteps.map((row, index) => (
+            <div className="how-step-card" key={index}>
+              <div className="step-number-circle">
+                {(index + 1).toLocaleString(en ? "en-BD" : "bn-BD")}
+              </div>
+              <h3 className="how-step-title">
+                {row[en ? 1 : 0].replace(/^[0-9০-৯]+\. /, "")}
+              </h3>
+              <p className="how-step-desc">{row[en ? 3 : 2]}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -792,32 +737,86 @@ export function Home() {
         <div className="eligibility-container">
           <div className="eligibility-left-card">
             <h3 className="eligibility-title">
-              {t(en, "রক্তদানের সাধারণ যোগ্যতা ও নির্দেশিকা", "Blood Donation Guidelines & Eligibility")}
+              {t(
+                en,
+                "রক্তদানের সাধারণ যোগ্যতা ও নির্দেশিকা",
+                "Blood Donation Guidelines & Eligibility",
+              )}
             </h3>
             <div className="eligibility-subgrid">
               <div>
                 <div className="eligibility-subcol-title success">
                   <CheckCircle2 size={16} />
-                  <span>{t(en, "যারা রক্ত দিতে পারবেন", "Who can donate")}</span>
+                  <span>{t(en, "দান করার আগে", "Before donating")}</span>
                 </div>
                 <ul className="eligibility-list success">
-                  <li>{t(en, "১৮ থেকে ৬০ বছর বয়সী নারী ও পুরুষ", "Age between 18 and 60 years")}</li>
-                  <li>{t(en, "শারীরিক ওজন ন্যূনতম ৪৫ কেজি", "Weight at least 45 kg")}</li>
-                  <li>{t(en, "রক্তে হিমোগ্লোবিনের মাত্রা স্বাভাবিক থাকলে", "Normal hemoglobin level")}</li>
-                  <li>{t(en, "সর্বশেষ রক্তদানের অন্তত ৩-৪ মাস অতিক্রান্ত হলে", "Last donation was at least 3-4 months ago")}</li>
+                  <li>
+                    {t(
+                      en,
+                      "বয়স ও ওজনের স্থানীয় শর্ত যাচাই করুন",
+                      "Check local age and weight requirements",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "রক্তদানের দিন সুস্থ আছেন কি না জানান",
+                      "Discuss your health on the donation day",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "দানের আগে হিমোগ্লোবিন পরীক্ষা করান",
+                      "Have haemoglobin checked before donation",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "শেষ রক্তদানের তারিখ স্বাস্থ্যকর্মীকে জানান",
+                      "Tell staff when you last donated",
+                    )}
+                  </li>
                 </ul>
               </div>
 
               <div>
                 <div className="eligibility-subcol-title danger">
                   <ShieldAlert size={16} />
-                  <span>{t(en, "যারা রক্ত দিতে পারবেন না", "Who cannot donate")}</span>
+                  <span>
+                    {t(en, "দান করার আগে না", "Tell the clinical team")}
+                  </span>
                 </div>
                 <ul className="eligibility-list danger">
-                  <li>{t(en, "গুরুতর সংক্রামক বা দীর্ঘস্থায়ী রোগ থাকলে", "Severe infectious or chronic illness")}</li>
-                  <li>{t(en, "গর্ভবতী বা স্তন্যদানকারী নারী", "Pregnant or nursing mothers")}</li>
-                  <li>{t(en, "গত ৬ মাসের মধ্যে বড় কোনো অস্ত্রোপচার হলে", "Major surgery within last 6 months")}</li>
-                  <li>{t(en, "জ্বর, ইনফেকশন বা অ্যান্টিবায়োটিক সেবনকালে", "Currently on antibiotics or running fever")}</li>
+                  <li>
+                    {t(
+                      en,
+                      "বর্তমান অসুস্থতা বা দীর্ঘস্থায়ী রোগ",
+                      "Current illness or long-term conditions",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "গর্ভাবস্থা বা স্তন্যদান",
+                      "Pregnancy or breastfeeding",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "সাম্প্রতিক অস্ত্রোপচার বা চিকিৎসা",
+                      "Recent surgery or treatment",
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      en,
+                      "জ্বর, সংক্রমণ এবং চলমান ওষুধ",
+                      "Fever, infection and current medication",
+                    )}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -827,7 +826,13 @@ export function Home() {
             <div>
               <div className="advisory-header">
                 <Building2 size={20} />
-                <span>{t(en, "মধুপুর উপজেলা স্বাস্থ্য পরামর্শ", "Madhupur Health Advisory")}</span>
+                <span>
+                  {t(
+                    en,
+                    "মধুপুর উপজেলা স্বাস্থ্য পরামর্শ",
+                    "Madhupur Health Advisory",
+                  )}
+                </span>
               </div>
               <p className="advisory-text">
                 {t(
@@ -837,10 +842,17 @@ export function Home() {
                 )}
               </p>
             </div>
-            <Link to="/how-it-works" className="advisory-link">
-              <span>{t(en, "সম্পূর্ণ নির্দেশিকা পড়ুন", "Read Full Guidelines")}</span>
+            <a
+              href="https://www.who.int/campaigns/world-blood-donor-day/2018/who-can-give-blood"
+              target="_blank"
+              rel="noreferrer"
+              className="advisory-link"
+            >
+              <span>
+                {t(en, "WHO-এর সাধারণ নির্দেশনা", "WHO eligibility guidance")}
+              </span>
               <ArrowRight size={15} />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -848,7 +860,10 @@ export function Home() {
       {/* ======================================================================
           7. FAQ ACCORDION SECTION
           ====================================================================== */}
-      <section className="section-wrapper" style={{ marginTop: 64, marginBottom: 80 }}>
+      <section
+        className="section-wrapper"
+        style={{ marginTop: 64, marginBottom: 80 }}
+      >
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div className="section-pill-tag">
             <CheckCircle2 size={14} />
@@ -872,74 +887,33 @@ export function Home() {
 
         <div className="faq-container">
           <div className="faq-list">
-            {[
-              {
-                q: t(
-                  en,
-                  "কে কে রক্তদান করতে পারবেন?",
-                  "Who is eligible to donate blood?",
-                ),
-                a: t(
-                  en,
-                  "১৮ থেকে ৬০ বছর বয়সী যে কোনো সুস্থ পুরুষ ও নারী, যাদের ওজন অন্তত ৪৫ কেজি এবং হিমোগ্লোবিনের মাত্রা স্বাভাবিক, তারা প্রতি ৩-৪ মাস অন্তর রক্তদান করতে পারেন।",
-                  "Any healthy individual aged 18 to 60, weighing at least 45 kg with normal hemoglobin levels, can donate blood every 3 to 4 months.",
-                ),
-              },
-              {
-                q: t(
-                  en,
-                  "রক্তদানে কি কোনো শারীরিক দুর্বলতা বা ক্ষতি হয়?",
-                  "Does blood donation cause any physical weakness or harm?",
-                ),
-                a: t(
-                  en,
-                  "না। রক্তদানের পর ২৪ থেকে ৪৮ ঘণ্টার মধ্যে শরীরে তরলের ঘাটতি পূরণ হয়ে যায় এবং কয়েক সপ্তাহের মধ্যে নতুন রক্তকণিকা তৈরি হয়। এটি শরীরের জন্য উপকারী।",
-                  "No. Liquid volume is restored within 24 to 48 hours, and new blood cells are naturally regenerated within a few weeks.",
-                ),
-              },
-              {
-                q: t(
-                  en,
-                  "আমার যোগাযোগের নম্বর কি সবার জন্য উন্মুক্ত থাকবে?",
-                  "Will my personal phone number be public to everyone?",
-                ),
-                a: t(
-                  en,
-                  "না। MadhuBlood প্ল্যাটফর্মে রক্তদাতার গোপনীয়তা অত্যন্ত সুরক্ষিত। আপনি কোনো অনুরোধ গ্রহণ করলে তবেই নির্দিষ্ট রোগীকে আপনার নম্বর জানানো হয়।",
-                  "No. Privacy is strictly protected. Your contact number is only shared with verified patients after your explicit consent.",
-                ),
-              },
-              {
-                q: t(
-                  en,
-                  "মধুপুরের বাইরে কি এই সেবা পাওয়া যাবে?",
-                  "Is this service available outside Madhupur?",
-                ),
-                a: t(
-                  en,
-                  "MadhuBlood মূলত মধুপুর পৌরসভা ও ১১টি ইউনিয়নের রক্তযোদ্ধাদের একত্রিত করার জন্য নিবেদিত। তবে আশেপাশের উপজেলা যেমন ধনবাড়ী, ঘাটাইল বা গোপালপুরের রোগীরাও জরুরি প্রয়োজনে অনুরোধ করতে পারেন।",
-                  "MadhuBlood is primarily focused on Madhupur Upazila and its 11 unions, though emergency requests from neighboring areas can also be coordinated.",
-                ),
-              },
-            ].map((faq, index) => {
-              const isOpen = activeFaq === index;
-              return (
-                <div
-                  className={`faq-item ${isOpen ? "active" : ""}`}
-                  key={index}
-                >
-                  <button
-                    type="button"
-                    className="faq-question-btn"
-                    onClick={() => setActiveFaq(isOpen ? null : index)}
+            {helpFaq
+              .map((row) => ({ q: row[en ? 1 : 0], a: row[en ? 3 : 2] }))
+              .map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <div
+                    className={`faq-item ${isOpen ? "active" : ""}`}
+                    key={index}
                   >
-                    <span>{faq.q}</span>
-                    <ChevronDown size={18} />
-                  </button>
-                  {isOpen && <div className="faq-answer">{faq.a}</div>}
-                </div>
-              );
-            })}
+                    <button
+                      type="button"
+                      className="faq-question-btn"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-answer-${index}`}
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                    >
+                      <span>{faq.q}</span>
+                      <ChevronDown size={18} />
+                    </button>
+                    {isOpen && (
+                      <div className="faq-answer" id={`faq-answer-${index}`}>
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         </div>
       </section>

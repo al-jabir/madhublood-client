@@ -9,7 +9,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <section className="auth-shell">
       <aside className="auth-story">
-        <span className="overline">MADHUPUR · TOGETHER FOR LIFE</span>
+        <span className="eyebrow-label">MADHUPUR · TOGETHER FOR LIFE</span>
         <div className="auth-symbol" aria-hidden="true">
           <Droplet size={76} strokeWidth={1.2} />
           <Heart size={24} />

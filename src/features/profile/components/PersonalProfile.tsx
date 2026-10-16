@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { useState, type FormEvent } from "react";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { accountApi } from "@/features/profile/api/account.api";
@@ -9,6 +11,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 export function PersonalProfile() {
+  const { en } = usePrefs();
   const { data: me } = useMe();
   const [busy, setBusy] = useState(false);
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -35,7 +38,9 @@ export function PersonalProfile() {
   }
   return (
     <form key={me?.id} className="panel form-grid" onSubmit={save}>
-      <h2 className="span2">ব্যক্তিগত তথ্য · Personal information</h2>
+      <h2 className="span2">
+        {t(en, "ব্যক্তিগত তথ্য", "Personal information")}
+      </h2>
       <p className="notice span2">
         Your email and contact phone stay private.{" "}
         {me?.emailVerified ? (
@@ -49,7 +54,7 @@ export function PersonalProfile() {
           </>
         )}
       </p>
-      <Field label="Email address">
+      <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
         <input
           type="email"
           value={me?.email ?? ""}
@@ -57,7 +62,7 @@ export function PersonalProfile() {
           autoComplete="email"
         />
       </Field>
-      <Field label="Full name">
+      <Field label={t(en, "পুরো নাম", "Full name")}>
         <input
           name="name"
           autoComplete="name"
@@ -67,29 +72,33 @@ export function PersonalProfile() {
           maxLength={80}
         />
       </Field>
-      <Field label="Contact phone (optional)">
+      <Field
+        label={t(en, "যোগাযোগের নম্বর (ঐচ্ছিক)", "Contact phone (optional)")}
+      >
         <input
           name="phone"
           type="tel"
           autoComplete="tel"
-          defaultValue={me?.phone ?? ""}
-          placeholder="+8801XXXXXXXXX"
-          pattern="\+8801[3-9][0-9]{8}"
+          defaultValue={me?.phone?.replace(/^\+88/, "") ?? ""}
+          placeholder="01XXXXXXXXX"
+          pattern="01[3-9][0-9]{8}"
         />
         <small>
           Needed only when you choose to be available as a donor or share your
           contact after accepting a request.
         </small>
       </Field>
-      <Field label="Gender (optional)">
+      <Field label={t(en, "লিঙ্গ (ঐচ্ছিক)", "Gender (optional)")}>
         <select name="gender" defaultValue={me?.gender ?? "undisclosed"}>
-          <option value="undisclosed">Prefer not to say</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
+          <option value="undisclosed">
+            {t(en, "জানাতে চাই না", "Prefer not to say")}
+          </option>
+          <option value="male">{t(en, "পুরুষ", "Male")}</option>
+          <option value="female">{t(en, "নারী", "Female")}</option>
+          <option value="other">{t(en, "অন্যান্য", "Other")}</option>
         </select>
       </Field>
-      <Field label="General area">
+      <Field label={t(en, "এলাকা", "General area")}>
         <LocationSelector
           defaultLocationId={me?.locationId}
           defaultArea={me?.area ?? ""}
@@ -101,7 +110,9 @@ export function PersonalProfile() {
         in the optional donor section below.
       </p>
       <button className="button" disabled={busy}>
-        {busy ? "Saving…" : "Save personal profile"}
+        {busy
+          ? t(en, "সংরক্ষণ হচ্ছে…", "Saving…")
+          : t(en, "ব্যক্তিগত তথ্য সংরক্ষণ করুন", "Save personal profile")}
       </button>
     </form>
   );

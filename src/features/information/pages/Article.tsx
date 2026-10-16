@@ -1,3 +1,5 @@
+import { helpFaq, helpSteps } from "@/i18n/help";
+import { t } from "@/i18n/translate";
 import { accountApi } from "@/features/profile/api/account.api";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -16,10 +18,19 @@ export function Article({ page }: { page: string }) {
     <section className="page narrow">
       <PageHeading title={c[en ? 1 : 0]} />
       <div className="panel prose">
-        <p>{c[en ? 3 : 2]}</p>
+        {page === "faq" || page === "how-it-works" ? (
+          (page === "faq" ? helpFaq : helpSteps).map((row, index) => (
+            <section className="help-item" key={index}>
+              <h2>{row[en ? 1 : 0]}</h2>
+              <p>{row[en ? 3 : 2]}</p>
+            </section>
+          ))
+        ) : (
+          <p>{c[en ? 3 : 2]}</p>
+        )}
         {page === "how-it-works" && (
           <Link className="button" to="/donors">
-            Find donors <ArrowRight size={17} />
+            {t(en, "রক্তদাতা খুঁজুন", "Find donors")} <ArrowRight size={17} />
           </Link>
         )}
         {page === "contact" && (

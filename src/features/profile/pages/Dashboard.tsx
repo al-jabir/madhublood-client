@@ -1,9 +1,17 @@
-import { PersonalProfile } from "@/features/profile/components/PersonalProfile";
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
+import { ProfileOverview } from "@/features/profile/components/ProfileOverview";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
 import { authApi } from "@/features/auth/api/auth.api";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
+import { returnToFrom } from "@/features/auth/return-to";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -13,7 +21,6 @@ import {
   Plus,
   ChevronRight,
 } from "lucide-react";
-import { toast } from "sonner";
 import { qc } from "@/lib/query-client";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { Loading } from "@/components/feedback/Loading";
@@ -27,15 +34,26 @@ import { DonorProfile } from "@/features/donors/components/DonorProfile";
 import { Donations } from "@/features/donations/pages/Donations";
 import { Notifications } from "@/features/notifications/pages/Notifications";
 import { setCsrf } from "@/services/http";
-import { errorText } from "@/utils/error-text";
 import { Mail } from "lucide-react";
 
 export function Dashboard() {
+  const { en } = usePrefs();
   const pagination = useCursorNavigation("");
   const { data: me } = useMe();
   const nav = useNavigate();
+  const returnTo = returnToFrom(useLocation().state);
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get("tab") || "overview";
+  const requestedTab = searchParams.get("tab") || "overview";
+  const tab = [
+    "overview",
+    "profile",
+    "donor",
+    "donations",
+    "notifications",
+    "settings",
+  ].includes(requestedTab)
+    ? requestedTab
+    : "overview";
   const setTab = (t: string) => setSearchParams({ tab: t });
 
   const q = useQuery({
@@ -45,15 +63,20 @@ export function Dashboard() {
   });
   return (
     <RequireUser>
-      <section className="page">
+      <section className="page dashboard-page">
         <PageHeading
-          title={`স্বাগতম, ${me?.name ?? ""}`}
-          desc="Your donor profile, requests, and privacy—together in one place."
+          title={`${t(en, "স্বাগতম", "Welcome")}, ${me?.name ?? ""}`}
+          desc={t(
+            en,
+            "আপনার প্রোফাইল, রক্তের অনুরোধ ও অ্যাকাউন্ট এক জায়গায়।",
+            "Your profile, blood requests and account in one place.",
+          )}
         />
         <div className="dashboard-tabs">
           {[
             "overview",
             "profile",
+            "donor",
             "donations",
             "notifications",
             "settings",
@@ -63,19 +86,39 @@ export function Dashboard() {
               key={s}
               onClick={() => setTab(s)}
             >
-              {s}
+              {
+                {
+                  overview: t(en, "সারসংক্ষেপ", "Overview"),
+                  profile: t(en, "প্রোফাইল", "Profile"),
+                  donor: t(en, "রক্তদাতা ফর্ম", "Donor form"),
+                  donations: t(en, "রক্তদান", "Donations"),
+                  notifications: t(en, "বিজ্ঞপ্তি", "Notifications"),
+                  settings: t(en, "সেটিংস", "Settings"),
+                }[s]
+              }
             </button>
           ))}
           {me?.roles.some((r: string) =>
             ["admin", "volunteer", "super-admin"].includes(r),
-          ) && <Link to="/admin">Moderation</Link>}
+          ) && <Link to="/admin">{t(en, "পরিচালনা", "Moderation")}</Link>}
         </div>
+        {me?.profileCompleted && returnTo && (
+          <div className="notice">
+            <Link
+              className="text-link"
+              to={returnTo.pathname}
+              state={returnTo.state}
+            >
+              {t(en, "আপনার অনুরোধে ফিরে যান →", "Continue your request →")}
+            </Link>
+          </div>
+        )}
         {!me?.profileCompleted && (
           <div className="notice">
             Complete your personal profile before registering as a donor or
             submitting requests.{" "}
             <button className="text-link" onClick={() => setTab("profile")}>
-              Complete profile →
+              {t(en, "প্রোফাইল সম্পূর্ণ করুন →", "Complete profile →")}
             </button>
           </div>
         )}
@@ -83,13 +126,20 @@ export function Dashboard() {
           <div className="verification-banner">
             <Mail size={22} />
             <div>
-              <strong>Secure your account with a verified email</strong>
+              <strong>
+                {t(
+                  en,
+                  "ইমেইল যাচাই করে অ্যাকাউন্ট সুরক্ষিত করুন",
+                  "Secure your account with a verified email",
+                )}
+              </strong>
               <p>
                 Verify ownership to help keep your account details up to date.
               </p>
             </div>
             <Link className="button secondary" to="/verify-email">
-              Verify email <ArrowUpRight size={16} />
+              {t(en, "ইমেইল যাচাই করুন", "Verify email")}{" "}
+              <ArrowUpRight size={16} />
             </Link>
           </div>
         )}
@@ -98,25 +148,27 @@ export function Dashboard() {
             <div className="dashboard-summary">
               <div className="panel">
                 <Activity className="red" />
-                <h3>My blood requests</h3>
+                <h3>{t(en, "আমার রক্তের অনুরোধ", "My blood requests")}</h3>
                 <strong className="metric">
                   {q.data?.total ?? q.data?.items.length ?? "—"}
                 </strong>
               </div>
               <div className="panel">
                 <ShieldCheck className="green" />
-                <h3>Personal profile</h3>
+                <h3>{t(en, "ব্যক্তিগত প্রোফাইল", "Personal profile")}</h3>
                 <strong>
-                  {me?.profileCompleted ? "Complete" : "Incomplete"}
+                  {me?.profileCompleted
+                    ? t(en, "সম্পূর্ণ", "Complete")
+                    : t(en, "অসম্পূর্ণ", "Incomplete")}
                 </strong>
               </div>
               <Link to="/requests/new" className="panel create-tile">
                 <Plus />
-                <h3>Create a request</h3>
+                <h3>{t(en, "নতুন অনুরোধ", "Create a request")}</h3>
                 <ArrowUpRight />
               </Link>
             </div>
-            <h2>My requests</h2>
+            <h2>{t(en, "আমার অনুরোধ", "My requests")}</h2>
             <CursorPager
               navigation={pagination}
               nextCursor={q.data?.nextCursor}
@@ -146,64 +198,69 @@ export function Dashboard() {
             )}
           </>
         )}
-        {tab === "profile" && (
-          <>
-            <PersonalProfile />
-            {me?.profileCompleted && (
-              <>
-                <h2>Optional donor profile</h2>
-                <DonorProfile />
-              </>
+        {tab === "profile" && <ProfileOverview />}
+        {tab === "donor" && (
+          <section className="donor-onboarding">
+            <h2>{t(en, "রক্তদাতা হিসেবে আপনার তথ্য", "Your donor details")}</h2>
+            <p>
+              {t(
+                en,
+                "রক্তের গ্রুপ, শেষ রক্তদান ও সম্মতির তথ্য পূরণ করুন। এটি ব্যক্তিগত প্রোফাইল থেকে আলাদা।",
+                "Add your blood group, last donation and consent preferences. This form is separate from your personal profile.",
+              )}
+            </p>
+            {me?.profileCompleted ? (
+              <DonorProfile />
+            ) : (
+              <div className="notice">
+                <button className="text-link" onClick={() => setTab("profile")}>
+                  {t(
+                    en,
+                    "আগে ব্যক্তিগত প্রোফাইল পূরণ করুন",
+                    "Complete your personal profile first",
+                  )}
+                </button>
+              </div>
             )}
-          </>
+          </section>
         )}
         {tab === "donations" && <Donations />}
         {tab === "notifications" && <Notifications />}
         {tab === "settings" && (
-          <div className="panel">
-            <h2>Account sessions</h2>
-            <p>
-              Sign out of all your devices if you suspect unauthorized access.
-            </p>
-            <button
-              className="button secondary"
-              onClick={async () => {
-                if (confirm("Sign out of all devices?")) {
-                  await authApi.logoutAll();
-                  setCsrf("");
-                  qc.clear();
-                  nav("/login");
-                }
-              }}
-            >
-              <LogOut size={17} />
-              Sign out everywhere
-            </button>
-            <p>
-              <Link to="/forgot-password">
-                Recover password with an email code or recovery key
-              </Link>
-            </p>
-            <AccountData />
-            <AccountSecurity />
+          <div className="settings-layout">
+            <section className="panel settings-session">
+              <h2>{t(en, "অ্যাকাউন্ট সেশন", "Account sessions")}</h2>
+              <p>
+                Sign out of all your devices if you suspect unauthorized access.
+              </p>
+              <button
+                className="button secondary"
+                onClick={async () => {
+                  if (confirm("Sign out of all devices?")) {
+                    await authApi.logoutAll();
+                    setCsrf("");
+                    qc.clear();
+                    nav("/login");
+                  }
+                }}
+              >
+                <LogOut size={17} />
+                {t(en, "সব ডিভাইস থেকে লগ আউট", "Sign out everywhere")}
+              </button>
+              <p>
+                <Link to="/forgot-password">
+                  Recover password with an email code or recovery key
+                </Link>
+              </p>
+            </section>
+            <section className="panel settings-security">
+              <AccountSecurity />
+            </section>
+            <section className="panel settings-data">
+              <AccountData />
+            </section>
           </div>
         )}
-        <button
-          className="text-link signout"
-          onClick={async () => {
-            try {
-              await authApi.logout();
-              setCsrf("");
-              qc.clear();
-              nav("/login");
-            } catch (e) {
-              toast.error(errorText(e));
-            }
-          }}
-        >
-          <LogOut size={16} />
-          Sign out
-        </button>
       </section>
     </RequireUser>
   );

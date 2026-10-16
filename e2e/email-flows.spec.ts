@@ -148,9 +148,7 @@ test("profile verification uses account email and refreshes verification status"
   await page.getByLabel("Verification code", { exact: true }).fill("123456");
   await page.getByRole("button", { name: "Verify email", exact: true }).click();
   await expect(page).toHaveURL(/dashboard\?tab=profile/);
-  await expect(
-    page.getByText("Your email address is verified.", { exact: false }),
-  ).toBeVisible();
+  await expect(page.getByText("Verified", { exact: true })).toBeVisible();
 });
 
 test("new account and recovery forms remain accessible and fit the viewport", async ({

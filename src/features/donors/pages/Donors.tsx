@@ -2,7 +2,14 @@ import { donorsApi } from "../api/donors.api";
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, MapPin, ShieldCheck, RotateCcw, Droplets } from "lucide-react";
+import {
+  ArrowUpRight,
+  MapPin,
+  ShieldCheck,
+  RotateCcw,
+  Droplets,
+  Search,
+} from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
 import { t } from "@/i18n/translate";
@@ -32,6 +39,9 @@ export function Donors() {
   const [available, setAvailable] = useState(initialAvailable);
   const [verified, setVerified] = useState(initialVerified);
   const [page, setPage] = useState(1);
+  const [areaType, setAreaType] = useState(
+    initialUnion ? "union" : initialLocality ? "municipality" : "",
+  );
 
   // Sync state if URL search parameters change externally
   useEffect(() => {
@@ -44,8 +54,8 @@ export function Donors() {
   }, [params]);
 
   const locQ = useQuery({
-    queryKey: ["locations", 100],
-    queryFn: () => locationsApi.list(100),
+    queryKey: ["locations", 50],
+    queryFn: () => locationsApi.list(50),
     staleTime: 1000 * 60 * 10,
   });
 
@@ -74,13 +84,20 @@ export function Donors() {
     available?: boolean;
     verified?: boolean;
   }) {
-    const nextGroup = newFilters.bloodGroup !== undefined ? newFilters.bloodGroup : group;
+    const nextGroup =
+      newFilters.bloodGroup !== undefined ? newFilters.bloodGroup : group;
     const nextUnion = newFilters.union !== undefined ? newFilters.union : union;
-    const nextLocality = newFilters.locality !== undefined ? newFilters.locality : locality;
-    const nextAvailable = newFilters.available !== undefined ? newFilters.available : available;
-    const nextVerified = newFilters.verified !== undefined ? newFilters.verified : verified;
+    const nextLocality =
+      newFilters.locality !== undefined ? newFilters.locality : locality;
+    const nextAvailable =
+      newFilters.available !== undefined ? newFilters.available : available;
+    const nextVerified =
+      newFilters.verified !== undefined ? newFilters.verified : verified;
 
-    const chosenArea = nextLocality || nextUnion || "";
+    const chosenArea =
+      newFilters.union !== undefined || newFilters.locality !== undefined
+        ? nextLocality || nextUnion
+        : effectiveArea;
 
     const newParams = new URLSearchParams();
     if (nextGroup) newParams.set("bloodGroup", nextGroup);
@@ -95,6 +112,7 @@ export function Donors() {
   }
 
   function handleResetFilters() {
+    setAreaType("");
     setGroup("");
     setUnion("");
     setLocality("");
@@ -125,9 +143,13 @@ export function Donors() {
   });
 
   return (
-    <section className="page">
+    <section className="page donor-results-page">
       <PageHeading
-        title={t(en, "মানুষের পাশে মানুষ · রক্তদাতা ডিরেক্টরি", "Find Blood Donors · Madhupur")}
+        title={t(
+          en,
+          "মানুষের পাশে মানুষ · রক্তদাতা ডিরেক্টরি",
+          "Find Blood Donors · Madhupur",
+        )}
         desc={t(
           en,
           "মধুপুর উপজেলার স্বেচ্ছাসেবী রক্তদাতাদের তালিকা। সঠিক গ্রুপের রক্তদাতা খুঁজে জরুরি প্রয়োজনে যোগাযোগ করুন।",
@@ -135,114 +157,174 @@ export function Donors() {
         )}
       />
 
-      <div className="filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "flex-end" }}>
-        {/* Blood Group */}
-        <label>
-          {t(en, "রক্তের গ্রুপ", "Blood group")}
-          <select
-            value={group}
-            onChange={(e) => {
-              const val = e.target.value;
-              setGroup(val);
-              updateFilterParams({ bloodGroup: val });
-            }}
-          >
-            <option value="">{t(en, "সকল গ্রুপ", "All groups")}</option>
-            {groups.map((g) => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
-        </label>
-
-        {/* Municipality & Wards (পৌরসভার লিস্ট আগে) */}
-        <label>
-          {t(en, "পৌরসভা ও এলাকা", "Municipality & Wards")}
-          <select
-            value={locality}
-            onChange={(e) => {
-              const val = e.target.value;
-              setLocality(val);
-              setUnion("");
-              updateFilterParams({ locality: val, union: "" });
-            }}
-          >
-            <option value="">{t(en, "সকল পৌর এলাকা ও ওয়ার্ড", "All Municipality Wards")}</option>
-            {municipalities.map((m) => (
-              <option key={m._id} value={m.name}>
-                {m.name} (সম্পূর্ণ পৌরসভা)
-              </option>
-            ))}
-            <optgroup label={t(en, "পৌরসভার ২১টি ওয়ার্ড ও মহল্লা", "Municipality Localities")}>
-              {localities.map((l) => (
-                <option key={l._id} value={l.name}>
-                  {l.name}
+      <div className="donor-search-panel dark-search-box">
+        <div className="donor-filter-heading">
+          <div>
+            <h2>{t(en, "আপনার রক্তদাতা খুঁজুন", "Refine your search")}</h2>
+            <p>
+              {t(
+                en,
+                "ফিল্টার বদলালে ফলাফল নিজে থেকেই আপডেট হবে।",
+                "Results update automatically when you change a filter.",
+              )}
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="donor-reset"
+            >
+              <RotateCcw size={15} />
+              {t(en, "সব মুছুন", "Clear filters")}
+            </button>
+          )}
+        </div>
+        <form
+          className="dark-search-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            updateFilterParams({});
+          }}
+        >
+          {/* Blood Group */}
+          <label htmlFor="results-blood" className="dark-field-label">
+            {t(en, "রক্তের গ্রুপ", "Blood group")}
+            <select
+              className="dark-select"
+              id="results-blood"
+              aria-label={t(en, "রক্তের গ্রুপ", "Blood group")}
+              value={group}
+              onChange={(e) => {
+                const val = e.target.value;
+                setGroup(val);
+                updateFilterParams({ bloodGroup: val });
+              }}
+            >
+              <option value="">{t(en, "সকল গ্রুপ", "All groups")}</option>
+              {groups.map((g) => (
+                <option key={g} value={g}>
+                  {g}
                 </option>
               ))}
-            </optgroup>
-          </select>
-        </label>
+            </select>
+          </label>
 
-        {/* Unions (তারপরে ইউনিয়নসমূহ) */}
-        <label>
-          {t(en, "ইউনিয়নসমূহ (১১টি)", "Unions (11)")}
-          <select
-            value={union}
-            onChange={(e) => {
-              const val = e.target.value;
-              setUnion(val);
-              setLocality("");
-              updateFilterParams({ union: val, locality: "" });
-            }}
-          >
-            <option value="">{t(en, "সকল ইউনিয়ন (মধুপুর)", "All Unions (Madhupur)")}</option>
-            {unions.map((u) => (
-              <option key={u._id} value={u.name}>
-                {u.name}
+          <label className="dark-field-label" htmlFor="results-type">
+            {t(en, "এলাকার ধরন", "Area type")}
+            <select
+              className="dark-select"
+              id="results-type"
+              aria-label={t(en, "এলাকার ধরন", "Area type")}
+              value={areaType}
+              onChange={(event) => {
+                setAreaType(event.target.value);
+                setArea("");
+                setUnion("");
+                setLocality("");
+                updateFilterParams({ union: "", locality: "" });
+              }}
+            >
+              <option value="">{t(en, "সব এলাকা", "All areas")}</option>
+              <option value="municipality">
+                {t(en, "পৌরসভা / ওয়ার্ড", "Municipality / wards")}
               </option>
-            ))}
-          </select>
-        </label>
-
-        {/* Available toggle */}
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={available}
-            onChange={(e) => {
-              const val = e.target.checked;
-              setAvailable(val);
-              updateFilterParams({ available: val });
-            }}
-          />
-          {t(en, "উপলব্ধ রক্তদাতা", "Available donors")}
-        </label>
-
-        {/* Verified toggle */}
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={verified}
-            onChange={(e) => {
-              const val = e.target.checked;
-              setVerified(val);
-              updateFilterParams({ verified: val });
-            }}
-          />
-          {t(en, "যাচাইকৃত প্রোফাইল", "Verified only")}
-        </label>
-
-        {/* Reset Filters button */}
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="button secondary small"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px", height: "40px" }}
-          >
-            <RotateCcw size={14} />
-            <span>{t(en, "ফিল্টার মুছুন", "Reset")}</span>
+              <option value="union">{t(en, "ইউনিয়ন", "Union")}</option>
+            </select>
+          </label>
+          <label className="dark-field-label" htmlFor="results-area">
+            {t(en, "এলাকা নির্বাচন", "Choose area")}
+            <select
+              className="dark-select"
+              id="results-area"
+              aria-label={t(en, "এলাকা", "Area")}
+              value={effectiveArea}
+              disabled={locQ.isPending || locQ.isError}
+              onChange={(e) => {
+                const val = e.target.value;
+                const isUnion = unions.some((item) => item.name === val);
+                setArea(val);
+                setUnion(isUnion ? val : "");
+                setLocality(isUnion ? "" : val);
+                updateFilterParams({
+                  union: isUnion ? val : "",
+                  locality: isUnion ? "" : val,
+                });
+              }}
+            >
+              <option value="">
+                {locQ.isPending
+                  ? t(en, "এলাকা লোড হচ্ছে…", "Loading areas…")
+                  : t(en, "মধুপুরের সব এলাকা", "Anywhere in Madhupur")}
+              </option>
+              {effectiveArea &&
+                !locQ.data?.items.some(
+                  (item) => item.name === effectiveArea,
+                ) && <option value={effectiveArea}>{effectiveArea}</option>}
+              {(areaType === "union"
+                ? unions
+                : areaType === "municipality"
+                  ? [...municipalities, ...localities]
+                  : [...municipalities, ...localities, ...unions]
+              ).map((item) => (
+                <option key={item._id} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className="btn-dark-search">
+            <Search size={17} />
+            {t(en, "খুঁজুন", "Search")}
           </button>
+        </form>
+        {locQ.isError && (
+          <p className="donor-location-error" role="status">
+            {t(en, "এলাকা লোড হয়নি।", "Could not load areas.")}{" "}
+            <button type="button" onClick={() => void locQ.refetch()}>
+              {t(en, "আবার চেষ্টা করুন", "Retry")}
+            </button>
+          </p>
         )}
+        <div className="donor-filter-options">
+          {/* Available toggle */}
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={available}
+              onChange={(e) => {
+                const val = e.target.checked;
+                setAvailable(val);
+                updateFilterParams({ available: val });
+              }}
+            />
+            {t(en, "উপলব্ধ রক্তদাতা", "Available donors")}
+          </label>
+
+          {/* Verified toggle */}
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={verified}
+              onChange={(e) => {
+                const val = e.target.checked;
+                setVerified(val);
+                updateFilterParams({ verified: val });
+              }}
+            />
+            {t(en, "যাচাইকৃত প্রোফাইল", "Verified only")}
+          </label>
+        </div>
+      </div>
+      <div className="donor-results-heading" aria-live="polite">
+        <h2>{t(en, "রক্তদাতার তালিকা", "Search results")}</h2>
+        <span>
+          {q.isFetching
+            ? t(en, "খোঁজা হচ্ছে…", "Searching…")
+            : q.isError
+              ? t(en, "ফলাফল লোড হয়নি", "Results unavailable")
+              : `${q.data?.total ?? q.data?.items.length ?? 0} ${t(en, "জন রক্তদাতা", "donors found")}`}
+        </span>
       </div>
 
       <p className="privacy-note">
@@ -267,7 +349,11 @@ export function Donors() {
                   "আপনার নির্বাচিত ফিল্টারে কোনো রক্তদাতা পাওয়া যায়নি। ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন।",
                   "No donors matched your selected filters. Try broadening your search.",
                 )
-              : t(en, "বর্তমানে কোনো নিবন্ধিত রক্তদাতা নেই।", "No registered donors found.")
+              : t(
+                  en,
+                  "বর্তমানে কোনো নিবন্ধিত রক্তদাতা নেই।",
+                  "No registered donors found.",
+                )
           }
         />
       ) : (
@@ -278,7 +364,14 @@ export function Donors() {
                 <div className="card-top">
                   <span className="blood-type">{d.bloodGroup}</span>
                   {d.verified ? (
-                    <span className="badge verified" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <span
+                      className="badge verified"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
                       <ShieldCheck size={14} className="green" />
                       {t(en, "যাচাইকৃত", "Verified")}
                     </span>
@@ -299,7 +392,13 @@ export function Donors() {
                   className="card-link"
                 >
                   <Droplets size={15} />
-                  <span>{t(en, "অনুরোধের মাধ্যমে যুক্ত হোন", "Connect through request")}</span>
+                  <span>
+                    {t(
+                      en,
+                      "অনুরোধের মাধ্যমে যুক্ত হোন",
+                      "Connect through request",
+                    )}
+                  </span>
                   <ArrowUpRight size={16} />
                 </Link>
               </article>

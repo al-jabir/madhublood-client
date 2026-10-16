@@ -1,3 +1,4 @@
+import { DemoExamples } from "@/features/demo/DemoExamples";
 import { lazy, Suspense, useState } from "react";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { Loading } from "@/components/feedback/Loading";
@@ -11,7 +12,8 @@ const AnalyticsPanel = lazy(() =>
     default: module.AnalyticsPanel,
   })),
 );
-type Tab =
+export type Tab =
+  | "demo-data"
   | "analytics"
   | "reports"
   | "tickets"
@@ -19,33 +21,41 @@ type Tab =
   | "locations"
   | "audit-logs"
   | "settings";
-export function Operations() {
-  const [tab, setTab] = useState<Tab>("analytics");
+export function Operations({ selected }: { selected?: Tab }) {
+  const [localTab, setTab] = useState<Tab>("analytics");
+  const tab = selected ?? localTab;
   const { data: me } = useMe();
   const superAdmin = me?.roles.includes("super-admin");
   const tabs: Tab[] = [
     "analytics",
     "reports",
+    ...(me?.roles.some((r) => ["admin", "super-admin"].includes(r))
+      ? ["demo-data" as Tab]
+      : []),
     ...(superAdmin
       ? (["tickets", "users", "locations", "audit-logs", "settings"] as Tab[])
       : []),
   ];
   return (
     <section className="operations">
-      <h2>Operations</h2>
-      <div className="dashboard-tabs">
-        {tabs.map((value) => (
-          <button
-            className={tab === value ? "selected" : ""}
-            key={value}
-            onClick={() => setTab(value)}
-          >
-            {value}
-          </button>
-        ))}
-      </div>
+      {!selected && <h2>Operations</h2>}
+      {!selected && (
+        <div className="dashboard-tabs">
+          {tabs.map((value) => (
+            <button
+              className={tab === value ? "selected" : ""}
+              key={value}
+              onClick={() => setTab(value)}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+      )}
       <Suspense fallback={<Loading />}>
-        {tab === "analytics" ? (
+        {tab === "demo-data" ? (
+          <DemoExamples manage />
+        ) : tab === "analytics" ? (
           <AnalyticsPanel />
         ) : tab === "reports" || tab === "tickets" ? (
           <CaseList tab={tab} />

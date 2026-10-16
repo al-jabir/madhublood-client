@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -14,10 +16,11 @@ import { RequireUser } from "@/features/auth/components/RequireUser";
 import { errorText } from "@/utils/error-text";
 
 export function RequestDetail() {
+  const { en } = usePrefs();
   const { id } = useParams();
   const { data: me } = useMe();
   const q = useQuery({
-    queryKey: ["request", id],
+    queryKey: ["request", id, me?.id],
     queryFn: async () => requestsApi.detail(id),
   });
   const r = useQuery({
@@ -53,9 +56,16 @@ export function RequestDetail() {
         <p>{item.area}</p>
         <p>{new Date(item.requiredAt).toLocaleString()}</p>
         {item.contact && (
-          <p>
-            <Phone size={16} /> {item.contact}
-          </p>
+          <div className="request-contact-card">
+            <div>
+              <small>{t(en, "অনুরোধকারীর যোগাযোগ", "Requester contact")}</small>
+              <strong>{item.contact.replace(/^\+88/, "")}</strong>
+            </div>
+            <a className="button" href={`tel:${item.contact}`}>
+              <Phone size={17} />
+              {t(en, "কল করুন", "Call requester")}
+            </a>
+          </div>
         )}
         {item.instructions && <p>{item.instructions}</p>}
         {item.owner === me?.id ? (

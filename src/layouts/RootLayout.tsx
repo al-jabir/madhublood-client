@@ -1,6 +1,7 @@
+import { AccountMenu } from "@/components/common/AccountMenu";
 import { useDocumentPreferences } from "@/hooks/useDocumentPreferences";
 import { useState, Suspense } from "react";
-import { NavLink, Link, Outlet } from "react-router-dom";
+import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Droplets,
@@ -27,10 +28,11 @@ export function RootLayout() {
   const { en, dark, toggleLang, toggleTheme } = usePrefs();
   const [open, setOpen] = useState(false);
   const { data: me } = useMe();
+  const adminPage = useLocation().pathname === "/admin";
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications", "badge"],
-    enabled: !!me,
+    enabled: !!me && !me.verificationRequired,
     queryFn: () => notificationsApi.list(),
     refetchInterval: 30000,
   });
@@ -38,6 +40,20 @@ export function RootLayout() {
   const unreadCount =
     notificationsData?.items?.filter((n) => !n.read).length ?? 0;
 
+  if (adminPage)
+    return (
+      <>
+        <a href="#main" className="skip">
+          Skip to content
+        </a>
+        <main id="main">
+          <Suspense fallback={<Loading />}>
+            <Outlet />
+          </Suspense>
+        </main>
+        <Toaster richColors position="top-center" />
+      </>
+    );
   return (
     <>
       <a href="#main" className="skip">
@@ -60,7 +76,7 @@ export function RootLayout() {
           )}
         </span>
       </div>
-      <header>
+      <header className="site-header">
         <Link to="/" className="brand">
           <span className="brand-icon">
             <Droplets fill="currentColor" />
@@ -159,12 +175,14 @@ export function RootLayout() {
               {t(en, "লগ ইন", "Sign in")}
             </Link>
           )}
-          <Link className="button small" to={me ? "/dashboard" : "/register"}>
-            {me
-              ? t(en, "ড্যাশবোর্ড", "Dashboard")
-              : t(en, "রক্তদাতা হোন", "Become a donor")}
-            <ArrowUpRight size={16} />
-          </Link>
+          {me ? (
+            <AccountMenu />
+          ) : (
+            <Link className="button small" to="/register">
+              {t(en, "রক্তদাতা হোন", "Become a donor")}
+              <ArrowUpRight size={16} />
+            </Link>
+          )}
         </div>
       </header>
       <PlatformNotice />

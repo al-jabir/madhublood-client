@@ -1,6 +1,6 @@
 import { requestsApi } from "../api/blood-requests.api";
 import React, { useState, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
@@ -18,10 +18,21 @@ export function CreateRequest() {
   const { en } = usePrefs();
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
-  const urlBlood = searchParams.get("bloodGroup") || "";
-  const urlContact = searchParams.get("contact") || "";
-  const urlUnits = Number(searchParams.get("units")) || 1;
-  const urlHospital = searchParams.get("hospital") || "";
+  const prefill = useLocation().state?.prefill;
+  const urlBlood = groups.includes(prefill?.bloodGroup)
+    ? prefill.bloodGroup
+    : searchParams.get("bloodGroup") || "";
+  const urlContact =
+    typeof prefill?.contact === "string" ? prefill.contact.slice(0, 20) : "";
+  const urlUnits = Math.min(
+    20,
+    Math.max(
+      1,
+      Math.trunc(Number(prefill?.units ?? searchParams.get("units")) || 1),
+    ),
+  );
+  const urlHospital =
+    typeof prefill?.hospital === "string" ? prefill.hospital.slice(0, 150) : "";
   const urlArea = searchParams.get("area") || "";
 
   const [busy, setBusy] = useState(false);
@@ -34,6 +45,7 @@ export function CreateRequest() {
       ...values,
       units: Number(values.units),
       contactConsent: values.contactConsent === "on",
+      shareContactWithMembers: values.shareContactWithMembers === "on",
     };
     if (values.requiredAt)
       data.requiredAt = new Date(String(values.requiredAt)).toISOString();
@@ -131,10 +143,10 @@ export function CreateRequest() {
             <input
               name="contact"
               type="tel"
-              placeholder="+8801XXXXXXXXX"
-              defaultValue={urlContact}
+              placeholder="01XXXXXXXXX"
+              defaultValue={urlContact.replace(/^\+88/, "")}
               required
-              pattern="\+8801[3-9][0-9]{8}"
+              pattern="01[3-9][0-9]{8}"
             />
           </Field>
           <Field label="রক্তের গ্রুপ · Blood group">
@@ -190,6 +202,14 @@ export function CreateRequest() {
           <Field label="নির্দেশনা · Instructions (private)">
             <textarea name="instructions" maxLength={500} />
           </Field>
+          <label className="checkbox span2">
+            <input type="checkbox" name="shareContactWithMembers" />
+            {t(
+              en,
+              "সক্রিয় অনুরোধে লগইন করা ব্যবহারকারীদের আমার নম্বর দেখাতে সম্মত।",
+              "Show my contact number to signed-in users while this request is active.",
+            )}
+          </label>
           <label className="checkbox span2">
             <input name="contactConsent" type="checkbox" required />I consent to
             sharing this contact with donors who accept this request.

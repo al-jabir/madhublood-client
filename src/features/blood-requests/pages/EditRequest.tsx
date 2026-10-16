@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -6,6 +8,7 @@ import { toast } from "sonner";
 import { errorText } from "@/utils/error-text";
 import { LocationSelector } from "@/features/locations/components/LocationSelector";
 export function EditRequest() {
+  const { en } = usePrefs();
   const { id } = useParams();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -31,7 +34,7 @@ export function EditRequest() {
   return (
     <section className="page narrow">
       <div className="page-heading">
-        <h1>অনুরোধ সম্পাদনা · Edit request</h1>
+        <h1>{t(en, "অনুরোধ সম্পাদনা", "Edit request")}</h1>
         <p>
           Edits return the request to moderation before it can become active.
         </p>
@@ -48,6 +51,7 @@ export function EditRequest() {
               units: Number(data.units),
               requiredAt: new Date(String(data.requiredAt)).toISOString(),
               contactConsent: data.contactConsent === "on",
+              shareContactWithMembers: data.shareContactWithMembers === "on",
             });
             toast.success("Updated and submitted for review");
             nav("/requests/" + id);
@@ -133,6 +137,18 @@ export function EditRequest() {
             required
           />
           I consent to sharing my contact with accepting donors.
+        </label>
+        <label className="checkbox span2">
+          <input
+            type="checkbox"
+            name="shareContactWithMembers"
+            defaultChecked={d.shareContactWithMembers}
+          />
+          {t(
+            en,
+            "সক্রিয় অনুরোধে লগইন করা ব্যবহারকারীদের আমার নম্বর দেখাতে সম্মত।",
+            "Show my contact number to signed-in users while this request is active.",
+          )}
         </label>
         <button className="button" disabled={busy}>
           Save and resubmit

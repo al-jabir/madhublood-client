@@ -5,6 +5,7 @@ export interface ApiUser {
   phone?: string;
   profileCompleted: boolean;
   emailVerified: boolean;
+  verificationRequired?: boolean;
   locationId?: string;
   area?: string;
   gender?: "undisclosed" | "male" | "female" | "other";
@@ -68,6 +69,7 @@ export interface BloodRequest {
   createdAt: string;
   instructions?: string;
   contactConsent?: boolean;
+  shareContactWithMembers?: boolean;
 }
 export interface DonorResponse {
   id: string;

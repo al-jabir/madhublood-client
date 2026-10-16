@@ -39,9 +39,10 @@ export const authApi = {
     (await api.post<SessionResponse>("/auth/login", data)).data,
   register: async (data: unknown) =>
     (
-      await api.post<
-        SessionResponse & { recoveryKey: string; message: string }
-      >("/auth/register", data)
+      await api.post<SessionResponse & { message: string }>(
+        "/auth/register",
+        data,
+      )
     ).data,
   resetPassword: async (data: unknown) =>
     (await api.post<Acknowledgment>("/auth/reset-password", data)).data,

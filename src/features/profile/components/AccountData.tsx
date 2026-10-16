@@ -11,7 +11,7 @@ export function AccountData() {
   const nav = useNavigate();
   const [password, setPassword] = useState("");
   return (
-    <div>
+    <div className="account-data-content">
       <h3>Your data</h3>
       <button
         className="button secondary"
@@ -36,6 +36,7 @@ export function AccountData() {
         Export my data
       </button>
       <form
+        className="account-delete-form"
         onSubmit={async (e) => {
           e.preventDefault();
           if (

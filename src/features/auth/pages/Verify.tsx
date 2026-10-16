@@ -1,3 +1,4 @@
+import { returnToFrom } from "../return-to";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -32,7 +33,9 @@ export function Verify({ reset = false }: { reset?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(
+    !reset && location.state?.codeQueued ? 60 : 0,
+  );
   const nav = useNavigate();
   useEffect(() => {
     if (!cooldown) return;
@@ -98,11 +101,22 @@ export function Verify({ reset = false }: { reset?: boolean }) {
         qc.clear();
         nav("/login", { replace: true, state: { message: result.message } });
       } else {
-        await qc.invalidateQueries({ queryKey: ["me"] });
-        nav("/dashboard?tab=profile", {
-          replace: true,
-          state: { message: result.message },
-        });
+        const identity = await authApi.me();
+        setCsrf(identity.csrf);
+        qc.setQueryData(["me"], identity.user);
+        const destination = returnToFrom(location.state);
+        nav(
+          identity.user.profileCompleted && destination
+            ? destination.pathname
+            : "/dashboard?tab=profile",
+          {
+            replace: true,
+            state:
+              identity.user.profileCompleted && destination
+                ? destination.state
+                : { message: result.message, returnTo: destination },
+          },
+        );
       }
     } catch (e) {
       setError(errorText(e));
@@ -112,10 +126,7 @@ export function Verify({ reset = false }: { reset?: boolean }) {
   }
   return (
     <AuthLayout>
-      <Link
-        className="text-link back-link"
-        to={reset ? "/login" : "/dashboard?tab=profile"}
-      >
+      <Link className="text-link back-link" to={reset ? "/login" : "/"}>
         <ArrowLeft size={16} />
         {t(en, "ফিরে যান", "Go back")}
       </Link>

@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test("email registration shows a private recovery key then saves the personal profile without SMS", async ({
+test("email registration requires verification before the personal profile", async ({
   page,
 }) => {
   let signedIn = false;
@@ -23,6 +23,7 @@ test("email registration shows a private recovery key then saves the personal pr
     roles: ["user"],
     profileCompleted: false,
     emailVerified: false,
+    verificationRequired: true,
     notificationConsent: false,
   };
   await page.route("**/api/v1/**", async (route) => {
@@ -43,6 +44,14 @@ test("email registration shows a private recovery key then saves the personal pr
           message: "Account created",
         },
       });
+    }
+    if (path.endsWith("/auth/verify-email")) {
+      expect(route.request().postDataJSON()).toEqual({
+        email: "new@example.test",
+        code: "123456",
+      });
+      user = { ...user, emailVerified: true, verificationRequired: false };
+      return route.fulfill({ json: { message: "Email verified" } });
     }
     if (path.endsWith("/auth/me"))
       return route.fulfill({
@@ -97,16 +106,19 @@ test("email registration shows a private recovery key then saves the personal pr
   await page
     .getByRole("button", { name: "Create account", exact: true })
     .click();
-  await expect(page.getByLabel("Account recovery key")).toHaveValue(key);
-  await page.getByRole("button", { name: /I saved my key/ }).click();
+  await expect(page.getByLabel("Account recovery key")).toHaveCount(0);
+  await expect(page).toHaveURL(/verify-email/);
+  await page.goto("/dashboard?tab=profile");
+  await expect(page).toHaveURL(/verify-email/);
+  await page.getByLabel("Verification code", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Verify email", exact: true }).click();
   await expect(page).toHaveURL(/dashboard\?tab=profile/);
   await page.getByLabel("Full name", { exact: true }).fill("New donor");
   await page
     .getByRole("button", { name: "Save personal profile", exact: true })
     .click();
-  await expect(
-    page.getByRole("heading", { name: "Optional donor profile" }),
-  ).toBeVisible();
+  await expect(page.locator(".profile-overview")).toContainText("New donor");
+  await page.getByRole("button", { name: "Edit profile", exact: true }).click();
   await expect(
     page.getByLabel("Email address", { exact: true }),
   ).toHaveAttribute("readonly", "");
@@ -238,6 +250,6 @@ test("replacement recovery key stays visible after sessions are revoked", async 
     .getByRole("button", { name: "Generate replacement recovery key" })
     .click();
   await expect(page.getByLabel("New recovery key")).toHaveValue(key);
-  await page.getByRole("button", { name: /I saved my key/ }).click();
+  await page.getByRole("button", { name: "I saved my key — sign in" }).click();
   await expect(page).toHaveURL(/\/login$/);
 });

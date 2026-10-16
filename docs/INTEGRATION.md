@@ -25,7 +25,11 @@ This is repository configuration, not confirmation of a deployed proxy. Publish 
 
 ## Verification scope
 
-16 October 2026: source/test typechecks, lint, seven unit/architecture tests and production build passed. Final browser suite: 22 passed, zero failures; two live coordinator cases skipped because disposable account fixtures were not configured. Read-only public checks returned HTTP 200 for locations through the local client proxy (35 items), Render locations (35 items), and Render requests (zero active items). No real registration, password change, email delivery or production workflow mutation was performed.
+16 October 2026: source/test typechecks, lint, eight unit/architecture tests and production build passed. Final browser suite: 26 passed, zero failures; two live coordinator cases skipped because disposable account fixtures were not configured. Read-only checks returned HTTP 200 for locations through the local client proxy (35 items) and requests (zero active items). No real registration, password change, email delivery or production workflow mutation was performed.
+
+Homepage integration now uses real donor/request responses without demo people, fabricated requests or invented donation counts. Empty/error/loading states are separate. Quick-request contact/hospital details travel in React Router navigation state rather than URL parameters, survive sign-in and can resume after profile onboarding. Continuation targets are restricted to known internal routes. These details are not saved in localStorage.
+
+The decorative label class is now eyebrow-label, avoiding Tailwind's overline text-decoration utility. Auth/header and quick-request top decorations were removed; input borders and keyboard focus indicators remain. Desktop/mobile tests verify label decoration, viewport fit, empty API results and the sign-in continuation.
 
 Run `npm run check` for typecheck/lint/unit tests/build. `npm run test:e2e` covers desktop/mobile account registration/profile, sign-in and recovery-key reset, email-code reset (including rejected codes), email verification/status refresh, private drafts, moderation settings, language persistence, responsive overflow and accessibility. Email/reset tests mock the API and do not send real email. Existing live coordinator tests require E2E_ACCOUNTS_FILE and are skipped without disposable account fixtures.
 

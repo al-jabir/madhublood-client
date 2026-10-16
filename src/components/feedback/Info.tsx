@@ -5,10 +5,12 @@ export function Info({
   title,
   text,
   action = false,
+  actionState,
 }: {
   title: string;
   text: string;
   action?: boolean;
+  actionState?: unknown;
 }) {
   return (
     <section className="page narrow">
@@ -16,7 +18,11 @@ export function Info({
         <ShieldCheck />
         <h1>{title}</h1>
         <p>{text}</p>
-        <Link to={action ? "/login" : "/"} className="button">
+        <Link
+          to={action ? "/login" : "/"}
+          state={actionState}
+          className="button"
+        >
           {action ? "Sign in" : "Back home"}
           <ArrowRight size={17} />
         </Link>

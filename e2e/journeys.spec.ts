@@ -7,20 +7,20 @@ test("Bangla home, blood group filtering, consent form and language preferences"
   await expect(page).toHaveTitle(/MadhuBlood/);
   await expect(page.locator("html")).toHaveAttribute("lang", "bn");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "আপনার এক ব্যাগ রক্ত",
+    "রক্তের বন্ধনে",
   );
   await page.screenshot({
     path: `.runtime/home-${test.info().project.name}.png`,
     fullPage: true,
   });
   await page.getByLabel("Blood group", { exact: true }).selectOption("O+");
-  await page.locator(".quick-controls button").click();
+  await page.locator(".dark-search-form button[type=submit]").click();
   await expect(page).toHaveURL(/bloodGroup=O%2B/);
   await expect(page.locator(".filter-bar select").first()).toHaveValue("O+");
   await page.getByRole("button", { name: "Change language" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Find a blood donor",
+    "Find Blood Donors",
   );
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");

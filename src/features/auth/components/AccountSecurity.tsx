@@ -1,3 +1,6 @@
+import { Monitor, LogOut, ShieldCheck } from "lucide-react";
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { useState, type FormEvent } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +12,7 @@ import { Field } from "@/components/ui/Field";
 import { errorText } from "@/utils/error-text";
 
 export function AccountSecurity() {
+  const { en } = usePrefs();
   const nav = useNavigate();
   const sessions = useQuery({
     queryKey: ["sessions"],
@@ -59,26 +63,60 @@ export function AccountSecurity() {
       <p>Review your sign-ins and sign out of sessions you no longer use.</p>
       {sessions.isPending && <p role="status">Loading sessions...</p>}
       {sessions.isError && <p role="alert">{errorText(sessions.error)}</p>}
-      {sessions.data?.items.map((session) => (
-        <div className="list-row" key={session.id}>
-          <span>
-            {session.current ? "This session" : "Other session"}
-            <small>
-              Signed in: {new Date(session.createdAt).toLocaleString()}
-              <br />
-              Expires: {new Date(session.expiresAt).toLocaleString()}
-            </small>
-          </span>
-          <button
-            type="button"
-            className="button secondary"
-            disabled={revoke.isPending}
-            onClick={() => revoke.mutate(session.id)}
+      <div className="session-cards">
+        {sessions.data?.items.map((session) => (
+          <article
+            className={"session-card" + (session.current ? " is-current" : "")}
+            key={session.id}
           >
-            Sign out
-          </button>
-        </div>
-      ))}
+            <div className="session-device-icon">
+              <Monitor size={23} />
+            </div>
+            <div className="session-details">
+              <div className="session-title">
+                <h4>
+                  {session.current
+                    ? t(en, "আপনার বর্তমান সেশন", "Your current session")
+                    : t(en, "অন্য একটি সেশন", "Another session")}
+                </h4>
+                {session.current && (
+                  <span className="session-current-badge">
+                    <ShieldCheck size={13} />
+                    {t(en, "বর্তমান", "Current")}
+                  </span>
+                )}
+              </div>
+              <dl className="session-times">
+                {[
+                  [t(en, "লগইন করেছেন", "Signed in"), session.createdAt],
+                  [t(en, "মেয়াদ শেষ", "Expires"), session.expiresAt],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <dt>{label}</dt>
+                    <dd>
+                      <time dateTime={value}>
+                        {new Intl.DateTimeFormat(en ? "en-BD" : "bn-BD", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }).format(new Date(value))}
+                      </time>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <button
+              type="button"
+              className="session-revoke"
+              disabled={revoke.isPending}
+              onClick={() => revoke.mutate(session.id)}
+            >
+              <LogOut size={16} />
+              {t(en, "লগ আউট", "Sign out")}
+            </button>
+          </article>
+        ))}
+      </div>
       <h3>Account recovery key</h3>
       <p>
         Replace your key if you lost it. This invalidates the old key and signs

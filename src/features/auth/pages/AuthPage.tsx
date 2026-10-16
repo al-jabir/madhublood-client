@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { returnToFrom } from "../return-to";
 import { authApi } from "../api/auth.api";
 import { authSchema } from "../schemas/auth.schema";
 import type { z } from "zod";
@@ -22,8 +22,8 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
   const { en } = usePrefs();
   const nav = useNavigate();
   const location = useLocation();
+  const returnTo = returnToFrom(location.state);
   const register = mode === "register";
-  const [recoveryKey, setRecoveryKey] = useState("");
   const schema = authSchema(register);
   const {
     register: r,
@@ -46,58 +46,26 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
       qc.removeQueries();
       setCsrf(data.csrf);
       qc.setQueryData(["me"], data.user);
-      if ("recoveryKey" in data && typeof data.recoveryKey === "string")
-        setRecoveryKey(data.recoveryKey);
-      else nav("/dashboard?tab=profile");
+      if (
+        data.user.verificationRequired ||
+        (register && !data.user.emailVerified)
+      )
+        nav("/verify-email", {
+          replace: true,
+          state: { email: data.user.email, returnTo, codeQueued: true },
+        });
+      else if (
+        data.user.roles.some((role) =>
+          ["admin", "super-admin", "volunteer"].includes(role),
+        )
+      )
+        nav("/admin");
+      else if (returnTo && data.user.profileCompleted)
+        nav(returnTo.pathname, { state: returnTo.state });
+      else nav("/dashboard?tab=profile", { state: { returnTo } });
     },
     onError: (e) => toast.error(errorText(e)),
   });
-  if (recoveryKey)
-    return (
-      <AuthLayout>
-        <div className="auth-form recovery-panel">
-          <h1>{t(en, "অ্যাকাউন্ট তৈরি হয়েছে", "Account created")}</h1>
-          <p>
-            {t(
-              en,
-              "এই recovery key নিরাপদে সংরক্ষণ করুন। পাসওয়ার্ড ভুলে গেলে এটি লাগবে। এটি আবার দেখানো হবে না।",
-              "Save this recovery key privately. You need it if you forget your password. It is shown only once.",
-            )}
-          </p>
-          <textarea
-            aria-label="Account recovery key"
-            readOnly
-            value={recoveryKey}
-            rows={3}
-          />
-          <button
-            className="button secondary"
-            onClick={() => {
-              const url = URL.createObjectURL(
-                new Blob([recoveryKey], { type: "text/plain" }),
-              );
-              const link = document.createElement("a");
-              link.href = url;
-              link.download = "madhublood-recovery-key.txt";
-              link.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Download recovery key
-          </button>
-          <button
-            className="button"
-            onClick={() => {
-              setRecoveryKey("");
-              m.reset();
-              nav("/dashboard?tab=profile");
-            }}
-          >
-            I saved my key — complete profile
-          </button>
-        </div>
-      </AuthLayout>
-    );
   return (
     <AuthLayout>
       <div className="form-intro">
@@ -174,12 +142,16 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         </button>
         <p className="auth-footer-links">
           {register ? (
-            <Link to="/login">
-              {t(en, "অ্যাকাউন্ট আছে? লগ ইন করুন", "Already registered? Sign in")}
+            <Link to="/login" state={{ returnTo }}>
+              {t(
+                en,
+                "অ্যাকাউন্ট আছে? লগ ইন করুন",
+                "Already registered? Sign in",
+              )}
             </Link>
           ) : (
             <>
-              <Link to="/register">
+              <Link to="/register" state={{ returnTo }}>
                 {t(en, "নতুন অ্যাকাউন্ট তৈরি করুন", "Create account")}
               </Link>
               <span className="dot-sep">·</span>
