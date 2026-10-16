@@ -2,7 +2,7 @@ import { useState } from "react";
 import { authApi } from "../api/auth.api";
 import { authSchema } from "../schemas/auth.schema";
 import type { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,10 +15,13 @@ import { t } from "@/i18n/translate";
 import { Field } from "@/components/ui/Field";
 import { setCsrf } from "@/services/http";
 import { errorText } from "@/utils/error-text";
+import { AuthLayout } from "../components/AuthLayout";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export function AuthPage({ mode }: { mode: "register" | "login" }) {
   const { en } = usePrefs();
   const nav = useNavigate();
+  const location = useLocation();
   const register = mode === "register";
   const [recoveryKey, setRecoveryKey] = useState("");
   const schema = authSchema(register);
@@ -28,14 +31,17 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) });
   const m = useMutation({
-    mutationFn: async (values: z.output<typeof schema>) =>
-      register
-        ? authApi.register({
-            email: values.email,
-            password: values.password,
-            consent: values.consent,
-          })
-        : authApi.login({ email: values.email, password: values.password }),
+    mutationFn: async (values: z.output<typeof schema>) => {
+      if (register)
+        return authApi.register({
+          email: values.email,
+          password: values.password,
+          consent: values.consent,
+        });
+      await authApi.login({ email: values.email, password: values.password });
+      // Confirm the browser retained the session before opening a private page.
+      return authApi.me();
+    },
     onSuccess: async (data) => {
       qc.removeQueries();
       setCsrf(data.csrf);
@@ -48,7 +54,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
   });
   if (recoveryKey)
     return (
-      <section className="form-page">
+      <AuthLayout>
         <div className="panel">
           <h1>{t(en, "অ্যাকাউন্ট তৈরি হয়েছে", "Account created")}</h1>
           <p>
@@ -90,10 +96,10 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
             I saved my key — complete profile
           </button>
         </div>
-      </section>
+      </AuthLayout>
     );
   return (
-    <section className="form-page">
+    <AuthLayout>
       <div className="form-intro">
         <Droplets size={36} />
         <h1>
@@ -110,6 +116,11 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         </p>
       </div>
       <form className="panel" onSubmit={handleSubmit((v) => m.mutate(v))}>
+        {typeof location.state?.message === "string" && (
+          <p className="notice" role="status">
+            {location.state.message}
+          </p>
+        )}
         <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
           <input
             type="email"
@@ -119,16 +130,14 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           />
         </Field>
         <Field label={t(en, "পাসওয়ার্ড", "Password")}>
-          <input
-            type="password"
+          <PasswordInput
             autoComplete={register ? "new-password" : "current-password"}
             {...r("password")}
           />
         </Field>
         {register && (
           <Field label={t(en, "পাসওয়ার্ড নিশ্চিত করুন", "Confirm password")}>
-            <input
-              type="password"
+            <PasswordInput
               autoComplete="new-password"
               {...r("confirmPassword")}
             />
@@ -154,7 +163,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         ))}
         <button className="button full" disabled={m.isPending}>
           {m.isPending
-            ? "…"
+            ? t(en, "একটু অপেক্ষা করুন…", "Please wait…")
             : register
               ? t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")
               : t(en, "লগ ইন করুন", "Sign in")}
@@ -178,6 +187,6 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           )}
         </p>
       </form>
-    </section>
+    </AuthLayout>
   );
 }

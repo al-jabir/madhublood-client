@@ -12,7 +12,10 @@ export function useMe() {
         setCsrf(data.csrf);
         return data.user;
       } catch (e: unknown) {
-        if (isAxiosError(e) && e.response?.status === 401) return null;
+        if (isAxiosError(e) && e.response?.status === 401) {
+          setCsrf("");
+          return null;
+        }
         throw e;
       }
     },

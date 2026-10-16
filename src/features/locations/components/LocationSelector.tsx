@@ -7,6 +7,7 @@ import { MapPin } from "lucide-react";
 import type { LocationRecord } from "@/types/api";
 
 interface LocationSelectorProps {
+  id?: string;
   name?: string;
   defaultLocationId?: string;
   defaultArea?: string;
@@ -15,6 +16,7 @@ interface LocationSelectorProps {
 }
 
 export function LocationSelector({
+  id,
   defaultLocationId = "",
   defaultArea = "মধুপুর, টাঙ্গাইল",
   required = true,
@@ -40,7 +42,9 @@ export function LocationSelector({
     if (!q.data?.items.length || selectedId) return;
 
     // Default to Madhupur upazila or first available
-    const madhupur = q.data.items.find((l) => l.kind === "upazila" && l.name.includes("মধুপুর"));
+    const madhupur = q.data.items.find(
+      (l) => l.kind === "upazila" && l.name.includes("মধুপুর"),
+    );
     if (madhupur) {
       setSelectedId(madhupur._id);
       const text = `${madhupur.name}, টাঙ্গাইল`;
@@ -61,7 +65,11 @@ export function LocationSelector({
     if (!loc) return;
 
     let formatted = loc.name;
-    if (loc.kind === "locality" || loc.kind === "union" || loc.kind === "municipality") {
+    if (
+      loc.kind === "locality" ||
+      loc.kind === "union" ||
+      loc.kind === "municipality"
+    ) {
       formatted = `${loc.name}, মধুপুর, টাঙ্গাইল`;
     } else if (loc.kind === "upazila") {
       formatted = `${loc.name}, টাঙ্গাইল`;
@@ -79,6 +87,7 @@ export function LocationSelector({
 
       <div className="select-with-icon" style={{ position: "relative" }}>
         <select
+          id={id}
           value={selectedId}
           required={required}
           onChange={(e) => handleSelect(e.target.value)}
@@ -112,7 +121,13 @@ export function LocationSelector({
           )}
 
           {localities.length > 0 && (
-            <optgroup label={t(en, "মধুপুর পৌরসভার আওতাধীন এলাকা/মহল্লা", "Municipality Localities")}>
+            <optgroup
+              label={t(
+                en,
+                "মধুপুর পৌরসভার আওতাধীন এলাকা/মহল্লা",
+                "Municipality Localities",
+              )}
+            >
               {localities.map((l) => (
                 <option key={l._id} value={l._id}>
                   {l.name}
@@ -153,7 +168,8 @@ export function LocationSelector({
             fontSize: "12px",
           }}
         >
-          {t(en, "নির্বাচিত এলাকা:", "Selected area:")} <strong>{areaText}</strong>
+          {t(en, "নির্বাচিত এলাকা:", "Selected area:")}{" "}
+          <strong>{areaText}</strong>
         </small>
       )}
     </div>

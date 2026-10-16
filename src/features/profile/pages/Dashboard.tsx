@@ -28,6 +28,7 @@ import { Donations } from "@/features/donations/pages/Donations";
 import { Notifications } from "@/features/notifications/pages/Notifications";
 import { setCsrf } from "@/services/http";
 import { errorText } from "@/utils/error-text";
+import { Mail } from "lucide-react";
 
 export function Dashboard() {
   const pagination = useCursorNavigation("");
@@ -76,6 +77,20 @@ export function Dashboard() {
             <button className="text-link" onClick={() => setTab("profile")}>
               Complete profile →
             </button>
+          </div>
+        )}
+        {!me?.emailVerified && (
+          <div className="verification-banner">
+            <Mail size={22} />
+            <div>
+              <strong>Secure your account with a verified email</strong>
+              <p>
+                Verify ownership to help keep your account details up to date.
+              </p>
+            </div>
+            <Link className="button secondary" to="/verify-email">
+              Verify email <ArrowUpRight size={16} />
+            </Link>
           </div>
         )}
         {tab === "overview" && (
@@ -166,7 +181,7 @@ export function Dashboard() {
             </button>
             <p>
               <Link to="/forgot-password">
-                Recover password with your saved recovery key
+                Recover password with an email code or recovery key
               </Link>
             </p>
             <AccountData />

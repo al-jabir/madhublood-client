@@ -79,11 +79,18 @@ export function RootLayout() {
         <button
           className="icon mobile"
           aria-label="Toggle navigation"
+          aria-expanded={open}
+          aria-controls="primary-navigation"
           onClick={() => setOpen(!open)}
         >
           {open ? <X /> : <Menu />}
         </button>
-        <nav className={open ? "open" : ""} onClick={() => setOpen(false)}>
+        <nav
+          id="primary-navigation"
+          aria-label="Main navigation"
+          className={open ? "open" : ""}
+          onClick={() => setOpen(false)}
+        >
           <NavLink to="/" end>
             {t(en, "হোম", "Home")}
           </NavLink>
@@ -145,6 +152,11 @@ export function RootLayout() {
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
+            </Link>
+          )}
+          {!me && (
+            <Link to="/login" className="header-signin">
+              {t(en, "লগ ইন", "Sign in")}
             </Link>
           )}
           <Link className="button small" to={me ? "/dashboard" : "/register"}>

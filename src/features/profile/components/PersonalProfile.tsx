@@ -6,6 +6,7 @@ import { LocationSelector } from "@/features/locations/components/LocationSelect
 import { qc } from "@/lib/query-client";
 import { errorText } from "@/utils/error-text";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 export function PersonalProfile() {
   const { data: me } = useMe();
@@ -36,8 +37,17 @@ export function PersonalProfile() {
     <form key={me?.id} className="panel form-grid" onSubmit={save}>
       <h2 className="span2">ব্যক্তিগত তথ্য · Personal information</h2>
       <p className="notice span2">
-        Your email and contact phone are private. No SMS or email payment is
-        needed. Your email address has not been independently verified.
+        Your email and contact phone stay private.{" "}
+        {me?.emailVerified ? (
+          "Your email address is verified."
+        ) : (
+          <>
+            Your email is not verified yet.{" "}
+            <Link className="text-link" to="/verify-email">
+              Verify your email →
+            </Link>
+          </>
+        )}
       </p>
       <Field label="Email address">
         <input

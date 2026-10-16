@@ -1,12 +1,8 @@
 import axios from "axios";
 export const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL?.trim() ||
-    (import.meta.env.PROD
-      ? "https://madhublood-server.onrender.com/api/v1"
-      : "/api/v1"),
+  baseURL: import.meta.env.VITE_API_URL?.trim() || "/api/v1",
   withCredentials: true,
-  timeout: 15000,
+  timeout: 60000,
 });
 let csrf = "";
 export function setCsrf(value: string) {

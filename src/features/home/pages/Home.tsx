@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Droplets,
-  ArrowUpRight,
   ArrowRight,
-  Search,
-  MapPin,
-  ShieldCheck,
+  ArrowUpRight,
+  Droplet,
   Heart,
-  Users,
+  MapPin,
   Plus,
+  Search,
+  ShieldCheck,
+  Users,
+  HandHeart,
+  ArrowDown,
 } from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
@@ -23,330 +25,329 @@ export function Home() {
   const [blood, setBlood] = useState("");
   const [area, setArea] = useState("");
   const nav = useNavigate();
-
-  const locQ = useQuery({
+  const locations = useQuery({
     queryKey: ["locations", 50],
     queryFn: () => locationsApi.list(50),
-    staleTime: 1000 * 60 * 10,
+    staleTime: 600000,
   });
+  function search(event: FormEvent) {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (blood) params.set("bloodGroup", blood);
+    if (area) params.set("area", area);
+    nav(`/donors${params.size ? `?${params}` : ""}`);
+  }
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="eyebrow">
+      <section className="community-hero">
+        <div className="community-hero-copy">
+          <span className="community-kicker">
             <span className="status-dot" />
             {t(
               en,
               "মধুপুরের মানুষ, মধুপুরের পাশে",
-              "OUR COMMUNITY. OUR RESPONSIBILITY.",
+              "LOCAL PEOPLE. LIFE-CHANGING CONNECTIONS.",
             )}
-          </div>
+          </span>
           <h1>
-            {t(en, "আপনার এক ব্যাগ রক্ত,", "One donation.")}
+            {t(en, "আপনার এক ব্যাগ রক্ত,", "A little of you.")}
             <br />
-            <em>{t(en, "কারও নতুন জীবন।", "A new chance at life.")}</em>
+            <span>{t(en, "কারও পুরো পৃথিবী।", "A whole life ahead.")}</span>
           </h1>
           <p>
             {t(
               en,
-              "রক্তের প্রয়োজনে আপনি একা নন। মধুপুরের স্বেচ্ছাসেবী রক্তদাতাদের সঙ্গে যুক্ত হোন—সহজে, নিরাপদে, সঠিক সময়ে।",
-              "When blood is needed, no one should feel alone. Connect with voluntary donors in Madhupur—simply, safely, and when it matters.",
+              "প্রয়োজনে হাত বাড়িয়ে দিন। আপনার কাছের স্বেচ্ছাসেবী রক্তদাতাদের সঙ্গে যুক্ত হোন, কিংবা কারও জীবনের নতুন শুরুর অংশ হোন।",
+              "Be there when it matters. Find voluntary donors near you, ask for help, or become someone’s reason to hope.",
             )}
           </p>
           <div className="hero-buttons">
             <Link to="/donors" className="button">
               <Search size={18} />
-              {t(en, "রক্তদাতা খুঁজুন", "Find a blood donor")}
+              {t(en, "রক্তদাতা খুঁজুন", "Find a donor")}
               <ArrowUpRight size={18} />
             </Link>
-            <Link to="/requests/new" className="button secondary">
-              <Plus size={18} />
-              {t(en, "রক্তের অনুরোধ করুন", "Request blood")}
+            <Link to="/register" className="button secondary">
+              {t(en, "রক্তদাতা হতে চাই", "I want to help")}
+              <Heart size={17} />
             </Link>
           </div>
-          <div className="trust">
+          <div className="community-proof">
+            <ShieldCheck size={18} />
             <span>
-              <ShieldCheck size={17} />
-              {t(en, "ব্যক্তিগত তথ্য সুরক্ষিত", "Privacy comes first")}
+              {t(en, "সম্মতিভিত্তিক যোগাযোগ", "Consent-first connections")}
             </span>
-            <span>
-              <Heart size={17} />
-              {t(en, "সম্পূর্ণ স্বেচ্ছাসেবী", "Always voluntary")}
-            </span>
+            <i />
+            <span>{t(en, "সম্পূর্ণ স্বেচ্ছাসেবী", "Always voluntary")}</span>
           </div>
         </div>
-        <div
-          className="hero-art"
-          aria-label="An illustration of a blood donation bag connecting the community"
-        >
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="art-label">
-            <span className="status-dot" />
-            {t(en, "একসাথে, জীবনের পাশে", "Together, for life")}
+        <div className="donation-visual" aria-hidden="true">
+          <div className="visual-topline">
+            <span>
+              <span className="status-dot" /> MADHUBLOOD COMMUNITY
+            </span>
+            <ArrowUpRight size={20} />
           </div>
-          <div className="blood-bag">
-            <div className="bag-handle" />
-            <div className="bag-label">
-              <Droplets size={38} fill="currentColor" />
-              <strong>এক ব্যাগ ভালোবাসা</strong>
-              <span>A GIFT OF LIFE</span>
-              <div className="bag-cross">+</div>
-            </div>
-            <div className="bag-bottom" />
+          <div className="life-ring ring-outer" />
+          <div className="life-ring ring-inner" />
+          <div className="visual-word">
+            GIVE
+            <br />
+            <span>HOPE.</span>
           </div>
-          <div className="tube" />
-          <div className="float-card float-heart">
-            <span className="soft-icon">
-              <Heart fill="currentColor" size={20} />
+          <div className="donation-drop">
+            <Droplet size={135} strokeWidth={1} />
+            <Heart size={33} fill="currentColor" />
+          </div>
+          <div className="group-token token-one">A+</div>
+          <div className="group-token token-two">O−</div>
+          <div className="group-token token-three">B+</div>
+          <div className="visual-note">
+            <span className="note-heart">
+              <HandHeart size={24} />
             </span>
             <div>
               <strong>
-                {t(en, "রক্ত দিন, জীবন বাঁচান", "Give blood. Give hope.")}
+                {t(en, "এক ব্যাগ ভালোবাসা", "A gift that matters.")}
               </strong>
               <small>
-                {t(
-                  en,
-                  "আপনার ইচ্ছেটুকুই প্রথম পদক্ষেপ",
-                  "It starts with your willingness",
-                )}
+                {t(en, "একসাথে, জীবনের পাশে", "From one person. To another.")}
               </small>
             </div>
           </div>
-          <div className="float-card float-shield">
-            <ShieldCheck className="green" size={23} />
-            <div>
-              <strong>{t(en, "নিরাপদ সংযোগ", "A safer connection")}</strong>
-              <small>
-                {t(
-                  en,
-                  "আপনার সম্মতি, আপনার নিয়ন্ত্রণ",
-                  "Your consent. Your control.",
-                )}
-              </small>
-            </div>
-          </div>
-          <span className="art-plus p1">+</span>
-          <span className="art-plus p2">+</span>
+          <span className="visual-caption">
+            EVERY CONNECTION STARTS WITH CARE
+          </span>
         </div>
       </section>
-      <section className="quick-search">
-        <div>
+      <section className="finder-section" aria-labelledby="finder-title">
+        <div className="finder-intro">
           <span className="overline">
-            {t(en, "প্রয়োজনে, পাশে আছি", "LET’S FIND YOUR MATCH")}
-          </span>
-          <h2>
             {t(
               en,
-              "কোন গ্রুপের রক্ত খুঁজছেন?",
-              "Which blood group do you need?",
+              "একটি সংযোগই বদলে দিতে পারে সবকিছু",
+              "YOUR SEARCH STARTS HERE",
             )}
+          </span>
+          <h2 id="finder-title">
+            {t(en, "কোন গ্রুপের রক্ত খুঁজছেন?", "Let’s find your match.")}
           </h2>
         </div>
-        <div className="quick-controls">
-          <label className="select-wrap">
-            <Droplets size={18} />
+        <form className="quick-controls" onSubmit={search}>
+          <label className="finder-field">
+            <span>
+              <Droplet size={15} />
+              {t(en, "রক্তের গ্রুপ", "Blood group")}
+            </span>
             <select
               aria-label="Blood group"
               value={blood}
               onChange={(e) => setBlood(e.target.value)}
             >
-              <option value="">{t(en, "রক্তের গ্রুপ", "Blood group")}</option>
-              {groups.map((g) => (
-                <option key={g}>{g}</option>
+              <option value="">{t(en, "সব গ্রুপ", "Any blood group")}</option>
+              {groups.map((group) => (
+                <option key={group}>{group}</option>
               ))}
             </select>
           </label>
-          <label className="select-wrap">
-            <MapPin size={18} />
+          <label className="finder-field">
+            <span>
+              <MapPin size={15} />
+              {t(en, "এলাকা", "Location")}
+            </span>
             <select
               aria-label="Area"
               value={area}
               onChange={(e) => setArea(e.target.value)}
             >
               <option value="">
-                {t(en, "সকল এলাকা (মধুপুর)", "All Madhupur")}
+                {t(en, "মধুপুরের সব এলাকা", "All Madhupur")}
               </option>
-              {locQ.data?.items?.map((l) => (
-                <option key={l._id} value={l.name}>
-                  {l.name}
+              {locations.data?.items.map((item) => (
+                <option key={item._id} value={item.name}>
+                  {item.name}
                 </option>
               ))}
             </select>
           </label>
-          <button
-            className="button"
-            onClick={() => {
-              const sp = new URLSearchParams();
-              if (blood) sp.set("bloodGroup", blood);
-              if (area) sp.set("area", area);
-              const qs = sp.toString();
-              nav("/donors" + (qs ? "?" + qs : ""));
-            }}
-          >
+          <button className="button" type="submit">
             <Search size={18} />
-            {t(en, "খুঁজুন", "Search")}
+            {t(en, "রক্তদাতা খুঁজুন", "Search donors")}
           </button>
-        </div>
+        </form>
+        {locations.isError && (
+          <p className="finder-status" role="status">
+            {t(
+              en,
+              "এলাকার তালিকা পাওয়া যাচ্ছে না। সব এলাকায় খুঁজতে পারবেন।",
+              "Locations are temporarily unavailable. You can still search all areas.",
+            )}
+          </p>
+        )}
       </section>
-      <section className="values">
-        <div>
-          <span className="value-icon">
-            <Users />
-          </span>
-          <div>
-            <strong>
-              {t(en, "স্থানীয় মানুষের নেটওয়ার্ক", "Rooted in our community")}
-            </strong>
-            <p>
-              {t(
-                en,
-                "আপনার এলাকার রক্তদাতার সঙ্গে সংযোগ",
-                "Connect with donors in your area",
-              )}
-            </p>
-          </div>
-        </div>
-        <div>
-          <span className="value-icon">
-            <ShieldCheck />
-          </span>
-          <div>
-            <strong>
-              {t(en, "আপনার গোপনীয়তা আগে", "Your privacy, protected")}
-            </strong>
-            <p>
-              {t(
-                en,
-                "সম্মতি ছাড়া ব্যক্তিগত যোগাযোগ প্রকাশ নয়",
-                "Contact details shared with consent",
-              )}
-            </p>
-          </div>
-        </div>
-        <div>
-          <span className="value-icon">
-            <Heart />
-          </span>
-          <div>
-            <strong>
-              {t(en, "মানবতার জন্য, বিনামূল্যে", "Voluntary, always free")}
-            </strong>
-            <p>
-              {t(
-                en,
-                "রক্তদানে নেই কোনো লেনদেন",
-                "A gift of life, never a transaction",
-              )}
-            </p>
-          </div>
-        </div>
+      <section
+        className="care-strip"
+        aria-label={t(en, "আমাদের অঙ্গীকার", "Our commitments")}
+      >
+        {[
+          [
+            ShieldCheck,
+            "সম্মতি সবার আগে",
+            "Consent comes first",
+            "ব্যক্তিগত যোগাযোগ আপনার নিয়ন্ত্রণে।",
+            "You control your contact details.",
+          ],
+          [
+            Users,
+            "আপনার এলাকার মানুষ",
+            "Closer to your community",
+            "কাছের রক্তদাতার সঙ্গে সংযোগ।",
+            "Connect with donors in your area.",
+          ],
+          [
+            Heart,
+            "মানবতার জন্য, বিনামূল্যে",
+            "Kindness has no price",
+            "রক্তদানে কোনো কেনাবেচা নয়।",
+            "Blood donation is never a transaction.",
+          ],
+        ].map(([Icon, bn, eng, description, descriptionEn]) => {
+          const Symbol = Icon as typeof Heart;
+          return (
+            <div key={String(eng)}>
+              <span className="care-icon">
+                <Symbol size={22} />
+              </span>
+              <div>
+                <h3>{t(en, String(bn), String(eng))}</h3>
+                <p>{t(en, String(description), String(descriptionEn))}</p>
+              </div>
+            </div>
+          );
+        })}
       </section>
-      <section className="section">
+      <section className="section community-requests" id="active-requests">
         <div className="section-heading">
           <div>
             <span className="overline">
-              {t(en, "একটু এগিয়ে আসুন", "BE THERE WHEN IT MATTERS")}
+              <span className="status-dot" />
+              {t(en, "একটু এগিয়ে আসুন", "SOMEONE NEEDS YOU TODAY")}
             </span>
-            <h2>{t(en, "জরুরি রক্তের অনুরোধ", "Active blood requests")}</h2>
+            <h2>{t(en, "একটি সাড়াই অনেক কিছু।", "Your response matters.")}</h2>
             <p>
               {t(
                 en,
-                "একটি সাড়া হয়তো বদলে দিতে পারে একটি পরিবারের গল্প।",
-                "Your response could make a difference to a family.",
+                "কমিউনিটির সক্রিয় রক্তের অনুরোধগুলো দেখুন।",
+                "Explore active blood requests from the community.",
               )}
             </p>
           </div>
-          <Link to="/requests" className="text-link">
-            {t(en, "সব অনুরোধ দেখুন", "View all requests")}
-            <ArrowRight size={17} />
+          <Link className="text-link" to="/requests">
+            {t(en, "সব অনুরোধ", "All requests")}
+            <ArrowUpRight size={18} />
           </Link>
         </div>
         <RequestList compact />
+        <Link className="request-prompt" to="/requests/new">
+          <span>
+            <Plus size={19} />
+            {t(
+              en,
+              "আপনার বা প্রিয়জনের রক্ত প্রয়োজন?",
+              "Need blood for yourself or someone you love?",
+            )}
+          </span>
+          <strong>
+            {t(en, "অনুরোধ তৈরি করুন", "Create a request")}
+            <ArrowRight size={17} />
+          </strong>
+        </Link>
       </section>
-      <section className="how section">
+      <section className="community-how section">
         <div className="section-heading">
           <div>
             <span className="overline">
-              {t(en, "সহজ তিনটি ধাপ", "A SIMPLE WAY TO HELP")}
-            </span>
-            <h2>
               {t(
                 en,
-                "জীবনের পাশে দাঁড়ানো এখন আরও সহজ",
-                "A connection that starts with you",
+                "সহজ শুরু, অর্থপূর্ণ পরিবর্তন",
+                "SMALL STEPS. REAL CONNECTIONS.",
               )}
+            </span>
+            <h2>
+              {t(en, "পাশে দাঁড়ানো এতটাই সহজ।", "A simpler way to be there.")}
             </h2>
           </div>
-          <Link to="/how-it-works" className="text-link">
-            {t(en, "বিস্তারিত জানুন", "Learn more")}
-            <ArrowRight size={17} />
+          <Link className="text-link" to="/how-it-works">
+            {t(en, "আরও জানুন", "How it works")}
+            <ArrowUpRight size={18} />
           </Link>
         </div>
-        <div className="steps">
+        <div className="connection-steps">
           {[
             [
               Search,
-              "রক্তদাতা খুঁজুন",
-              "Find your blood group",
-              "প্রয়োজনীয় গ্রুপ ও এলাকা দিয়ে খুঁজুন।",
-              "Search the group and area you need.",
+              "খুঁজুন",
+              "Find your community",
+              "গ্রুপ ও এলাকা দিয়ে কাছের রক্তদাতাদের খুঁজুন।",
+              "Search by blood group and area, or post a request.",
             ],
             [
               ShieldCheck,
-              "নিরাপদে সংযুক্ত হোন",
-              "Connect with consent",
-              "যাচাই করা অনুরোধে রক্তদাতার সাড়া পান।",
-              "Receive donor responses to a reviewed request.",
+              "যুক্ত হোন",
+              "Make a connection",
+              "যাচাই করা অনুরোধে সম্মতির ভিত্তিতে যোগাযোগ করুন।",
+              "Connect through reviewed requests, with everyone’s consent.",
             ],
             [
-              Heart,
-              "জীবনের পাশে থাকুন",
-              "Make a difference",
-              "হাসপাতালের পরামর্শে রক্তদানে এগিয়ে আসুন।",
-              "Coordinate donation with the clinical team.",
+              HandHeart,
+              "পাশে থাকুন",
+              "Give a little hope",
+              "হাসপাতালের পরামর্শে রক্তদান সমন্বয় করুন।",
+              "Coordinate your donation with the hospital’s clinical team.",
             ],
-          ].map(([Icon, bn, eng, desc, edesc], i) => {
-            const I = Icon as typeof Search;
+          ].map(([Icon, bn, eng, desc, engDesc], index) => {
+            const Symbol = Icon as typeof Search;
             return (
-              <div className="step" key={i}>
-                <span className="step-number">0{i + 1}</span>
-                <I size={27} />
-                <h3>{t(en, bn as string, eng as string)}</h3>
-                <p>{t(en, desc as string, edesc as string)}</p>
-              </div>
+              <article key={String(eng)}>
+                <div className="connection-step-top">
+                  <Symbol size={24} />
+                  <span>0{index + 1}</span>
+                </div>
+                <h3>{t(en, String(bn), String(eng))}</h3>
+                <p>{t(en, String(desc), String(engDesc))}</p>
+              </article>
             );
           })}
         </div>
       </section>
-      <section className="join">
+      <section className="community-join">
         <div>
           <span className="overline">
             {t(
               en,
-              "আপনিও হতে পারেন কারও আশার আলো",
-              "SOMEONE’S HOPE COULD START WITH YOU",
+              "আপনার কমিউনিটি। আপনার অবদান।",
+              "YOUR COMMUNITY. YOUR DIFFERENCE.",
             )}
           </span>
           <h2>
-            {t(
-              en,
-              "রক্তদাতা হোন। মানবতার পাশে থাকুন।",
-              "Be a donor. Be someone’s reason to hope.",
-            )}
+            {t(en, "কারও আশার কারণ হোন।", "Be someone’s reason to hope.")}
           </h2>
           <p>
             {t(
               en,
-              "আজই যুক্ত হোন মধুপুরের স্বেচ্ছাসেবী রক্তদাতা পরিবারে।",
-              "Join Madhupur’s voluntary blood donor community today.",
+              "আজই মধুপুরের স্বেচ্ছাসেবী রক্তদাতা পরিবারে যুক্ত হোন।",
+              "Join Madhupur’s voluntary donor community. It starts with you.",
             )}
           </p>
+          <Link className="button white" to="/register">
+            {t(en, "কমিউনিটিতে যোগ দিন", "Count me in")}
+            <ArrowUpRight size={18} />
+          </Link>
         </div>
-        <Link to="/register" className="button white">
-          {t(en, "রক্তদাতা হিসেবে যোগ দিন", "Join the community")}
-          <ArrowUpRight size={18} />
-        </Link>
+        <div className="join-mark" aria-hidden="true">
+          <Heart size={115} strokeWidth={1} />
+          <ArrowDown size={50} />
+        </div>
       </section>
     </>
   );

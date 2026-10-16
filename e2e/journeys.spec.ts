@@ -16,7 +16,7 @@ test("Bangla home, blood group filtering, consent form and language preferences"
   await page.getByLabel("Blood group", { exact: true }).selectOption("O+");
   await page.locator(".quick-controls button").click();
   await expect(page).toHaveURL(/bloodGroup=O%2B/);
-  await expect(page.locator(".filter-bar select")).toHaveValue("O+");
+  await expect(page.locator(".filter-bar select").first()).toHaveValue("O+");
   await page.getByRole("button", { name: "Change language" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

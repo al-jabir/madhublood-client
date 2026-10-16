@@ -11,11 +11,13 @@ export function Field({
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
-      {React.isValidElement(children)
-        ? React.cloneElement(children as React.ReactElement<{ id: string }>, {
-            id,
-          })
-        : children}
+      {React.Children.map(children, (child, index) =>
+        index === 0 && React.isValidElement(child)
+          ? React.cloneElement(child as React.ReactElement<{ id: string }>, {
+              id,
+            })
+          : child,
+      )}
     </div>
   );
 }

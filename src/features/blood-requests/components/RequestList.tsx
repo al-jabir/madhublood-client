@@ -18,7 +18,11 @@ export function RequestList({ compact = false }: { compact?: boolean }) {
   });
   if (q.isPending)
     return (
-      <div className="skeleton-grid" aria-label="Loading requests">
+      <div
+        className="skeleton-grid"
+        role="status"
+        aria-label="Loading requests"
+      >
         {[1, 2, 3].map((i) => (
           <div className="skeleton" key={i} />
         ))}

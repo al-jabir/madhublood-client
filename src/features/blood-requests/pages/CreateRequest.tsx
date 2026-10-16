@@ -20,6 +20,7 @@ export function CreateRequest() {
   const [busy, setBusy] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [draftId, setDraftId] = useState<string>();
+  const [draftLocation, setDraftLocation] = useState({ id: "", area: "" });
   function valuesFrom(form: HTMLFormElement) {
     const values = Object.fromEntries(new FormData(form));
     const data: Record<string, unknown> = {
@@ -56,6 +57,10 @@ export function CreateRequest() {
       }
     }
     setDraftId(draft._id);
+    setDraftLocation({
+      id: String(draft.data.locationId ?? ""),
+      area: String(draft.data.area ?? ""),
+    });
   }
   async function saveDraft() {
     if (!formRef.current) return;
@@ -159,7 +164,11 @@ export function CreateRequest() {
             <input name="hospital" minLength={3} maxLength={150} required />
           </Field>
           <Field label="এলাকা · Area">
-            <LocationSelector />
+            <LocationSelector
+              key={draftId ?? "new"}
+              defaultLocationId={draftLocation.id}
+              defaultArea={draftLocation.area}
+            />
           </Field>
           <Field label="প্রয়োজনের সময় · Required by">
             <input type="datetime-local" name="requiredAt" required />
@@ -193,6 +202,7 @@ export function CreateRequest() {
               disabled={busy}
               onClick={() => {
                 setDraftId(undefined);
+                setDraftLocation({ id: "", area: "" });
                 formRef.current?.reset();
               }}
             >

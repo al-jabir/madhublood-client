@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { AppProviders } from "@/app/providers/AppProviders";
 import { App } from "@/app/App";
 import "@/styles/globals.css";
+import "@/styles/community.css";
 import "@fontsource/hind-siliguri/bengali-400.css";
 import "@fontsource/hind-siliguri/bengali-600.css";
 import "@fontsource/hind-siliguri/bengali-700.css";

@@ -1,4 +1,4 @@
-> Current authentication: email/password with no MFA or SMS. Registration shows a one-time recovery key and opens the personal profile after saving it; sign-in opens the profile tab. Personal information (name, general location, optional contact phone/gender) is separate from optional donor blood group, donation history, availability and consent. Email is not claimed verified. Password reset uses the saved recovery key; no paid provider is required. Existing phone-only accounts need the server email migration before deployment.
+> Email/password registration and sign-in, email verification, email-code password reset and a saved one-use recovery key are connected to the backend. Registration shows the private key once, then opens profile onboarding. Donor/contact details remain optional and consent-based. No SMS or MFA is used.
 
 # MadhuBlood client
 
@@ -53,16 +53,14 @@ Feature folders contain only the API clients, components, hooks, pages and schem
 
 The refactor preserves current product functionality. It does not resolve all existing launch requirements; see the server's readiness report for the remaining clinical, privacy, provider and product limitations.
 
-## Production domains
+## Production connection
 
 Frontend: https://madhublood.vercel.app. Backend: https://madhublood-server.onrender.com.
 
-The production source defaults to `https://madhublood-server.onrender.com/api/v1`, so no Vercel environment variable is needed. An optional VITE_API_URL override is read at build time. Use the client directory as the project root, `npm run build` and output `dist`. For local production builds, copy `.env.production.example` to `.env.production` on a fresh checkout. Keep the local development value `/api/v1` to use Vite's proxy. The browser-facing variable is public and must never contain database/provider secrets.
+The browser defaults to `/api/v1`. The checked-in `vercel.json` forwards `/api/:path*` to the Render API before the SPA fallback. This keeps browser session cookies on the frontend origin and avoids depending on cross-site cookie acceptance. API responses are marked private/no-store. Server Origin/CSRF protection remains enabled. No Vercel environment variable is required.
 
-The Render server must allow exactly `CLIENT_ORIGIN=https://madhublood.vercel.app`, with production cookie settings. These are different sites: production sessions use Secure/HttpOnly/SameSite=None and Axios sends credentials. Browsers that block third-party cookies may still prevent persistent login; verify the target browsers or use same-site custom domains before public release. Configure SPA route fallback in the hosting project and test refreshing a nested page. Hosting dashboard changes are separate from local file changes.
+If a previous Vercel VITE_API_URL points directly at Render, remove it or change it to `/api/v1`, then redeploy. Explicit overrides take precedence over the source default. On hosts other than Vercel, configure an equivalent API reverse proxy or a reviewed VITE_API_URL override. Vite preview alone does not provide this hosting rewrite.
 
-## Production without Vercel environment variables
+Vercel build: `npm ci --include=dev && npm run build`, output `dist`, repository root containing this package.json. Deploy the updated vercel.json with the client. Keep production server CLIENT_ORIGIN set to the exact frontend origin. Verify browser login, refresh, logout and actual inbox delivery after deployment; local mocked tests do not certify hosted cookies or mail.
 
-No Vercel environment variable is required for the current public API address. Production builds default to `https://madhublood-server.onrender.com/api/v1`; development defaults to `/api/v1` through Vite's local proxy. `VITE_API_URL` is an optional override. A nonblank override takes precedence, so remove an old incorrect value if one exists. Only the public API URL is in the browser bundle; server credentials remain private.
-
-Commit/push this source change and redeploy the Vercel project to publish it. Render also needs the updated server revision: when CLIENT_ORIGIN is unset, production allows `https://madhublood.vercel.app` by default. If an old CLIENT_ORIGIN is already set on Render, correct it or remove it to use that default. CORS/Origin/CSRF and credentialed-cookie protections remain enabled.
+See [integration notes](docs/INTEGRATION.md) for routes, tests and acceptance steps.

@@ -172,6 +172,7 @@ test("email sign-in opens profile and account recovery accepts a one-use key wit
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/dashboard\?tab=profile/);
   await page.goto("/forgot-password");
+  await page.getByRole("button", { name: "Recovery key", exact: true }).click();
   await page
     .getByLabel("Email address", { exact: true })
     .fill("member@example.test");

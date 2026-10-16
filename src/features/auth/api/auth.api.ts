@@ -1,6 +1,22 @@
 import { api } from "@/services/http";
 import type { Acknowledgment, SessionResponse } from "@/types/api";
 export const authApi = {
+  requestVerification: async (email: string) =>
+    (
+      await api.post<Acknowledgment>("/auth/request-email-verification", {
+        email,
+      })
+    ).data,
+  verifyEmail: async (data: { email: string; code: string }) =>
+    (await api.post<Acknowledgment>("/auth/verify-email", data)).data,
+  forgotPassword: async (email: string) =>
+    (await api.post<Acknowledgment>("/auth/forgot-password", { email })).data,
+  resetPasswordEmail: async (data: {
+    email: string;
+    code: string;
+    password: string;
+  }) =>
+    (await api.post<Acknowledgment>("/auth/reset-password-email", data)).data,
   sessions: async () =>
     (
       await api.get<{
