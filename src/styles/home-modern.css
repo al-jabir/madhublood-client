@@ -1,0 +1,1559 @@
+/* ==========================================================================
+   MadhuBlood Modern Homepage Styles (Matching Reference Design)
+   ========================================================================== */
+
+/* --- Emergency Topline Bar --- */
+.topline-emergency {
+  background: #dc2626;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.topline-emergency a,
+.topline-emergency span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topline-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.topline-phone-link {
+  color: #ffffff;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.topline-phone-link:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* --- Hero Section --- */
+.home-hero-section {
+  position: relative;
+  padding: 48px 0 64px;
+  background: radial-gradient(ellipse at 15% 20%, rgba(254, 226, 226, 0.45) 0%, rgba(255, 255, 255, 0) 70%),
+              radial-gradient(ellipse at 85% 80%, rgba(254, 242, 242, 0.5) 0%, rgba(255, 255, 255, 0) 65%);
+}
+
+.home-hero-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.hero-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.hero-pill-tag .pulsing-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #dc2626;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+.hero-headline {
+  font-size: clamp(34px, 4.2vw, 54px);
+  font-weight: 800;
+  line-height: 1.22;
+  color: #0f172a;
+  letter-spacing: -0.8px;
+  margin-bottom: 20px;
+}
+
+.hero-headline .text-red {
+  color: #dc2626;
+  display: block;
+  margin-top: 4px;
+}
+
+.hero-lead-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #475569;
+  margin-bottom: 32px;
+  max-width: 580px;
+}
+
+.hero-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.btn-primary-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #dc2626;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 26px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-primary-red:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+}
+
+.btn-outline-donor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 13px 24px;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-outline-donor:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.hero-trust-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.hero-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.hero-trust-item svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+/* --- Hero Quick Request Card --- */
+.quick-request-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-request-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.quick-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.quick-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.quick-card-title .card-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-emergency {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.quick-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quick-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quick-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.quick-field-input,
+.quick-field-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  transition: all 0.2s;
+}
+
+.quick-field-input:focus,
+.quick-field-select:focus {
+  background: #ffffff;
+  border-color: #dc2626;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.quick-two-cols {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+
+.btn-post-emergency {
+  width: 100%;
+  min-height: 48px;
+  background: #dc2626;
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn-post-emergency:hover {
+  background: #b91c1c;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+/* --- Dark Donor Search Banner --- */
+.dark-search-section {
+  max-width: 1240px;
+  margin: -20px auto 56px;
+  padding: 0 20px;
+}
+
+.dark-search-box {
+  background: #0c1322;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 36px 40px;
+  color: #ffffff;
+  box-shadow: 0 20px 40px -12px rgba(12, 19, 34, 0.45);
+}
+
+.dark-search-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(220, 38, 38, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fca5a5;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.dark-search-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.dark-search-subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 26px;
+}
+
+.dark-search-form {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1.3fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.dark-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.dark-select {
+  width: 100%;
+  min-height: 46px;
+  background: #182235;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.dark-select:focus {
+  border-color: #ef4444;
+  outline: none;
+}
+
+.dark-select option {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.btn-dark-search {
+  min-height: 46px;
+  padding: 0 28px;
+  background: #dc2626;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-dark-search:hover {
+  background: #ef4444;
+}
+
+.dark-checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.dark-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dark-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dark-checkbox-label input[type="checkbox"] {
+  accent-color: #dc2626;
+  width: 16px;
+  height: 16px;
+  min-height: auto;
+  cursor: pointer;
+}
+
+.dark-privacy-note {
+  font-size: 12px;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Content Sections Common --- */
+.section-wrapper {
+  max-width: 1240px;
+  margin: 0 auto 64px;
+  padding: 0 20px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.section-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+  text-decoration: none;
+  transition: gap 0.2s;
+}
+
+.view-all-link:hover {
+  gap: 10px;
+}
+
+/* --- Urgent Requests Card Grid --- */
+.urgent-requests-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.urgent-req-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.urgent-req-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.08);
+}
+
+.urgent-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.blood-group-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.urgency-pill-tag {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.urgent-card-hospital {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.urgent-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 18px;
+  flex: 1;
+}
+
+.urgent-card-info span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.urgent-card-info svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.urgent-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.btn-card-help {
+  background: #dc2626;
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-card-help:hover {
+  background: #b91c1c;
+}
+
+/* --- Donors Showcase Grid --- */
+.donors-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.donor-showcase-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.donor-showcase-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.07);
+}
+
+.donor-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.donor-blood-tag {
+  font-size: 18px;
+  font-weight: 800;
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+}
+
+.donor-avail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.donor-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.donor-role-title {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+.donor-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #64748b;
+  padding: 6px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.donor-meta-val {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.btn-donor-request {
+  margin-top: 16px;
+  width: 100%;
+  padding: 9px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-donor-request:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+/* --- How It Works Section --- */
+.how-it-works-section {
+  text-align: center;
+}
+
+.how-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.how-step-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  transition: all 0.25s ease;
+}
+
+.how-step-card:hover {
+  transform: translateY(-4px);
+  border-color: #fca5a5;
+  box-shadow: 0 16px 32px -8px rgba(220, 38, 38, 0.08);
+}
+
+.step-number-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.how-step-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.how-step-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #64748b;
+  margin: 0;
+}
+
+/* --- Eligibility Guidelines Box --- */
+.eligibility-container {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+}
+
+.eligibility-left-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.eligibility-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 22px;
+}
+
+.eligibility-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.eligibility-subcol-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.eligibility-subcol-title.success {
+  color: #16a34a;
+}
+
+.eligibility-subcol-title.danger {
+  color: #dc2626;
+}
+
+.eligibility-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eligibility-list li {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+  position: relative;
+  padding-left: 20px;
+}
+
+.eligibility-list.success li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #16a34a;
+  font-weight: 800;
+}
+
+.eligibility-list.danger li::before {
+  content: "✕";
+  position: absolute;
+  left: 0;
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.advisory-right-card {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.advisory-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #92400e;
+  margin-bottom: 14px;
+}
+
+.advisory-text {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #78350f;
+  margin-bottom: 20px;
+}
+
+.advisory-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: underline;
+}
+
+/* --- FAQ Accordion --- */
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.faq-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.faq-item.active {
+  border-color: #dc2626;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.06);
+}
+
+.faq-question-btn {
+  width: 100%;
+  padding: 18px 22px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-question-btn svg {
+  color: #64748b;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.faq-item.active .faq-question-btn svg {
+  transform: rotate(180deg);
+  color: #dc2626;
+}
+
+.faq-answer {
+  padding: 0 22px 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #475569;
+}
+
+/* --- Modern Rich Footer --- */
+.site-footer-modern {
+  background: #090e1a;
+  color: #e2e8f0;
+  padding: 64px 0 24px;
+  margin-top: 80px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-inner-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1.6fr 1.1fr 1.1fr;
+  gap: 56px;
+  margin-bottom: 48px;
+}
+
+.footer-col-brand .footer-brand-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.footer-col-brand .footer-brand-title span.brand-red {
+  color: #ef4444;
+}
+
+.footer-brand-desc {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.footer-hotline-card {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+
+.footer-hotline-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fca5a5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.footer-hotline-phone {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.footer-col-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 18px;
+  letter-spacing: -0.2px;
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.footer-links-list a {
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links-list a:hover {
+  color: #ef4444;
+}
+
+.footer-unions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.footer-unions-grid a {
+  font-size: 12.5px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-unions-grid a:hover {
+  color: #f87171;
+}
+
+.footer-bottom-bar {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 18px;
+}
+
+.footer-bottom-links a {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-bottom-links a:hover {
+  color: #cbd5e1;
+}
+
+/* --- Responsive Media Queries --- */
+@media (max-width: 1024px) {
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .dark-search-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .urgent-requests-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .donors-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .eligibility-container {
+    grid-template-columns: 1fr;
+  }
+  .footer-inner-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .topline-emergency {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  .dark-search-box {
+    padding: 24px 20px;
+  }
+  .dark-search-form {
+    grid-template-columns: 1fr;
+  }
+  .urgent-requests-grid {
+    grid-template-columns: 1fr;
+  }
+  .donors-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+  .how-steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .eligibility-subgrid {
+    grid-template-columns: 1fr;
+  }
+  .footer-inner-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-bottom-bar {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   Dark Mode Support for Modern Theme (data-theme="dark" & html.dark)
+   ========================================================================== */
+
+[data-theme="dark"],
+html.dark,
+.dark {
+  /* Hero Section */
+  & .home-hero-section {
+    background: radial-gradient(ellipse at 15% 20%, rgba(220, 38, 38, 0.16) 0%, rgba(27, 29, 33, 0) 70%),
+                radial-gradient(ellipse at 85% 80%, rgba(172, 35, 61, 0.14) 0%, rgba(27, 29, 33, 0) 65%),
+                #1b1d21;
+  }
+
+  & .hero-pill-tag {
+    background: rgba(220, 38, 38, 0.16);
+    border-color: rgba(220, 38, 38, 0.35);
+    color: #fca5a5;
+  }
+
+  & .hero-headline {
+    color: #f1f5f9;
+  }
+
+  & .hero-headline .text-red {
+    color: #ef4444;
+  }
+
+  & .hero-lead-text {
+    color: #94a3b8;
+  }
+
+  & .btn-outline-donor {
+    background: #22252a;
+    color: #e2e8f0;
+    border-color: #393e46;
+  }
+
+  & .btn-outline-donor:hover {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  & .hero-trust-list {
+    border-color: #393e46;
+  }
+
+  & .hero-trust-item {
+    color: #cbd5e1;
+  }
+
+  /* Quick Emergency Request Card */
+  & .quick-request-card {
+    background: #22252a;
+    border-color: #393e46;
+    box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  & .quick-card-title {
+    color: #f8fafc;
+  }
+
+  & .quick-card-title .card-icon-wrap {
+    background: rgba(220, 38, 38, 0.22);
+    color: #ef4444;
+  }
+
+  & .badge-emergency {
+    background: rgba(220, 38, 38, 0.25);
+    color: #fca5a5;
+  }
+
+  & .quick-field-label {
+    color: #cbd5e1;
+  }
+
+  & .quick-field-input,
+  & .quick-field-select {
+    background: #181b20;
+    border-color: #393e46;
+    color: #f8fafc;
+  }
+
+  & .quick-field-input:focus,
+  & .quick-field-select:focus {
+    background: #22252a;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+
+  & .quick-field-select option {
+    background: #181b20;
+    color: #f8fafc;
+  }
+
+  /* Dark Search Box (already slate, polished for dark mode) */
+  & .dark-search-box {
+    background: #0f172a;
+    border-color: #334155;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  & .dark-select {
+    background: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+  }
+
+  & .dark-select option,
+  & .dark-select optgroup {
+    background: #0f172a;
+    color: #f8fafc;
+  }
+
+  /* Section Common Titles & Headers */
+  & .section-wrapper {
+    color: #f8fafc;
+  }
+
+  & .section-pill-tag {
+    color: #f87171;
+  }
+
+  & .section-title {
+    color: #f8fafc;
+  }
+
+  & .section-subtitle {
+    color: #94a3b8;
+  }
+
+  & .view-all-link {
+    color: #ef4444;
+  }
+
+  /* Urgent Blood Request Cards */
+  & .urgent-req-card {
+    background: #22252a;
+    border-color: #393e46;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  & .urgent-req-card:hover {
+    border-color: #4b5563;
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.5);
+  }
+
+  & .blood-group-circle {
+    background: rgba(220, 38, 38, 0.25);
+    color: #fca5a5;
+  }
+
+  & .urgency-pill-tag {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.35);
+    color: #fca5a5;
+  }
+
+  & .urgent-card-hospital {
+    color: #f8fafc;
+  }
+
+  & .urgent-card-info {
+    color: #94a3b8;
+  }
+
+  & .urgent-card-info svg {
+    color: #64748b;
+  }
+
+  & .urgent-card-footer {
+    border-color: #2d3239;
+  }
+
+  /* Donors Showcase Cards */
+  & .donor-showcase-card {
+    background: #22252a;
+    border-color: #393e46;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+
+  & .donor-showcase-card:hover {
+    border-color: #4b5563;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.45);
+  }
+
+  & .donor-blood-tag {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #fca5a5;
+  }
+
+  & .donor-avail-badge {
+    background: rgba(22, 163, 74, 0.2);
+    color: #86efac;
+  }
+
+  & .donor-name {
+    color: #f8fafc;
+  }
+
+  & .donor-role-title {
+    color: #94a3b8;
+  }
+
+  & .donor-meta-row {
+    border-color: #2d3239;
+    color: #94a3b8;
+  }
+
+  & .donor-meta-val {
+    color: #f8fafc;
+  }
+
+  & .btn-donor-request {
+    background: #181b20;
+    color: #cbd5e1;
+    border-color: #393e46;
+  }
+
+  & .btn-donor-request:hover {
+    background: rgba(220, 38, 38, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  /* How It Works Section */
+  & .how-step-card {
+    background: #22252a;
+    border-color: #393e46;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  & .how-step-card:hover {
+    border-color: #ef4444;
+    box-shadow: 0 16px 32px -8px rgba(220, 38, 38, 0.2);
+  }
+
+  & .step-number-circle {
+    background: rgba(220, 38, 38, 0.25);
+    color: #fca5a5;
+  }
+
+  & .how-step-title {
+    color: #f8fafc;
+  }
+
+  & .how-step-desc {
+    color: #94a3b8;
+  }
+
+  /* Eligibility Guidelines Box */
+  & .eligibility-left-card {
+    background: #22252a;
+    border-color: #393e46;
+  }
+
+  & .eligibility-title {
+    color: #f8fafc;
+  }
+
+  & .eligibility-list li {
+    color: #cbd5e1;
+  }
+
+  & .advisory-right-card {
+    background: #261e12;
+    border-color: #78350f;
+  }
+
+  & .advisory-header {
+    color: #fde68a;
+  }
+
+  & .advisory-text {
+    color: #fef3c7;
+  }
+
+  & .advisory-link {
+    color: #fbbf24;
+  }
+
+  /* FAQ Accordion */
+  & .faq-item {
+    background: #22252a;
+    border-color: #393e46;
+  }
+
+  & .faq-item.active {
+    border-color: #ef4444;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+  }
+
+  & .faq-question-btn {
+    color: #f8fafc;
+  }
+
+  & .faq-question-btn svg {
+    color: #94a3b8;
+  }
+
+  & .faq-item.active .faq-question-btn svg {
+    color: #ef4444;
+  }
+
+  & .faq-answer {
+    color: #cbd5e1;
+  }
+
+  /* Donors directory page filters & cards */
+  & .filter-bar {
+    background: #22252a !important;
+    border-color: #393e46 !important;
+    color: #f8fafc !important;
+  }
+
+  & .filter-bar label {
+    color: #cbd5e1 !important;
+  }
+
+  & .filter-bar select {
+    background: #181b20 !important;
+    color: #f8fafc !important;
+    border-color: #393e46 !important;
+  }
+
+  & .filter-bar select option,
+  & .filter-bar select optgroup {
+    background: #181b20 !important;
+    color: #f8fafc !important;
+  }
+
+  & .donor-card {
+    background: #22252a !important;
+    border-color: #393e46 !important;
+    color: #f8fafc !important;
+  }
+
+  & .donor-card:hover {
+    border-color: #ef4444 !important;
+  }
+
+  & .donor-card h3 {
+    color: #f8fafc !important;
+  }
+
+  & .donor-card p {
+    color: #94a3b8 !important;
+  }
+
+  & .donor-card .blood-type {
+    background: rgba(220, 38, 38, 0.25) !important;
+    color: #fca5a5 !important;
+  }
+
+  & .donor-card .badge {
+    background: rgba(220, 38, 38, 0.2) !important;
+    color: #fca5a5 !important;
+  }
+
+  & .donor-card .badge.available {
+    background: rgba(22, 163, 74, 0.2) !important;
+    color: #86efac !important;
+  }
+
+  & .donor-card .badge.verified {
+    background: rgba(22, 163, 74, 0.2) !important;
+    color: #86efac !important;
+  }
+
+  & .card-link {
+    color: #ef4444 !important;
+  }
+}

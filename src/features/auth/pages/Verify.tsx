@@ -168,12 +168,13 @@ export function Verify({ reset = false }: { reset?: boolean }) {
           </button>
         </div>
       )}
-      <form className="panel" onSubmit={submit}>
+      <form className="auth-form" onSubmit={submit}>
         <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
           <input
             name="email"
             type="email"
             autoComplete="email"
+            placeholder="user@example.com"
             required
             maxLength={254}
             value={email}
@@ -216,7 +217,7 @@ export function Verify({ reset = false }: { reset?: boolean }) {
                 <Field label={t(en, "নতুন পাসওয়ার্ড", "New password")}>
                   <PasswordInput
                     name="password"
-                    minLength={12}
+                    minLength={6}
                     maxLength={128}
                     required
                     autoComplete="new-password"
@@ -231,7 +232,7 @@ export function Verify({ reset = false }: { reset?: boolean }) {
                 >
                   <PasswordInput
                     name="confirmPassword"
-                    minLength={12}
+                    minLength={6}
                     maxLength={128}
                     required
                     autoComplete="new-password"
@@ -240,8 +241,8 @@ export function Verify({ reset = false }: { reset?: boolean }) {
                 <p className="muted">
                   {t(
                     en,
-                    "অন্তত ১২ অক্ষর দিন। Reset করলে সব পুরোনো session ও recovery key বাতিল হবে।",
-                    "Use at least 12 characters. Resetting signs out all devices and invalidates the previous recovery key.",
+                    "অন্তত ৬ অক্ষর দিন। Reset করলে সব পুরোনো session ও recovery key বাতিল হবে।",
+                    "Use at least 6 characters. Resetting signs out all devices and invalidates the previous recovery key.",
                   )}
                 </p>
               </>

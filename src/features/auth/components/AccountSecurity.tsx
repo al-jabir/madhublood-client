@@ -146,13 +146,13 @@ export function AccountSecurity() {
             maxLength={128}
           />
         </Field>
-        <Field label="New password (at least 12 characters)">
+        <Field label="New password (at least 6 characters)">
           <input
             name="newPassword"
             type="password"
             autoComplete="new-password"
             required
-            minLength={12}
+            minLength={6}
             maxLength={128}
           />
         </Field>
@@ -162,7 +162,7 @@ export function AccountSecurity() {
             type="password"
             autoComplete="new-password"
             required
-            minLength={12}
+            minLength={6}
             maxLength={128}
           />
         </Field>

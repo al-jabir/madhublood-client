@@ -1,6 +1,6 @@
 import { requestsApi } from "../api/blood-requests.api";
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
@@ -17,6 +17,13 @@ import { LocationSelector } from "@/features/locations/components/LocationSelect
 export function CreateRequest() {
   const { en } = usePrefs();
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlBlood = searchParams.get("bloodGroup") || "";
+  const urlContact = searchParams.get("contact") || "";
+  const urlUnits = Number(searchParams.get("units")) || 1;
+  const urlHospital = searchParams.get("hospital") || "";
+  const urlArea = searchParams.get("area") || "";
+
   const [busy, setBusy] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [draftId, setDraftId] = useState<string>();
@@ -125,12 +132,13 @@ export function CreateRequest() {
               name="contact"
               type="tel"
               placeholder="+8801XXXXXXXXX"
+              defaultValue={urlContact}
               required
               pattern="\+8801[3-9][0-9]{8}"
             />
           </Field>
           <Field label="রক্তের গ্রুপ · Blood group">
-            <select name="bloodGroup">
+            <select name="bloodGroup" defaultValue={urlBlood || "O+"}>
               {groups.map((g) => (
                 <option key={g}>{g}</option>
               ))}
@@ -149,7 +157,7 @@ export function CreateRequest() {
               type="number"
               min={1}
               max={20}
-              defaultValue={1}
+              defaultValue={urlUnits}
               required
             />
           </Field>
@@ -161,13 +169,19 @@ export function CreateRequest() {
             </select>
           </Field>
           <Field label="হাসপাতাল · Hospital">
-            <input name="hospital" minLength={3} maxLength={150} required />
+            <input
+              name="hospital"
+              minLength={3}
+              maxLength={150}
+              defaultValue={urlHospital}
+              required
+            />
           </Field>
           <Field label="এলাকা · Area">
             <LocationSelector
-              key={draftId ?? "new"}
+              key={draftId ?? urlArea ?? "new"}
               defaultLocationId={draftLocation.id}
-              defaultArea={draftLocation.area}
+              defaultArea={draftLocation.area || urlArea || "মধুপুর, টাঙ্গাইল"}
             />
           </Field>
           <Field label="প্রয়োজনের সময় · Required by">

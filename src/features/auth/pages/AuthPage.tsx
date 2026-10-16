@@ -55,7 +55,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
   if (recoveryKey)
     return (
       <AuthLayout>
-        <div className="panel">
+        <div className="auth-form recovery-panel">
           <h1>{t(en, "অ্যাকাউন্ট তৈরি হয়েছে", "Account created")}</h1>
           <p>
             {t(
@@ -115,7 +115,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           )}
         </p>
       </div>
-      <form className="panel" onSubmit={handleSubmit((v) => m.mutate(v))}>
+      <form className="auth-form" onSubmit={handleSubmit((v) => m.mutate(v))}>
         {typeof location.state?.message === "string" && (
           <p className="notice" role="status">
             {location.state.message}
@@ -126,12 +126,14 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
             type="email"
             autoComplete="email"
             maxLength={254}
+            placeholder={t(en, "user@example.com", "user@example.com")}
             {...r("email")}
           />
         </Field>
         <Field label={t(en, "পাসওয়ার্ড", "Password")}>
           <PasswordInput
             autoComplete={register ? "new-password" : "current-password"}
+            placeholder="••••••••"
             {...r("password")}
           />
         </Field>
@@ -139,6 +141,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           <Field label={t(en, "পাসওয়ার্ড নিশ্চিত করুন", "Confirm password")}>
             <PasswordInput
               autoComplete="new-password"
+              placeholder="••••••••"
               {...r("confirmPassword")}
             />
           </Field>
@@ -169,17 +172,17 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
               : t(en, "লগ ইন করুন", "Sign in")}
           <ArrowRight size={17} />
         </button>
-        <p>
+        <p className="auth-footer-links">
           {register ? (
             <Link to="/login">
-              {t(en, "অ্যাকাউন্ট আছে? লগ ইন", "Already registered? Sign in")}
+              {t(en, "অ্যাকাউন্ট আছে? লগ ইন করুন", "Already registered? Sign in")}
             </Link>
           ) : (
             <>
               <Link to="/register">
-                {t(en, "নতুন অ্যাকাউন্ট", "Create account")}
-              </Link>{" "}
-              ·{" "}
+                {t(en, "নতুন অ্যাকাউন্ট তৈরি করুন", "Create account")}
+              </Link>
+              <span className="dot-sep">·</span>
               <Link to="/forgot-password">
                 {t(en, "পাসওয়ার্ড ভুলে গেছেন?", "Forgot password?")}
               </Link>
