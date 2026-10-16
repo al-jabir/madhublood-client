@@ -2356,3 +2356,38 @@ header nav a.active {
     font-size: 28px;
   }
 }
+.donor-response-guide {
+  margin-block: 28px;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 16px;
+}
+.donor-response-guide h3 {
+  font-size: 19px;
+  margin-bottom: 12px;
+}
+.donor-response-guide p {
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.donor-response-guide ul {
+  list-style: disc;
+  padding-left: 22px;
+  margin: 16px 0 24px;
+}
+.donor-response-guide li {
+  margin-block: 10px;
+  line-height: 1.8;
+}
+.auth-action-error p {
+  margin: 0 0 16px;
+  line-height: 1.8;
+}
+.auth-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+}
+.auth-error-actions a {
+  font-weight: 700;
+}

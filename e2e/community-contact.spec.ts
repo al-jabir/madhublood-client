@@ -8,8 +8,20 @@ test("home shows real API counts and consented requester contact has a call acti
       JSON.stringify({ state: { en: true, dark: false }, version: 0 }),
     ),
   );
+  let donorReady = false;
   await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/donors/me"))
+      return route.fulfill({
+        json: donorReady
+          ? {
+              _id: "333333333333333333333333",
+              bloodGroup: "A+",
+              available: true,
+              contactConsent: true,
+            }
+          : null,
+      });
     if (path.endsWith("/auth/me"))
       return route.fulfill({
         json: {
@@ -59,6 +71,22 @@ test("home shows real API counts and consented requester contact has a call acti
   await expect(
     page.getByRole("link", { name: "Call requester" }),
   ).toHaveAttribute("href", "tel:01712345678");
+  await expect(
+    page.getByText("Your donor profile has not been set up yet.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "I want to donate", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("link", { name: "Review my donor details" }),
+  ).toHaveAttribute("href", "/dashboard?tab=donor");
+  donorReady = true;
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "I want to donate", exact: true }),
+  ).toBeEnabled();
   await page.goto("/requests/new");
   await expect(
     page.getByRole("checkbox", {

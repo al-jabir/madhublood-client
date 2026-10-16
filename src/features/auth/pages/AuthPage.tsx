@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import { returnToFrom } from "../return-to";
 import { authApi } from "../api/auth.api";
 import { authSchema } from "../schemas/auth.schema";
@@ -8,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Droplets, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
 import { qc } from "@/lib/query-client";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
@@ -28,8 +28,15 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
   const {
     register: r,
     handleSubmit,
+    getValues,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) });
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email:
+        typeof location.state?.email === "string" ? location.state.email : "",
+    },
+  });
   const m = useMutation({
     mutationFn: async (values: z.output<typeof schema>) => {
       if (register)
@@ -64,7 +71,6 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         nav(returnTo.pathname, { state: returnTo.state });
       else nav("/dashboard?tab=profile", { state: { returnTo } });
     },
-    onError: (e) => toast.error(errorText(e)),
   });
   return (
     <AuthLayout>
@@ -127,6 +133,49 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
             </span>
           </label>
         )}
+        {m.isError && (
+          <div className="notice auth-action-error" role="alert">
+            <p>
+              {isAxiosError(m.error) &&
+              m.error.response?.status === 409 &&
+              register
+                ? t(
+                    en,
+                    "এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে। আবার register না করে লগ ইন করুন।",
+                    "This email is already registered. Sign in instead of creating another account.",
+                  )
+                : isAxiosError(m.error) &&
+                    m.error.response?.status === 401 &&
+                    !register
+                  ? t(
+                      en,
+                      "ইমেইল বা পাসওয়ার্ড মেলেনি। আগে register করে থাকলে তথ্য ঠিক করুন বা password reset করুন। নতুন হলে account তৈরি করুন।",
+                      "Email or password did not match. If you already registered, check your details or reset your password. New here? Create an account first.",
+                    )
+                  : errorText(m.error)}
+            </p>
+            <div className="auth-error-actions">
+              {register ? (
+                <Link
+                  to="/login"
+                  state={{ returnTo, email: getValues("email") }}
+                >
+                  {t(en, "লগ ইন করুন", "Sign in")}
+                </Link>
+              ) : (
+                <Link
+                  to="/register"
+                  state={{ returnTo, email: getValues("email") }}
+                >
+                  {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
+                </Link>
+              )}
+              <Link to="/forgot-password" state={{ email: getValues("email") }}>
+                {t(en, "পাসওয়ার্ড ফিরে পান", "Reset password")}
+              </Link>
+            </div>
+          </div>
+        )}
         {Object.entries(errors).map(([key, e]) => (
           <p className="error-text" role="alert" key={key}>
             {String(e?.message)}
@@ -142,7 +191,7 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         </button>
         <p className="auth-footer-links">
           {register ? (
-            <Link to="/login" state={{ returnTo }}>
+            <Link to="/login" state={{ returnTo, email: getValues("email") }}>
               {t(
                 en,
                 "অ্যাকাউন্ট আছে? লগ ইন করুন",
@@ -151,7 +200,10 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
             </Link>
           ) : (
             <>
-              <Link to="/register" state={{ returnTo }}>
+              <Link
+                to="/register"
+                state={{ returnTo, email: getValues("email") }}
+              >
                 {t(en, "নতুন অ্যাকাউন্ট তৈরি করুন", "Create account")}
               </Link>
               <span className="dot-sep">·</span>

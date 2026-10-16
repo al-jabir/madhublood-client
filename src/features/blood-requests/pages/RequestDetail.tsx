@@ -1,3 +1,4 @@
+import { donorsApi } from "@/features/donors/api/donors.api";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
@@ -23,6 +24,11 @@ export function RequestDetail() {
     queryKey: ["request", id, me?.id],
     queryFn: async () => requestsApi.detail(id),
   });
+  const donor = useQuery({
+    queryKey: ["profile"],
+    enabled: !!me && !me.verificationRequired,
+    queryFn: donorsApi.me,
+  });
   const r = useQuery({
     queryKey: ["responses", id],
     enabled: !!q.data?.owner && q.data.owner === me?.id,
@@ -45,6 +51,51 @@ export function RequestDetail() {
       </section>
     );
   const item = q.data;
+  const donorIssues = [
+    !me?.profileCompleted
+      ? t(
+          en,
+          "আগে আপনার ব্যক্তিগত প্রোফাইল পূরণ করুন।",
+          "Complete your personal profile first.",
+        )
+      : "",
+    !donor.data
+      ? t(
+          en,
+          "আপনার Donor form এখনো পূরণ করা নেই।",
+          "Your donor profile has not been set up yet.",
+        )
+      : "",
+    donor.data && donor.data.bloodGroup !== item.bloodGroup
+      ? t(
+          en,
+          `এখানে ${item.bloodGroup} দরকার। আপনার প্রোফাইলে ${donor.data.bloodGroup} আছে। শুধু নিজের প্রকৃত রক্তের গ্রুপ ব্যবহার করুন।`,
+          `This request needs ${item.bloodGroup}; your profile says ${donor.data.bloodGroup}. Only use your actual blood group.`,
+        )
+      : "",
+    donor.data && !donor.data.available
+      ? t(
+          en,
+          "রক্তদানে প্রস্তুত থাকলে Donor form-এ availability চালু করুন।",
+          "If you are ready to donate, enable availability in your Donor form.",
+        )
+      : "",
+    donor.data && !donor.data.contactConsent
+      ? t(
+          en,
+          "সাড়া দিতে যোগাযোগের তথ্য শেয়ার করার সম্মতি দিন।",
+          "Enable consent to share your contact when accepting a request.",
+        )
+      : "",
+    !["active", "donors-contacted"].includes(item.status) ||
+    Date.parse(item.requiredAt) <= Date.now()
+      ? t(
+          en,
+          "এই অনুরোধে এখন নতুন সাড়া নেওয়া হচ্ছে না।",
+          "This request is no longer accepting responses.",
+        )
+      : "",
+  ].filter(Boolean);
   return (
     <section className="page narrow">
       <PageHeading title={`${item.bloodGroup} · ${item.hospital}`} />
@@ -112,23 +163,71 @@ export function RequestDetail() {
           </>
         ) : (
           <RequireUser>
-            <p>
-              Contact is shared after you accept, with consent. Your donor
-              profile must match the requested blood group.
-            </p>
+            <section className="donor-response-guide">
+              <h3>{t(en, "রক্ত দিতে চান?", "Want to donate?")}</h3>
+              <p>
+                {t(
+                  en,
+                  `এই অনুরোধে ${item.bloodGroup} গ্রুপের রক্তদাতা দরকার। সাড়া দেওয়ার আগে নিচের তথ্য মিলতে হবে।`,
+                  `This request needs a ${item.bloodGroup} donor. Check your donor information before responding.`,
+                )}
+              </p>
+              {donor.isPending ? (
+                <p role="status">
+                  {t(
+                    en,
+                    "আপনার তথ্য দেখা হচ্ছে…",
+                    "Checking your donor profile…",
+                  )}
+                </p>
+              ) : donor.isError ? (
+                <Failure error={donor.error} />
+              ) : donorIssues.length ? (
+                <>
+                  <ul>
+                    {donorIssues.map((issue) => (
+                      <li key={issue}>{issue}</li>
+                    ))}
+                  </ul>
+                  <Link
+                    className="button secondary"
+                    to={
+                      me?.profileCompleted
+                        ? "/dashboard?tab=donor"
+                        : "/dashboard?tab=profile"
+                    }
+                  >
+                    {t(en, "আমার তথ্য ঠিক করুন", "Review my donor details")}
+                  </Link>
+                </>
+              ) : (
+                <p>
+                  {t(
+                    en,
+                    "আপনার প্রোফাইলের তথ্য মিলেছে। সাড়া দিতে পারবেন। চূড়ান্ত উপযুক্ততা হাসপাতাল যাচাই করবে।",
+                    "Your profile matches the response requirements. The hospital will assess clinical suitability.",
+                  )}
+                </p>
+              )}
+            </section>
             <div className="button-row">
               {["accepted", "declined"].map((response) => (
                 <button
                   className="button"
                   key={response}
-                  disabled={mutation.isPending}
+                  disabled={
+                    mutation.isPending ||
+                    donor.isPending ||
+                    donor.isError ||
+                    donorIssues.length > 0
+                  }
                   onClick={() =>
                     mutation.mutate({ path: "respond", data: { response } })
                   }
                 >
                   {response === "accepted"
-                    ? "আমি সাড়া দিতে চাই · Accept"
-                    : "Decline"}
+                    ? t(en, "আমি রক্ত দিতে চাই", "I want to donate")
+                    : t(en, "সাড়া দেব না", "Decline")}
                 </button>
               ))}
             </div>
