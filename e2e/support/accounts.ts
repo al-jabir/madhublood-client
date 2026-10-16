@@ -3,9 +3,15 @@ import { z } from "zod";
 const fixtureSchema = z.object({
   runId: z.string(),
   password: z.string(),
-  mfaSecret: z.string(),
   users: z
-    .array(z.object({ id: z.string(), name: z.string(), phone: z.string() }))
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        phone: z.string(),
+        email: z.email(),
+      }),
+    )
     .length(3),
 });
 export function readAccounts() {

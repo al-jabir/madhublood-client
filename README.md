@@ -1,3 +1,5 @@
+> Current authentication: email/password with no MFA or SMS. Registration shows a one-time recovery key and opens the personal profile after saving it; sign-in opens the profile tab. Personal information (name, general location, optional contact phone/gender) is separate from optional donor blood group, donation history, availability and consent. Email is not claimed verified. Password reset uses the saved recovery key; no paid provider is required. Existing phone-only accounts need the server email migration before deployment.
+
 # MadhuBlood client
 
 An independent React 19 / Vite / TypeScript application. It uses Tailwind CSS v4, React Router, TanStack Query, Zustand, React Hook Form, Zod, Axios and accessible shared controls. There is no root package manager or workspace.
@@ -55,6 +57,12 @@ The refactor preserves current product functionality. It does not resolve all ex
 
 Frontend: https://madhublood.vercel.app. Backend: https://madhublood-server.onrender.com.
 
-In the Vercel project set `VITE_API_URL=https://madhublood-server.onrender.com/api/v1`, then rebuild/redeploy: Vite reads this value at build time. Use the client directory as the project root, `npm run build` and output `dist`. For local production builds, copy `.env.production.example` to `.env.production` on a fresh checkout. Keep the local development value `/api/v1` to use Vite's proxy. The browser-facing variable is public and must never contain database/provider secrets.
+The production source defaults to `https://madhublood-server.onrender.com/api/v1`, so no Vercel environment variable is needed. An optional VITE_API_URL override is read at build time. Use the client directory as the project root, `npm run build` and output `dist`. For local production builds, copy `.env.production.example` to `.env.production` on a fresh checkout. Keep the local development value `/api/v1` to use Vite's proxy. The browser-facing variable is public and must never contain database/provider secrets.
 
 The Render server must allow exactly `CLIENT_ORIGIN=https://madhublood.vercel.app`, with production cookie settings. These are different sites: production sessions use Secure/HttpOnly/SameSite=None and Axios sends credentials. Browsers that block third-party cookies may still prevent persistent login; verify the target browsers or use same-site custom domains before public release. Configure SPA route fallback in the hosting project and test refreshing a nested page. Hosting dashboard changes are separate from local file changes.
+
+## Production without Vercel environment variables
+
+No Vercel environment variable is required for the current public API address. Production builds default to `https://madhublood-server.onrender.com/api/v1`; development defaults to `/api/v1` through Vite's local proxy. `VITE_API_URL` is an optional override. A nonblank override takes precedence, so remove an old incorrect value if one exists. Only the public API URL is in the browser bundle; server credentials remain private.
+
+Commit/push this source change and redeploy the Vercel project to publish it. Render also needs the updated server revision: when CLIENT_ORIGIN is unset, production allows `https://madhublood.vercel.app` by default. If an old CLIENT_ORIGIN is already set on Render, correct it or remove it to use that default. CORS/Origin/CSRF and credentialed-cookie protections remain enabled.

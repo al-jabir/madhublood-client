@@ -1,151 +1,242 @@
 import { test, expect } from "@playwright/test";
-
-test("registration carries the phone number into verification", async ({
-  page,
-}) => {
+const id = "111111111111111111111111",
+  locationId = "222222222222222222222222";
+const key = "a".repeat(64);
+test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem(
       "madhublood-preferences",
       JSON.stringify({ state: { en: true, dark: false }, version: 0 }),
     ),
   );
+});
+
+test("email registration shows a private recovery key then saves the personal profile without SMS", async ({
+  page,
+}) => {
+  let signedIn = false;
+  let user = {
+    id,
+    email: "new@example.test",
+    name: "",
+    phone: "",
+    roles: ["user"],
+    profileCompleted: false,
+    emailVerified: false,
+    notificationConsent: false,
+  };
   await page.route("**/api/v1/**", async (route) => {
-    if (new URL(route.request().url()).pathname.endsWith("/auth/register")) {
-      expect(route.request().postDataJSON()).toMatchObject({
-        name: "New donor",
-        phone: "+8801712345678",
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/register")) {
+      expect(route.request().postDataJSON()).toEqual({
+        email: "new@example.test",
+        password: "new-secure-password",
         consent: true,
       });
-      await route.fulfill({
-        status: 202,
+      signedIn = true;
+      return route.fulfill({
+        status: 201,
         json: {
-          message:
-            "If the number can be registered, a verification code will be sent.",
+          user,
+          csrf: "fixture-csrf",
+          recoveryKey: key,
+          message: "Account created",
         },
       });
-    } else
-      await route.fulfill({
-        status: 401,
-        json: { error: { message: "Please sign in" } },
+    }
+    if (path.endsWith("/auth/me"))
+      return route.fulfill({
+        status: signedIn ? 200 : 401,
+        json: signedIn
+          ? { user, csrf: "fixture-csrf" }
+          : { error: { message: "Please sign in" } },
       });
+    if (path.endsWith("/platform"))
+      return route.fulfill({
+        json: {
+          maintenance: false,
+          registrationOpen: true,
+          supportMessage: "",
+        },
+      });
+    if (path.endsWith("/locations"))
+      return route.fulfill({
+        json: { items: [{ _id: locationId, name: "মধুপুর", kind: "upazila" }] },
+      });
+    if (path.endsWith("/account/profile")) {
+      expect(route.request().headers()["x-csrf-token"]).toBe("fixture-csrf");
+      expect(route.request().postDataJSON()).toEqual({
+        name: "New donor",
+        phone: "",
+        gender: "undisclosed",
+        locationId,
+      });
+      user = { ...user, name: "New donor", profileCompleted: true };
+      return route.fulfill({
+        json: { ...user, locationId, area: "মধুপুর, টাঙ্গাইল" },
+      });
+    }
+    if (path.endsWith("/donors/me")) return route.fulfill({ json: null });
+    return route.fulfill({ json: { items: [] } });
   });
   await page.goto("/register");
-  await page.getByLabel("Full name", { exact: true }).fill("New donor");
+  await expect(page.getByLabel("Mobile number", { exact: true })).toHaveCount(
+    0,
+  );
+  await expect(page.getByLabel(/MFA/)).toHaveCount(0);
   await page
-    .getByLabel("Mobile number", { exact: true })
-    .fill("+8801712345678");
+    .getByLabel("Email address", { exact: true })
+    .fill("new@example.test");
   await page
     .getByLabel("Password", { exact: true })
+    .fill("new-secure-password");
+  await page
+    .getByLabel("Confirm password", { exact: true })
     .fill("new-secure-password");
   await page.getByRole("checkbox").check();
   await page
     .getByRole("button", { name: "Create account", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/verify-otp$/);
-  await expect(page.getByLabel("Mobile number", { exact: true })).toHaveValue(
-    "+8801712345678",
-  );
+  await expect(page.getByLabel("Account recovery key")).toHaveValue(key);
+  await page.getByRole("button", { name: /I saved my key/ }).click();
+  await expect(page).toHaveURL(/dashboard\?tab=profile/);
+  await page.getByLabel("Full name", { exact: true }).fill("New donor");
+  await page
+    .getByRole("button", { name: "Save personal profile", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Optional donor profile" }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Email address", { exact: true }),
+  ).toHaveAttribute("readonly", "");
 });
 
-test("settings revokes sessions and changes passwords with validation", async ({
+test("email sign-in opens profile and account recovery accepts a one-use key without sending messages", async ({
+  page,
+}) => {
+  let signedIn = false;
+  const user = {
+    id,
+    email: "member@example.test",
+    name: "Member",
+    profileCompleted: true,
+    emailVerified: false,
+    roles: ["user"],
+    notificationConsent: false,
+  };
+  await page.route("**/api/v1/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/login")) {
+      expect(route.request().postDataJSON()).toEqual({
+        email: "member@example.test",
+        password: "original-password",
+      });
+      signedIn = true;
+      return route.fulfill({ json: { user, csrf: "fixture-csrf" } });
+    }
+    if (path.endsWith("/auth/me"))
+      return route.fulfill({
+        status: signedIn ? 200 : 401,
+        json: signedIn
+          ? { user, csrf: "fixture-csrf" }
+          : { error: { message: "Please sign in" } },
+      });
+    if (path.endsWith("/auth/reset-password")) {
+      expect(route.request().postDataJSON()).toEqual({
+        email: "member@example.test",
+        recoveryKey: key,
+        password: "replacement-password",
+      });
+      signedIn = false;
+      return route.fulfill({
+        json: { message: "Password reset successfully" },
+      });
+    }
+    if (path.endsWith("/donors/me")) return route.fulfill({ json: null });
+    if (path.endsWith("/platform"))
+      return route.fulfill({
+        json: {
+          maintenance: false,
+          registrationOpen: true,
+          supportMessage: "",
+        },
+      });
+    return route.fulfill({ json: { items: [] } });
+  });
+  await page.goto("/login");
+  await page
+    .getByLabel("Email address", { exact: true })
+    .fill("member@example.test");
+  await page.getByLabel("Password", { exact: true }).fill("original-password");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/dashboard\?tab=profile/);
+  await page.goto("/forgot-password");
+  await page
+    .getByLabel("Email address", { exact: true })
+    .fill("member@example.test");
+  await page.getByLabel("Recovery key", { exact: true }).fill(key);
+  await page
+    .getByLabel("New password", { exact: true })
+    .fill("replacement-password");
+  await page
+    .getByLabel("Confirm new password", { exact: true })
+    .fill("replacement-password");
+  await page
+    .getByRole("button", { name: "Reset password", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("replacement recovery key stays visible after sessions are revoked", async ({
   page,
 }) => {
   let signedIn = true;
-  let passwordChanges = 0;
-  let sessions = [
-    {
-      id: "111111111111111111111111",
-      current: true,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 60000).toISOString(),
-    },
-    {
-      id: "222222222222222222222222",
-      current: false,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 60000).toISOString(),
-    },
-  ];
-  // All API traffic is intercepted; this UI test never touches real accounts.
+  const user = {
+    id,
+    email: "member@example.test",
+    name: "Member",
+    profileCompleted: true,
+    emailVerified: false,
+    roles: ["user"],
+    notificationConsent: false,
+  };
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (path.endsWith("/auth/me")) {
-      await route.fulfill({
+    if (path.endsWith("/auth/me"))
+      return route.fulfill({
         status: signedIn ? 200 : 401,
         json: signedIn
-          ? {
-              user: {
-                id: "test-user",
-                name: "Security tester",
-                phone: "+8801712345678",
-                verified: true,
-                roles: ["user"],
-                notificationConsent: false,
-              },
-              csrf: "test-csrf",
-            }
+          ? { user, csrf: "fixture-csrf" }
           : { error: { message: "Please sign in" } },
       });
-    } else if (path.endsWith("/auth/sessions")) {
-      await route.fulfill({ json: { items: sessions } });
-    } else if (path.includes("/auth/sessions/")) {
-      expect(route.request().method()).toBe("DELETE");
-      expect(route.request().headers()["x-csrf-token"]).toBe("test-csrf");
-      sessions = sessions.filter((session) => !path.endsWith(session.id));
-      await route.fulfill({
-        json: { ok: true, message: "Session signed out successfully." },
-      });
-    } else if (path.endsWith("/auth/change-password")) {
+    if (path.endsWith("/auth/recovery-key")) {
       expect(route.request().postDataJSON()).toEqual({
-        currentPassword: "original-password",
-        newPassword: "new-secure-password",
+        password: "original-password",
       });
-      expect(route.request().headers()["x-csrf-token"]).toBe("test-csrf");
-      passwordChanges++;
       signedIn = false;
-      await route.fulfill({
+      return route.fulfill({
+        json: { recoveryKey: key, message: "Recovery key replaced" },
+      });
+    }
+    if (path.endsWith("/platform"))
+      return route.fulfill({
         json: {
-          ok: true,
-          message: "Password changed successfully. Please sign in again.",
+          maintenance: false,
+          registrationOpen: true,
+          supportMessage: "",
         },
       });
-    } else await route.fulfill({ json: { items: [] } });
+    return route.fulfill({ json: { items: [] } });
   });
-  await page.goto("/dashboard");
-  await page.getByRole("button", { name: "settings", exact: true }).click();
-  await expect(
-    page.locator(".list-row").filter({ hasText: "Other session" }),
-  ).toBeVisible();
+  await page.goto("/dashboard?tab=settings");
   await page
-    .locator(".list-row")
-    .filter({ hasText: "Other session" })
-    .getByRole("button", { name: "Sign out", exact: true })
-    .click();
-  await expect(
-    page.locator(".list-row").filter({ hasText: "Other session" }),
-  ).toHaveCount(0);
-  await page
-    .getByLabel("Current password", { exact: true })
+    .getByLabel("Current password for recovery key", { exact: true })
     .fill("original-password");
   await page
-    .getByLabel("New password (at least 12 characters)", { exact: true })
-    .fill("new-secure-password");
-  await page
-    .getByLabel("Confirm new password", { exact: true })
-    .fill("different-password");
-  await page
-    .getByRole("button", { name: "Change password", exact: true })
+    .getByRole("button", { name: "Generate replacement recovery key" })
     .click();
-  await expect(
-    page.getByText("The new passwords do not match.", { exact: true }),
-  ).toBeVisible();
-  expect(passwordChanges).toBe(0);
-  await page
-    .getByLabel("Confirm new password", { exact: true })
-    .fill("new-secure-password");
-  await page
-    .getByRole("button", { name: "Change password", exact: true })
-    .click();
+  await expect(page.getByLabel("New recovery key")).toHaveValue(key);
+  await page.getByRole("button", { name: /I saved my key/ }).click();
   await expect(page).toHaveURL(/\/login$/);
-  expect(passwordChanges).toBe(1);
 });

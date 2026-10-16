@@ -4,10 +4,10 @@ import { authSchema } from "../src/features/auth/schemas/auth.schema.ts";
 import { t } from "../src/i18n/translate.ts";
 import { errorText } from "../src/utils/error-text.ts";
 import { AxiosError } from "axios";
-test("registration retains phone, password and explicit consent validation", () => {
+test("registration validates email, confirmed password and explicit consent", () => {
   const input = {
-    name: "Donor",
-    phone: "+8801712345678",
+    email: "donor@example.test",
+    confirmPassword: "a-long-password",
     password: "a-long-password",
     consent: true,
   };
@@ -17,7 +17,14 @@ test("registration retains phone, password and explicit consent validation", () 
     false,
   );
   assert.equal(
-    authSchema(true).safeParse({ ...input, phone: "bad" }).success,
+    authSchema(true).safeParse({ ...input, email: "bad" }).success,
+    false,
+  );
+  assert.equal(
+    authSchema(true).safeParse({
+      ...input,
+      confirmPassword: "different-password",
+    }).success,
     false,
   );
   assert.equal(
@@ -28,7 +35,7 @@ test("registration retains phone, password and explicit consent validation", () 
 test("login accepts established login fields without registration consent", () =>
   assert.equal(
     authSchema(false).safeParse({
-      phone: "+8801712345678",
+      email: "donor@example.test",
       password: "password",
     }).success,
     true,

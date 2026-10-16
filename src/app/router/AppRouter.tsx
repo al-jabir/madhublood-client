@@ -78,7 +78,7 @@ export function AppRouter() {
         />
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
-        <Route path="/verify-otp" element={<Verify />} />
+        <Route path="/verify-otp" element={<Info title="Email sign-in" text="Phone verification is no longer required. Sign in with your email and complete your profile." action />} />
         <Route path="/forgot-password" element={<Verify reset />} />
         <Route path="/reset-password" element={<Verify reset />} />
         <Route path="/dashboard/*" element={<Dashboard />} />

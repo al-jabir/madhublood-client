@@ -22,10 +22,20 @@ export const authApi = {
   login: async (data: unknown) =>
     (await api.post<SessionResponse>("/auth/login", data)).data,
   register: async (data: unknown) =>
-    (await api.post<Acknowledgment>("/auth/register", data)).data,
-  sendCode: async (data: unknown) =>
-    (await api.post<Acknowledgment>("/auth/send-code", data)).data,
-  verify: async (data: unknown) => api.post("/auth/verify-otp", data),
+    (
+      await api.post<
+        SessionResponse & { recoveryKey: string; message: string }
+      >("/auth/register", data)
+    ).data,
+  resetPassword: async (data: unknown) =>
+    (await api.post<Acknowledgment>("/auth/reset-password", data)).data,
+  recoveryKey: async (password: string) =>
+    (
+      await api.post<{ recoveryKey: string; message: string }>(
+        "/auth/recovery-key",
+        { password },
+      )
+    ).data,
   logout: () => api.post("/auth/logout"),
   logoutAll: () => api.post("/auth/logout-all"),
 };

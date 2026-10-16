@@ -1,8 +1,13 @@
 export interface ApiUser {
   id: string;
   name: string;
-  phone: string;
-  verified: boolean;
+  email: string;
+  phone?: string;
+  profileCompleted: boolean;
+  emailVerified: boolean;
+  locationId?: string;
+  area?: string;
+  gender?: "undisclosed" | "male" | "female" | "other";
   roles: string[];
   notificationConsent: boolean;
 }
@@ -87,10 +92,11 @@ export interface ModerationQueue {
 export interface ManagedUser {
   _id: string;
   name: string;
-  phone: string;
+  email: string;
+  phone?: string;
   roles: string[];
   areas: string[];
-  verified: boolean;
+  profileCompleted: boolean;
 }
 export interface LocationRecord {
   _id: string;

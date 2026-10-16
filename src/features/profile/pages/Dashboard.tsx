@@ -1,8 +1,8 @@
+import { PersonalProfile } from "@/features/profile/components/PersonalProfile";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
 import { authApi } from "@/features/auth/api/auth.api";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
-import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -69,10 +69,13 @@ export function Dashboard() {
             ["admin", "volunteer", "super-admin"].includes(r),
           ) && <Link to="/admin">Moderation</Link>}
         </div>
-        {!me?.verified && (
+        {!me?.profileCompleted && (
           <div className="notice">
-            Verify your phone before registering as a donor or submitting
-            requests. <Link to="/verify-otp">Verify now →</Link>
+            Complete your personal profile before registering as a donor or
+            submitting requests.{" "}
+            <button className="text-link" onClick={() => setTab("profile")}>
+              Complete profile →
+            </button>
           </div>
         )}
         {tab === "overview" && (
@@ -87,8 +90,10 @@ export function Dashboard() {
               </div>
               <div className="panel">
                 <ShieldCheck className="green" />
-                <h3>Phone verification</h3>
-                <strong>{me?.verified ? "Verified" : "Pending"}</strong>
+                <h3>Personal profile</h3>
+                <strong>
+                  {me?.profileCompleted ? "Complete" : "Incomplete"}
+                </strong>
               </div>
               <Link to="/requests/new" className="panel create-tile">
                 <Plus />
@@ -126,7 +131,17 @@ export function Dashboard() {
             )}
           </>
         )}
-        {tab === "profile" && <DonorProfile />}
+        {tab === "profile" && (
+          <>
+            <PersonalProfile />
+            {me?.profileCompleted && (
+              <>
+                <h2>Optional donor profile</h2>
+                <DonorProfile />
+              </>
+            )}
+          </>
+        )}
         {tab === "donations" && <Donations />}
         {tab === "notifications" && <Notifications />}
         {tab === "settings" && (
@@ -151,7 +166,7 @@ export function Dashboard() {
             </button>
             <p>
               <Link to="/forgot-password">
-                Change password through SMS verification
+                Recover password with your saved recovery key
               </Link>
             </p>
             <AccountData />

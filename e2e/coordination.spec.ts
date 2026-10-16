@@ -1,5 +1,4 @@
 import { test, expect, type Page } from "@playwright/test";
-import { generate } from "otplib";
 import { readAccounts } from "./support/accounts";
 
 test("requester, moderator and donor coordinate through the real UI", async ({
@@ -10,7 +9,7 @@ test("requester, moderator and donor coordinate through the real UI", async ({
     !process.env.E2E_ACCOUNTS_FILE,
     "Set E2E_ACCOUNTS_FILE for the backend-provisioned workflow test.",
   );
-  const { users, password, mfaSecret: secret } = readAccounts();
+  const { users, password } = readAccounts();
   const suffix = String(Date.now()).slice(-8);
   const contexts = await Promise.all(
     [0, 1, 2].map(() =>
@@ -32,13 +31,9 @@ test("requester, moderator and donor coordinate through the real UI", async ({
     await page.goto("/login");
     await page.getByRole("button", { name: "Change language" }).click();
     await page
-      .getByLabel("Mobile number", { exact: true })
-      .fill(users[index].phone!);
+      .getByLabel("Email address", { exact: true })
+      .fill(users[index].email);
     await page.getByLabel("Password", { exact: true }).fill(password);
-    if (index === 2)
-      await page
-        .getByLabel("Administrator MFA")
-        .fill(await generate({ secret }));
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/dashboard/);
     await expect(page.locator(".dashboard-tabs")).toBeVisible();

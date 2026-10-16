@@ -3,7 +3,7 @@ export const content: Record<string, [string, string, string, string]> = {
     "যেভাবে কাজ করে",
     "How it works",
     "নির্দিষ্ট রক্তের গ্রুপ দিয়ে খুঁজুন। যাচাইকৃত ফোন নম্বর দিয়ে অনুরোধ তৈরি করুন। স্বেচ্ছাসেবী যাচাইয়ের পর অনুরোধ সক্রিয় হয়। সম্মত রক্তদাতা সাড়া দিলে যোগাযোগের তথ্য পাওয়া যায়। হাসপাতালের নির্দেশনায় সমন্বয় করুন এবং রক্তের ব্যবস্থা হলে অনুরোধ বন্ধ করুন।",
-    "Search the specific blood group. Verify your phone and submit a request. A volunteer reviews it before activation. When a consenting donor accepts, contact details become available to coordinate with the hospital. Mark the request arranged and completed to stop further matching.",
+    "Search the specific blood group. Sign in with email, complete your personal profile and submit a request. A volunteer reviews it before activation. When a consenting donor accepts, contact details become available to coordinate with the hospital. Mark the request arranged and completed to stop further matching.",
   ],
   guidelines: [
     "রক্তদান নির্দেশিকা",
@@ -33,7 +33,7 @@ export const content: Record<string, [string, string, string, string]> = {
     "গোপনীয়তা নীতি",
     "Privacy policy",
     "আমরা নাম, ফোন, অ্যাকাউন্ট ও সম্মতিভিত্তিক রক্তদাতা তথ্য সংরক্ষণ করি। প্রকাশ্য তালিকায় ফোন, সঠিক ঠিকানা বা রক্তদানের ইতিহাস থাকে না। প্রোফাইল থেকে প্রকাশ্য তালিকা এবং বিজ্ঞপ্তির সম্মতি প্রত্যাহার করা যায়। তথ্য রপ্তানি বা মুছে ফেলার অনুরোধ সহায়তা ফর্মে জানান। প্রকাশের আগে স্থানীয় গোপনীয়তা পর্যালোচনা প্রয়োজন।",
-    "We store account identity, phone, consented donor information, requests and security records to coordinate donations. Public search omits phone numbers, exact addresses and private donation history. Withdraw directory and notification consent in your profile. Request export or deletion through support. Provider processing, retention periods, controller contact and Bangladesh privacy review must be finalized before public launch.",
+    "We store account email, optional contact phone, consented donor information, requests and security records to coordinate donations. Public search omits phone numbers, exact addresses and private donation history. Withdraw directory and notification consent in your profile. Request export or deletion through support. Provider processing, retention periods, controller contact and Bangladesh privacy review must be finalized before public launch.",
   ],
   terms: [
     "ব্যবহারের শর্ত",

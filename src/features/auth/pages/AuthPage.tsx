@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { authApi } from "../api/auth.api";
 import { authSchema } from "../schemas/auth.schema";
 import type { z } from "zod";
@@ -19,28 +20,78 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
   const { en } = usePrefs();
   const nav = useNavigate();
   const register = mode === "register";
+  const [recoveryKey, setRecoveryKey] = useState("");
   const schema = authSchema(register);
   const {
     register: r,
-    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) });
   const m = useMutation({
     mutationFn: async (values: z.output<typeof schema>) =>
-      register ? authApi.register(values) : authApi.login(values),
+      register
+        ? authApi.register({
+            email: values.email,
+            password: values.password,
+            consent: values.consent,
+          })
+        : authApi.login({ email: values.email, password: values.password }),
     onSuccess: async (data) => {
-      if ("message" in data) {
-        toast.success(data.message);
-        nav("/verify-otp", { state: { phone: getValues("phone") } });
-      } else {
-        setCsrf(data.csrf);
-        await qc.invalidateQueries({ queryKey: ["me"] });
-        nav("/dashboard");
-      }
+      qc.removeQueries();
+      setCsrf(data.csrf);
+      qc.setQueryData(["me"], data.user);
+      if ("recoveryKey" in data && typeof data.recoveryKey === "string")
+        setRecoveryKey(data.recoveryKey);
+      else nav("/dashboard?tab=profile");
     },
     onError: (e) => toast.error(errorText(e)),
   });
+  if (recoveryKey)
+    return (
+      <section className="form-page">
+        <div className="panel">
+          <h1>{t(en, "অ্যাকাউন্ট তৈরি হয়েছে", "Account created")}</h1>
+          <p>
+            {t(
+              en,
+              "এই recovery key নিরাপদে সংরক্ষণ করুন। পাসওয়ার্ড ভুলে গেলে এটি লাগবে। এটি আবার দেখানো হবে না।",
+              "Save this recovery key privately. You need it if you forget your password. It is shown only once.",
+            )}
+          </p>
+          <textarea
+            aria-label="Account recovery key"
+            readOnly
+            value={recoveryKey}
+            rows={3}
+          />
+          <button
+            className="button secondary"
+            onClick={() => {
+              const url = URL.createObjectURL(
+                new Blob([recoveryKey], { type: "text/plain" }),
+              );
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = "madhublood-recovery-key.txt";
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Download recovery key
+          </button>
+          <button
+            className="button"
+            onClick={() => {
+              setRecoveryKey("");
+              m.reset();
+              nav("/dashboard?tab=profile");
+            }}
+          >
+            I saved my key — complete profile
+          </button>
+        </div>
+      </section>
+    );
   return (
     <section className="form-page">
       <div className="form-intro">
@@ -59,17 +110,12 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         </p>
       </div>
       <form className="panel" onSubmit={handleSubmit((v) => m.mutate(v))}>
-        {register && (
-          <Field label={t(en, "পূর্ণ নাম", "Full name")}>
-            <input autoComplete="name" {...r("name")} />
-          </Field>
-        )}
-        <Field label={t(en, "মোবাইল নম্বর", "Mobile number")}>
+        <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
           <input
-            type="tel"
-            placeholder="+8801XXXXXXXXX"
-            autoComplete="tel"
-            {...r("phone")}
+            type="email"
+            autoComplete="email"
+            maxLength={254}
+            {...r("email")}
           />
         </Field>
         <Field label={t(en, "পাসওয়ার্ড", "Password")}>
@@ -79,12 +125,12 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
             {...r("password")}
           />
         </Field>
-        {!register && (
-          <Field label="Administrator MFA (if applicable)">
+        {register && (
+          <Field label={t(en, "পাসওয়ার্ড নিশ্চিত করুন", "Confirm password")}>
             <input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              {...r("mfa")}
+              type="password"
+              autoComplete="new-password"
+              {...r("confirmPassword")}
             />
           </Field>
         )}

@@ -5,7 +5,9 @@ const identity = {
     id: "test-user",
     name: "Test requester",
     phone: "+8801712345678",
-    verified: true,
+    email: "fixture@example.test",
+    emailVerified: false,
+    profileCompleted: true,
     roles: ["super-admin"],
     notificationConsent: false,
   },
@@ -40,6 +42,18 @@ test("private draft survives reload and submits after completion", async ({
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     const method = route.request().method();
+    if (path.endsWith("/locations"))
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              _id: "333333333333333333333333",
+              name: "মধুপুর",
+              kind: "upazila",
+            },
+          ],
+        },
+      });
     if (path.endsWith("/auth/me")) return route.fulfill({ json: identity });
     if (path.endsWith("/platform"))
       return route.fulfill({ json: normalPlatform });
@@ -112,6 +126,18 @@ test("super admin settings update the public maintenance notice", async ({
   const platform = { ...normalPlatform };
   await page.route("**/api/v1/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/locations"))
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              _id: "333333333333333333333333",
+              name: "মধুপুর",
+              kind: "upazila",
+            },
+          ],
+        },
+      });
     if (path.endsWith("/auth/me")) return route.fulfill({ json: identity });
     if (path.endsWith("/platform")) return route.fulfill({ json: platform });
     if (path.endsWith("/admin/queue"))

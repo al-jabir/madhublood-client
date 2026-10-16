@@ -98,7 +98,7 @@ export function CreateRequest() {
       <section className="page narrow">
         <PageHeading
           title={t(en, "রক্তের অনুরোধ তৈরি করুন", "Create a blood request")}
-          desc="Requests are reviewed before they become public. Phone verification is required."
+          desc="Requests are reviewed before they become public. Complete your personal profile first."
         />
         <DraftsPanel onLoad={loadDraft} />
         {draftId && (

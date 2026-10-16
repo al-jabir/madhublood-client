@@ -15,6 +15,7 @@ export function AccountSecurity() {
     queryFn: authApi.sessions,
   });
   const [busy, setBusy] = useState(false);
+  const [recoveryKey, setRecoveryKey] = useState("");
   function signedOut() {
     setCsrf("");
     qc.clear();
@@ -78,6 +79,61 @@ export function AccountSecurity() {
           </button>
         </div>
       ))}
+      <h3>Account recovery key</h3>
+      <p>
+        Replace your key if you lost it. This invalidates the old key and signs
+        out all sessions. Save the new key before continuing.
+      </p>
+      {recoveryKey ? (
+        <div>
+          <textarea
+            aria-label="New recovery key"
+            readOnly
+            value={recoveryKey}
+            rows={3}
+          />
+          <button
+            className="button"
+            onClick={() => {
+              setRecoveryKey("");
+              signedOut();
+            }}
+          >
+            I saved my key — sign in
+          </button>
+        </div>
+      ) : (
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const password = String(
+              new FormData(event.currentTarget).get("password"),
+            );
+            setBusy(true);
+            try {
+              const result = await authApi.recoveryKey(password);
+              setRecoveryKey(result.recoveryKey);
+              setCsrf("");
+            } catch (error) {
+              toast.error(errorText(error));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <Field label="Current password for recovery key">
+            <input
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+            />
+          </Field>
+          <button className="button secondary" disabled={busy}>
+            Generate replacement recovery key
+          </button>
+        </form>
+      )}
       <h3>Change password</h3>
       <p>Changing your password signs you out of all sessions.</p>
       <form onSubmit={changePassword}>

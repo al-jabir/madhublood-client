@@ -1,112 +1,88 @@
-import { authApi } from "../api/auth.api";
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
-import { PageHeading } from "@/components/common/PageHeading";
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { authApi } from "@/features/auth/api/auth.api";
+import { setCsrf } from "@/services/http";
+import { qc } from "@/lib/query-client";
 import { Field } from "@/components/ui/Field";
+import { toast } from "sonner";
 import { errorText } from "@/utils/error-text";
-
-export function Verify({ reset = false }: { reset?: boolean }) {
-  const nav = useNavigate();
-  const location = useLocation();
-  const state: unknown = location.state;
-  const initialPhone =
-    state &&
-    typeof state === "object" &&
-    "phone" in state &&
-    typeof state.phone === "string"
-      ? state.phone
-      : "";
-  const [sending, setSending] = useState(false);
+export function Verify(_props: { reset?: boolean }) {
   const [busy, setBusy] = useState(false);
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const values = Object.fromEntries(new FormData(e.currentTarget));
+  const nav = useNavigate();
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    if (data.get("password") !== data.get("confirmPassword")) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setBusy(true);
     try {
-      await authApi.verify({
-        ...values,
-        purpose: reset ? "reset" : "verify",
+      const result = await authApi.resetPassword({
+        email: data.get("email"),
+        recoveryKey: data.get("recoveryKey"),
+        password: data.get("password"),
       });
-      toast.success("Completed. Please sign in.");
+      setCsrf("");
+      qc.clear();
+      toast.success(result.message);
       nav("/login");
-    } catch (e) {
-      toast.error(errorText(e));
+    } catch (error) {
+      toast.error(errorText(error));
     } finally {
       setBusy(false);
     }
   }
   return (
     <section className="form-page">
-      <PageHeading
-        title={
-          reset
-            ? "পাসওয়ার্ড পুনরুদ্ধার · Reset password"
-            : "ফোন যাচাই · Verify phone"
-        }
-      />
       <form className="panel" onSubmit={submit}>
-        <Field label="Mobile number">
-          <input
-            name="phone"
-            defaultValue={initialPhone}
-            type="tel"
-            required
-            pattern="\+8801[3-9][0-9]{8}"
-            placeholder="+8801XXXXXXXXX"
-          />
-        </Field>
-        <button
-          type="button"
-          className="button secondary"
-          disabled={sending || busy}
-          onClick={async (e) => {
-            const form = e.currentTarget.form!;
-            const phone = form.elements.namedItem("phone") as HTMLInputElement;
-            if (!phone.reportValidity()) return;
-            setSending(true);
-            try {
-              await authApi.sendCode({
-                phone: phone.value,
-                purpose: reset ? "reset" : "verify",
-              });
-              toast.success("If the account exists, a code will be sent.");
-            } catch (err) {
-              toast.error(errorText(err));
-            } finally {
-              setSending(false);
-            }
-          }}
-        >
-          {sending ? "Sending..." : "Send / resend code"}
-        </button>
-        <Field label="SMS verification code">
-          <input
-            name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            required
-          />
-        </Field>
-        {reset && (
-          <Field label="New password (at least 12 characters)">
-            <input
-              name="password"
-              type="password"
-              minLength={12}
-              maxLength={128}
-              required
-            />
-          </Field>
-        )}
-        <button className="button" disabled={busy}>
-          Verify & continue
-        </button>
-        <p className="muted">
-          Codes expire in 10 minutes. SMS delivery requires a configured
-          provider.
+        <h1>পাসওয়ার্ড পুনরুদ্ধার · Reset password</h1>
+        <p>
+          Use the recovery key you saved during registration. No SMS or email is
+          sent. If you lost both your password and key, contact support; email
+          alone cannot prove ownership.
         </p>
+        <Field label="Email address">
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            maxLength={254}
+          />
+        </Field>
+        <Field label="Recovery key">
+          <input
+            name="recoveryKey"
+            type="password"
+            required
+            pattern="[a-fA-F0-9]{64}"
+            autoComplete="off"
+          />
+        </Field>
+        <Field label="New password">
+          <input
+            name="password"
+            type="password"
+            minLength={12}
+            maxLength={128}
+            required
+            autoComplete="new-password"
+          />
+        </Field>
+        <Field label="Confirm new password">
+          <input
+            name="confirmPassword"
+            type="password"
+            minLength={12}
+            maxLength={128}
+            required
+            autoComplete="new-password"
+          />
+        </Field>
+        <button className="button" disabled={busy}>
+          {busy ? "Resetting…" : "Reset password"}
+        </button>
       </form>
     </section>
   );

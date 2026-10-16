@@ -22,10 +22,10 @@ export function UsersPanel() {
         q.data.items.map((row) => (
           <div className="list-row" key={row._id}>
             <div>
-              <strong>{row.name}</strong>
+              <strong>{row.name || row.email}</strong>
               <small>
                 {row.roles.join(", ")} ·{" "}
-                {row.verified ? "Verified" : "Unverified"}
+                {row.profileCompleted ? "Profile complete" : "Profile incomplete"}
               </small>
             </div>
             <RoleEditor
