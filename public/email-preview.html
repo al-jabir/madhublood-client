@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MadhuBlood - ইমেইল টেমপ্লেট প্রিভিউ (Email Template Preview)</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.preview-header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .brand-title .badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(225, 29, 72, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-toggle {
+      background: #334155;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-toggle:hover {
+      background: #475569;
+      color: #ffffff;
+    }
+    .btn-toggle.active {
+      background: #e11d48;
+      border-color: #f43f5e;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(225, 29, 72, 0.4);
+    }
+    .btn-action {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn-action:hover {
+      background: #0369a1;
+    }
+    .btn-action.success {
+      background: #10b981;
+    }
+    .preview-notice {
+      background: #1e1b4b;
+      border-bottom: 1px solid #3730a3;
+      padding: 10px 24px;
+      font-size: 13px;
+      color: #c7d2fe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .preview-notice a {
+      color: #93c5fd;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .main-canvas {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 32px 16px;
+      background: #0b0f19;
+      overflow-y: auto;
+    }
+    .device-frame {
+      width: 100%;
+      max-width: 640px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      transition: max-width 0.25s ease;
+      border: 1px solid #334155;
+    }
+    .device-frame.mobile {
+      max-width: 380px;
+      border: 8px solid #334155;
+      border-radius: 32px;
+    }
+    iframe#emailFrame {
+      width: 100%;
+      height: 720px;
+      border: none;
+      display: block;
+      background: #f1f5f9;
+    }
+    /* Guide Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .guide-modal {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+      color: #e2e8f0;
+      padding: 28px;
+    }
+    .guide-modal h2 {
+      font-size: 20px;
+      color: #ffffff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-item {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 18px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e11d48;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-content {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .step-content strong {
+      color: #ffffff;
+    }
+    .step-content code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+      border-top: 1px solid #334155;
+      padding-top: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="preview-header">
+    <div class="brand-title">
+      <span>🩸 MadhuBlood</span>
+      <span class="badge">ইমেইল টেমপ্লেট লাইভ প্রিভিউ</span>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn-toggle active" id="btnVerify" onclick="setScenario('verify')">📩 ভেরিফিকেশন ওটিপি</button>
+      <button class="btn-toggle" id="btnReset" onclick="setScenario('reset')">🔑 পাসওয়ার্ড রিসেট</button>
+      <div style="width: 1px; height: 24px; background: #334155; margin: 0 4px;"></div>
+      <button class="btn-toggle active" id="btnDesktop" onclick="setDevice('desktop')">💻 ডেস্কটপ (640px)</button>
+      <button class="btn-toggle" id="btnMobile" onclick="setDevice('mobile')">📱 মোবাইল (380px)</button>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn-action" onclick="openGuide()">
+        📖 গুগল স্ক্রিপ্টে চালু করার নিয়ম
+      </button>
+    </div>
+  </header>
+
+  <div class="preview-notice">
+    <div>
+      ℹ️ <strong>কেন আপনার জিমেইলে আগে সাধারণ টেক্সট আসছিল?</strong> কারণ Google Apps Script আপনার গুগল অ্যাকাউন্টে চলে। সেখানে নতুন <code>Code.gs</code> ফাইলটি পেস্ট করে <strong>"New version"</strong> ডিপ্লয় করলেই জিমেইলে নিচের ডিজাইনটি সক্রিয় হবে।
+    </div>
+    <a onclick="openGuide()">ধাপগুলো দেখুন &rarr;</a>
+  </div>
+
+  <main class="main-canvas">
+    <div class="device-frame" id="deviceFrame">
+      <iframe id="emailFrame" title="ইমেইল প্রিভিউ"></iframe>
+    </div>
+  </main>
+
+  <!-- Deployment Guide Modal -->
+  <div class="modal-backdrop" id="guideModal" onclick="closeGuideOnBackdrop(event)">
+    <div class="guide-modal">
+      <h2>🚀 গুগল অ্যাপস স্ক্রিপ্টে নতুন টেমপ্লেট চালু করার সহজ উপায়</h2>
+      
+      <div class="step-item">
+        <div class="step-num">১</div>
+        <div class="step-content">
+          ব্রাউজারে <strong><a href="https://script.google.com" target="_blank" style="color:#38bdf8;">script.google.com</a></strong> এ যান এবং আপনার <strong>MadhuBlood Mail Bridge</strong> প্রজেক্টটি ওপেন করুন।
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">২</div>
+        <div class="step-content">
+          বামে <code>Code.gs</code> ফাইলের আগের সব কোড সিলেক্ট করে মুছে দিন (Ctrl+A & Del)।
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">৩</div>
+        <div class="step-content">
+          প্রজেক্টের <code>server/adapters/google-mail/Code.gs</code> ফাইলের সম্পূর্ণ কোড কপি করে সেখানে পেস্ট করুন এবং <strong>Save (💾)</strong> বাটনে ক্লিক করুন।
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">৪</div>
+        <div class="step-content">
+          <strong style="color: #fb7185;">খুবই গুরুত্বপূর্ণ ধাপ (Deploy New Version):</strong><br>
+          উপরে ডানপাশের নীল <strong>Deploy</strong> বাটনে ক্লিক করুন &rarr; <strong>Manage deployments</strong> সিলেক্ট করুন &rarr; এডিট আইকন (পেন্সিল ✏️) এ ক্লিক করুন &rarr; <strong>Version</strong> ড্রপডাউন থেকে <strong style="color: #4ade80;">"New version"</strong> সিলেক্ট করুন &rarr; <strong>Deploy</strong> চাপুন।
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">৫</div>
+        <div class="step-content">
+          ব্যস কাজ শেষ! এবার ওয়েবসাইট থেকে নতুন ভেরিফিকেশন বা রিসেট কোড পাঠালেই জিমেইলে স্বয়ংক্রিয়ভাবে এই ব্র‍্যান্ডেড কালারফুল টেমপ্লেট আসবে।
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-toggle" onclick="closeGuide()">বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function generateHtml(scenario) {
+      const isReset = scenario === 'reset';
+      const code = '742918';
+      const title = isReset 
+        ? "পাসওয়ার্ড রিসেট কোড (Reset Your Password)" 
+        : "ইমেইল ভেরিফিকেশন কোড (Verify Your Email)";
+      const subtitle = isReset
+        ? "আপনার MadhuBlood অ্যাকাউন্টের পাসওয়ার্ড পরিবর্তন করতে নিচের ওয়ান-টাইম সিকিউরিটি কোডটি ব্যবহার করুন।"
+        : "MadhuBlood প্ল্যাটফর্মে আপনার ইমেইল নিশ্চিত করার জন্য নিচের ওয়ান-টাইম কোডটি ব্যবহার করুন।";
+      const sampleText = isReset
+        ? "Your MadhuBlood password reset code is 742918.\n\nThis code expires in 10 minutes and can be used once.\nDo not share this code with anyone.\nIf you did not request it, ignore this email."
+        : "Your MadhuBlood email verification code is 742918.\n\nThis code expires in 10 minutes and can be used once.\nDo not share this code with anyone.\nIf you did not request it, ignore this email.";
+
+      return `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${isReset ? "Reset your password" : "Verify your email"} - MadhuBlood</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#1e293b;">
+  <div style="display:none;font-size:1px;color:#f1f5f9;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    আপনার MadhuBlood কোড: ${code} (মেয়াদ ১০ মিনিট)
+  </div>
+
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f1f5f9;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:580px;background-color:#ffffff;border-radius:18px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.06);">
+          <tr>
+            <td style="background:linear-gradient(90deg, #dc2626 0%, #e11d48 50%, #f43f5e 100%);height:6px;"></td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px 32px 20px;border-bottom:1px solid #f1f5f9;text-align:center;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <div style="width:38px;height:38px;background-color:#fef2f2;border-radius:12px;text-align:center;line-height:38px;font-size:22px;color:#dc2626;border:1px solid #fecaca;display:inline-block;">
+                      🩸
+                    </div>
+                  </td>
+                  <td style="vertical-align:middle;text-align:left;">
+                    <div style="font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;">
+                      Madhu<span style="color:#dc2626;">Blood</span>
+                    </div>
+                    <div style="font-size:11.5px;color:#64748b;font-weight:500;">
+                      রক্তের বন্ধনে বাঁচুক জীবন · রক্তদান নেটওয়ার্ক
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px 32px 24px;">
+              <h1 style="font-size:20px;font-weight:700;color:#0f172a;margin:0 0 10px;line-height:1.4;">
+                ${title}
+              </h1>
+              <p style="font-size:14px;color:#475569;margin:0 0 24px;line-height:1.6;">
+                ${subtitle}
+              </p>
+
+              <div style="background-color:#fff1f2;border:1.5px dashed #f43f5e;border-radius:14px;padding:22px 20px;text-align:center;margin:0 0 24px;">
+                <div style="font-size:11.5px;font-weight:700;color:#e11d48;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+                  নিরাপত্তা কোড / Security Code
+                </div>
+                <div style="font-family:'SF Mono',Consolas,Menlo,Monaco,monospace;font-size:38px;font-weight:800;letter-spacing:8px;color:#be123c;line-height:1;padding:4px 0;">
+                  ${code}
+                </div>
+                <div style="font-size:12px;color:#64748b;margin-top:10px;">
+                  ⏳ এই কোডটি <strong>১০ মিনিট</strong> কার্যকর থাকবে (Expires in 10 minutes)
+                </div>
+              </div>
+
+              <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;font-size:13.5px;color:#334155;line-height:1.7;white-space:pre-line;margin-bottom:24px;">
+${sampleText}
+              </div>
+
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#fffbeb;border:1px solid #fef3c7;border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+                <tr>
+                  <td style="vertical-align:top;padding-right:10px;font-size:18px;line-height:1;">
+                    🔒
+                  </td>
+                  <td style="font-size:12.5px;color:#92400e;line-height:1.6;">
+                    <strong>নিরাপত্তা সতর্কতা:</strong> এই কোডটি কাউকে বলবেন না। MadhuBlood কোনো প্রতিনিধির পক্ষ থেকে কখনো আপনার কাছে ওটিপি চাওয়া হবে না। আপনি যদি এই কোডের অনুরোধ না করে থাকেন, তবে নির্দ্বিধায় এই ইমেইলটি উপেক্ষা করুন।
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color:#f8fafc;border-top:1px solid #f1f5f9;padding:24px 32px;text-align:center;">
+              <p style="font-size:12px;color:#64748b;margin:0 0 6px;line-height:1.6;">
+                <strong>MadhuBlood</strong> · মধুপুর, টাঙ্গাইল, বাংলাদেশ
+              </p>
+              <p style="font-size:11.5px;color:#94a3b8;margin:0 0 10px;line-height:1.5;">
+                একটি মানবিক উদ্যোগ। জরুরি প্রয়োজনে সরাসরি নিকটস্থ হাসপাতাল ব্লাড ব্যাংকে যোগাযোগ করুন।
+              </p>
+              <p style="font-size:11px;color:#94a3b8;margin:0;">
+                © ${new Date().getFullYear()} MadhuBlood. মানুষের পাশে, নিঃস্বার্থ ভালোবাসায়।
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+    }
+
+    let currentScenario = 'verify';
+    function updateIframe() {
+      const frame = document.getElementById('emailFrame');
+      frame.srcdoc = generateHtml(currentScenario);
+    }
+
+    function setScenario(scenario) {
+      currentScenario = scenario;
+      document.getElementById('btnVerify').classList.toggle('active', scenario === 'verify');
+      document.getElementById('btnReset').classList.toggle('active', scenario === 'reset');
+      updateIframe();
+    }
+
+    function setDevice(device) {
+      const frameContainer = document.getElementById('deviceFrame');
+      document.getElementById('btnDesktop').classList.toggle('active', device === 'desktop');
+      document.getElementById('btnMobile').classList.toggle('active', device === 'mobile');
+      if (device === 'mobile') {
+        frameContainer.classList.add('mobile');
+      } else {
+        frameContainer.classList.remove('mobile');
+      }
+    }
+
+    function openGuide() {
+      document.getElementById('guideModal').classList.add('open');
+    }
+    function closeGuide() {
+      document.getElementById('guideModal').classList.remove('open');
+    }
+    function closeGuideOnBackdrop(e) {
+      if (e.target.id === 'guideModal') closeGuide();
+    }
+
+    // Initial render
+    updateIframe();
+  </script>
+</body>
+</html>
