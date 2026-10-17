@@ -103,7 +103,7 @@ export function Dashboard() {
                   profile: t(en, "প্রোফাইল", "Profile"),
                   donor: t(en, "রক্তদাতা ফর্ম", "Donor form"),
                   donations: t(en, "রক্তদান", "Donations"),
-                  notifications: t(en, "বিজ্ঞপ্তি", "Notifications"),
+                  notifications: t(en, "ইনবক্স ও বিজ্ঞপ্তি", "Inbox & Notifications"),
                   settings: t(en, "সেটিংস", "Settings"),
                 }[s]
               }
