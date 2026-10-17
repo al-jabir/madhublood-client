@@ -45,6 +45,7 @@ test("duplicate registration guides to sign in and invalid login guides to regis
   await expect(page.getByLabel("Email address", { exact: true })).toHaveValue(
     "existing@example.test",
   );
+  await expect(page.getByRole("alert")).toHaveCount(0);
   await page
     .getByLabel("Email address", { exact: true })
     .fill("unregistered@example.test");

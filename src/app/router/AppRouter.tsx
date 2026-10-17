@@ -76,8 +76,11 @@ export function AppRouter() {
             </RequireUser>
           }
         />
-        <Route path="/register" element={<AuthPage mode="register" />} />
-        <Route path="/login" element={<AuthPage mode="login" />} />
+        <Route
+          path="/register"
+          element={<AuthPage key="register" mode="register" />}
+        />
+        <Route path="/login" element={<AuthPage key="login" mode="login" />} />
         <Route
           path="/verify-otp"
           element={
