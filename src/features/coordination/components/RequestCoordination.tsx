@@ -49,6 +49,15 @@ export function RequestCoordination({
         {t(en, "দায়িত্বে:", "Coordinator:")} {q.data.coordinator?.name}
       </p>
       <ProgressCards summary={q.data.summary} />
+      {q.data.onBehalf && (
+        <p className="notice">
+          {t(
+            en,
+            "পরিবারের প্রতিনিধির সঙ্গে কথা বলে রক্তের ব্যবস্থা পাওয়ার বিষয়টি নিশ্চিত করার পর নিচের বোতাম চাপুন। এটি আপনার নিজের রক্তের অনুরোধ নয়।",
+            "Confirm with the family representative by phone before recording fulfillment below. You are acting on their behalf.",
+          )}
+        </p>
+      )}
       <p>
         {status === "completed"
           ? t(
@@ -87,8 +96,12 @@ export function RequestCoordination({
         >
           {t(
             en,
-            "ব্যবস্থা পেয়েছি—নিশ্চিত করুন",
-            "Confirm arrangement received",
+            q.data.onBehalf
+              ? "পরিবার ফোনে নিশ্চিত করেছে"
+              : "ব্যবস্থা পেয়েছি—নিশ্চিত করুন",
+            q.data.onBehalf
+              ? "Family confirmed by phone"
+              : "Confirm arrangement received",
           )}
         </button>
       )}

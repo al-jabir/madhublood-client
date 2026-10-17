@@ -56,7 +56,7 @@ test("admin has a separate workspace and role-aware sidebar", async ({
     .click();
   await expect(page.getByRole("cell", { name: /Test hospital/ })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "verification", exact: true }),
+    page.getByRole("button", { name: "Start review", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

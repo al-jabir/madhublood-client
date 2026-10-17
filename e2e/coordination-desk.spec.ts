@@ -190,6 +190,8 @@ test("coordinator sees only the coordination workspace and no assignment control
   await expect(
     page.getByRole("heading", { name: "No open assignments" }),
   ).toBeVisible();
+  if ((page.viewportSize()?.width ?? 1200) <= 900)
+    await page.getByRole("button", {name: "Toggle admin navigation"}).click();
   const navigation = page.getByRole("navigation", { name: "Admin navigation" });
   await expect(navigation.getByRole("link")).toHaveCount(1);
   await expect(page.getByLabel("Assigned coordinator")).toHaveCount(0);

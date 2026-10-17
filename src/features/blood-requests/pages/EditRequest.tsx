@@ -71,6 +71,7 @@ export function EditRequest() {
           try {
             await requestsApi.edit(id, {
               ...data,
+              ...(d.referral ? { referral: d.referral } : {}),
               units: Number(data.units),
               requiredAt: new Date(String(data.requiredAt)).toISOString(),
               contactConsent: data.contactConsent === "on",
@@ -91,6 +92,16 @@ export function EditRequest() {
           }
         }}
       >
+        {d.referral && (
+          <label className="checkbox span2">
+            <input type="checkbox" required />
+            {t(
+              en,
+              "পরিবারের সঙ্গে কথা বলে পরিবর্তিত তথ্য ও যোগাযোগের অনুমতি আবার নিশ্চিত করেছি।",
+              "I reconfirmed the updated information and contact permission with the family.",
+            )}
+          </label>
+        )}
         {[
           ["representative", t(en, "প্রতিনিধির নাম", "Representative"), "text"],
           ["contact", t(en, "মোবাইল নম্বর", "Mobile number"), "tel"],
@@ -144,6 +155,16 @@ export function EditRequest() {
         <label className="field">
           {t(en, "রক্তের গ্রুপ", "Blood group")}
           <select name="bloodGroup" defaultValue={d.bloodGroup}>
+            {d.referral && (
+              <label className="checkbox span2">
+                <input type="checkbox" required />
+                {t(
+                  en,
+                  "পরিবারের সঙ্গে কথা বলে পরিবর্তিত তথ্য ও যোগাযোগের অনুমতি আবার নিশ্চিত করেছি।",
+                  "I reconfirmed the updated information and contact permission with the family.",
+                )}
+              </label>
+            )}
             {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((g) => (
               <option key={g}>{g}</option>
             ))}
@@ -152,6 +173,16 @@ export function EditRequest() {
         <label className="field">
           {t(en, "উপাদান", "Component")}
           <select name="component" defaultValue={d.component}>
+            {d.referral && (
+              <label className="checkbox span2">
+                <input type="checkbox" required />
+                {t(
+                  en,
+                  "পরিবারের সঙ্গে কথা বলে পরিবর্তিত তথ্য ও যোগাযোগের অনুমতি আবার নিশ্চিত করেছি।",
+                  "I reconfirmed the updated information and contact permission with the family.",
+                )}
+              </label>
+            )}
             {["whole-blood", "red-cells", "platelets", "plasma"].map((s) => (
               <option key={s} value={s}>
                 {requestLabel(en, s)}
@@ -162,6 +193,16 @@ export function EditRequest() {
         <label className="field">
           {t(en, "জরুরিতা", "Urgency")}
           <select name="urgency" defaultValue={d.urgency}>
+            {d.referral && (
+              <label className="checkbox span2">
+                <input type="checkbox" required />
+                {t(
+                  en,
+                  "পরিবারের সঙ্গে কথা বলে পরিবর্তিত তথ্য ও যোগাযোগের অনুমতি আবার নিশ্চিত করেছি।",
+                  "I reconfirmed the updated information and contact permission with the family.",
+                )}
+              </label>
+            )}
             {["routine", "urgent", "critical"].map((s) => (
               <option key={s} value={s}>
                 {requestLabel(en, s)}

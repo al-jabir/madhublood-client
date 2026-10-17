@@ -106,6 +106,47 @@ export function RequestDetail() {
   return (
     <section className="page narrow">
       <PageHeading title={`${item.bloodGroup} · ${item.hospital}`} />
+      {(item.submittedOnBehalf || item.referral) && (
+        <p className="notice">
+          {t(
+            en,
+            "পরিবারের পক্ষ থেকে স্বেচ্ছাসেবকের মাধ্যমে যোগ করা অনুরোধ।",
+            "Submitted by a volunteer on behalf of the family.",
+          )}
+        </p>
+      )}
+      {item.referral && (
+        <p className="notice">
+          {t(
+            en,
+            "ফোনে প্রয়োজন ও প্রতিনিধির অনুমতি নিশ্চিত করা হয়েছে। উৎস:",
+            "Need and representative permission confirmed by phone. Source:",
+          )}{" "}
+          {
+            (
+              {
+                "social-media": t(en, "সামাজিক মাধ্যম", "Social media"),
+                phone: t(en, "ফোন", "Phone"),
+                hospital: t(en, "হাসপাতাল", "Hospital"),
+                "personal-contact": t(en, "পরিচিত ব্যক্তি", "Personal contact"),
+              } as Record<string, string>
+            )[item.referral.source]
+          }
+          {item.referral.sourceUrl && (
+            <>
+              {" "}
+              ·{" "}
+              <a
+                href={item.referral.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t(en, "মূল পোস্ট", "Original post")}
+              </a>
+            </>
+          )}
+        </p>
+      )}
       <div className="panel">
         <span className="badge">{requestLabel(en, item.status)}</span>
         <h2>
@@ -168,7 +209,9 @@ export function RequestDetail() {
               )
                 .filter(
                   (status) =>
-                    status !== "completed" || !item.coordinatorManaged,
+                    (!item.referral &&
+                      (status !== "completed" || !item.coordinatorManaged)) ||
+                    status === "cancelled",
                 )
                 .map((status) => (
                   <button

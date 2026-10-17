@@ -1,3 +1,4 @@
+import { useMe } from "@/features/auth/hooks/useMe";
 import { requestLabel } from "../request-labels";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { requestsApi } from "../api/blood-requests.api";
@@ -19,7 +20,19 @@ import { LocationSelector } from "@/features/locations/components/LocationSelect
 export function CreateRequest() {
   const { en } = usePrefs();
   const nav = useNavigate();
+  const { data: me } = useMe();
+  const staff = me?.roles.some((role) =>
+    ["volunteer", "admin", "super-admin"].includes(role),
+  );
+
+  const [sourceDefaults, setSourceDefaults] = useState({
+    source: "social-media",
+    sourceUrl: "",
+  });
   const [searchParams] = useSearchParams();
+  const [onBehalf, setOnBehalf] = useState(
+    searchParams.get("onBehalf") === "1",
+  );
   const prefill = useLocation().state?.prefill;
   const urlBlood = groups.includes(prefill?.bloodGroup)
     ? prefill.bloodGroup
@@ -50,6 +63,13 @@ export function CreateRequest() {
       contactConsent: values.contactConsent === "on",
       shareContactWithMembers: values.shareContactWithMembers === "on",
     };
+    if (onBehalf && staff)
+      data.referral = {
+        source: values.source,
+        sourceUrl: values.sourceUrl || "",
+        verifiedByPhone: values.verifiedByPhone === "on",
+        representativeConsent: values.representativeConsent === "on",
+      };
     if (values.requiredAt)
       data.requiredAt = new Date(String(values.requiredAt)).toISOString();
     else delete data.requiredAt;
@@ -59,6 +79,13 @@ export function CreateRequest() {
     const form = formRef.current;
     if (!form) return;
     form.reset();
+    setOnBehalf(!!draft.data.referral);
+    const referral = draft.data.referral as
+      { source?: string; sourceUrl?: string } | undefined;
+    setSourceDefaults({
+      source: referral?.source || "social-media",
+      sourceUrl: referral?.sourceUrl || "",
+    });
     for (const [key, value] of Object.entries(draft.data)) {
       const input = form.elements.namedItem(key);
       if (input instanceof HTMLInputElement && input.type === "checkbox")
@@ -160,6 +187,88 @@ export function CreateRequest() {
           onSubmit={submit}
           onReset={() => setRequiredAt("")}
         >
+          {staff && (
+            <label className="checkbox span2">
+              <input
+                type="checkbox"
+                checked={onBehalf}
+                onChange={(e) => {
+                  setOnBehalf(e.target.checked);
+                  setDraftId(undefined);
+                }}
+              />
+              {t(
+                en,
+                "অন্যের হয়ে অনুরোধ যোগ করছি",
+                "Submit on behalf of someone else",
+              )}
+            </label>
+          )}
+          {onBehalf && staff && (
+            <section
+              className="notice span2"
+              style={{ display: "grid", gap: "16px" }}
+            >
+              <h3>
+                {t(
+                  en,
+                  "পরিবারের অ্যাকাউন্ট প্রয়োজন নেই",
+                  "No family account needed",
+                )}
+              </h3>
+              <p>
+                {t(
+                  en,
+                  "আপনি এই অনুরোধের যোগাযোগ ও নিশ্চিতকরণ দেখবেন। অনুমোদনের পর এটি প্রকাশিত হবে। উৎসের লিংক প্রকাশ করা হবে না।",
+                  "You manage contact and family confirmation. An administrator reviews this before publication. The source link stays private.",
+                )}
+              </p>
+              <Field label={t(en, "খবরের উৎস", "Source")}>
+                <select name="source" defaultValue={sourceDefaults.source}>
+                  <option value="social-media">
+                    {t(en, "সামাজিক মাধ্যম", "Social media")}
+                  </option>
+                  <option value="phone">{t(en, "ফোন", "Phone")}</option>
+                  <option value="hospital">
+                    {t(en, "হাসপাতাল", "Hospital")}
+                  </option>
+                  <option value="personal-contact">
+                    {t(en, "পরিচিত ব্যক্তি", "Personal contact")}
+                  </option>
+                </select>
+              </Field>
+              <Field
+                label={t(
+                  en,
+                  "মূল পোস্টের লিংক (ঐচ্ছিক)",
+                  "Original post link (optional)",
+                )}
+              >
+                <input
+                  name="sourceUrl"
+                  type="url"
+                  maxLength={1000}
+                  defaultValue={sourceDefaults.sourceUrl}
+                />
+              </Field>
+              <label className="checkbox">
+                <input type="checkbox" name="verifiedByPhone" required />
+                {t(
+                  en,
+                  "ফোনে কথা বলে প্রয়োজনটি নিশ্চিত করেছি",
+                  "I confirmed the current need by phone",
+                )}
+              </label>
+              <label className="checkbox">
+                <input type="checkbox" name="representativeConsent" required />
+                {t(
+                  en,
+                  "প্রতিনিধি অনুরোধ তৈরি ও সাড়া দেওয়া রক্তদাতাদের সঙ্গে নম্বর শেয়ারের অনুমতি দিয়েছেন",
+                  "The representative permitted this request and contact sharing with responding donors",
+                )}
+              </label>
+            </section>
+          )}
           <Field label={t(en, "প্রতিনিধির নাম", "Representative")}>
             <input
               name="representative"
@@ -241,16 +350,24 @@ export function CreateRequest() {
             <input type="checkbox" name="shareContactWithMembers" />
             {t(
               en,
-              "সক্রিয় অনুরোধে লগইন করা ব্যবহারকারীদের আমার নম্বর দেখাতে সম্মত।",
-              "Show my contact number to signed-in users while this request is active.",
+              onBehalf
+                ? "প্রতিনিধি সক্রিয় অনুরোধে লগইন করা ব্যবহারকারীদের তাঁর নম্বর দেখাতে অনুমতি দিয়েছেন।"
+                : "সক্রিয় অনুরোধে লগইন করা ব্যবহারকারীদের আমার নম্বর দেখাতে সম্মত।",
+              onBehalf
+                ? "The representative allows their number to be shown to signed-in users while active."
+                : "Show my contact number to signed-in users while this request is active.",
             )}
           </label>
           <label className="checkbox span2">
             <input name="contactConsent" type="checkbox" required />
             {t(
               en,
-              "এই অনুরোধে সাড়া দেওয়া রক্তদাতাদের সঙ্গে আমার যোগাযোগের তথ্য শেয়ার করতে সম্মত।",
-              "I consent to sharing this contact with donors who accept this request.",
+              onBehalf
+                ? "প্রতিনিধি এই অনুরোধে সাড়া দেওয়া রক্তদাতাদের সঙ্গে যোগাযোগের তথ্য শেয়ারের অনুমতি দিয়েছেন।"
+                : "এই অনুরোধে সাড়া দেওয়া রক্তদাতাদের সঙ্গে আমার যোগাযোগের তথ্য শেয়ার করতে সম্মত।",
+              onBehalf
+                ? "The representative allows sharing this contact with donors who accept."
+                : "I consent to sharing this contact with donors who accept this request.",
             )}
           </label>
           <p className="notice span2">
@@ -268,7 +385,7 @@ export function CreateRequest() {
           <button
             type="button"
             className="button secondary"
-            disabled={busy}
+            disabled={busy || onBehalf}
             onClick={saveDraft}
           >
             {t(en, "খসড়া সংরক্ষণ করুন", "Save draft")}

@@ -42,6 +42,7 @@ export interface DeskDetail {
   candidates: Assignment[];
 }
 export interface OwnerProgress {
+  onBehalf?: boolean;
   managed: boolean;
   confirmed: boolean;
   coordinator: { name: string } | null;

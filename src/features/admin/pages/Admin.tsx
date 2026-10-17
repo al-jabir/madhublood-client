@@ -1,6 +1,9 @@
+import "../admin-workspace.css";
+import { requestLabel } from "@/features/blood-requests/request-labels";
+import { moderationLabel } from "../admin-labels";
 import { CommunityOperations } from "@/features/community-tools/components/StaffTools";
 import { CoordinationDesk } from "@/features/coordination/components/CoordinationDesk";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -39,6 +42,47 @@ export function Admin() {
   const { en, dark, toggleLang, toggleTheme } = usePrefs();
   const [params] = useSearchParams();
   const [open, setOpen] = useState(false);
+  const sidebar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebar.current?.querySelector<HTMLElement>("button, a")?.focus();
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+      }
+      if (event.key === "Tab") {
+        const items = Array.from(
+          sidebar.current?.querySelectorAll<HTMLElement>(
+            "a[href],button:not(:disabled)",
+          ) ?? [],
+        );
+        const first = items[0],
+          last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    }
+    const resized = () => {
+      if (window.innerWidth > 900) setOpen(false);
+    };
+    document.addEventListener("keydown", keyboard);
+    window.addEventListener("resize", resized);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", keyboard);
+      window.removeEventListener("resize", resized);
+      previous?.focus();
+    };
+  }, [open]);
   const [busy, setBusy] = useState(false);
   const allowed = me?.roles.some((r) =>
     ["admin", "super-admin", "volunteer"].includes(r),
@@ -153,7 +197,18 @@ export function Admin() {
               onClick={() => setOpen(false)}
             />
           )}
-          <aside className={"admin-sidebar" + (open ? " is-open" : "")}>
+          <aside
+            ref={sidebar}
+            id="admin-sidebar"
+            className={"admin-sidebar" + (open ? " is-open" : "")}
+          >
+            <button
+              className="icon admin-sidebar-dismiss"
+              aria-label={t(en, "মেনু বন্ধ করুন", "Close navigation")}
+              onClick={() => setOpen(false)}
+            >
+              <X size={18} />
+            </button>
             <Link to="/admin" className="admin-brand">
               <Droplets size={28} />
               <span>
@@ -190,15 +245,16 @@ export function Admin() {
                 className="icon admin-menu-toggle"
                 aria-label="Toggle admin navigation"
                 aria-expanded={open}
+                aria-controls="admin-sidebar"
                 onClick={() => setOpen(!open)}
               >
                 {open ? <X size={20} /> : <Menu size={20} />}
               </button>
               <span className="admin-role">
                 {superAdmin
-                  ? "Super admin"
+                  ? t(en, "সুপার অ্যাডমিন", "Super admin")
                   : administrator
-                    ? "Admin"
+                    ? t(en, "অ্যাডমিন", "Admin")
                     : t(en, "সমন্বয়কারী", "Coordinator")}
               </span>
               <div className="admin-topbar-actions">
@@ -284,10 +340,34 @@ export function Admin() {
                                 </td>
                                 <td>
                                   <strong>{r.hospital}</strong>
+                                  {r.referral && (
+                                    <p>
+                                      {t(
+                                        en,
+                                        "পরিবারের হয়ে জমা · ফোনে নিশ্চিত",
+                                        "On behalf of family · phone confirmed",
+                                      )}
+                                      {r.referral.sourceUrl && (
+                                        <>
+                                          {" "}
+                                          ·{" "}
+                                          <a
+                                            href={r.referral.sourceUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                          >
+                                            {t(en, "উৎস দেখুন", "View source")}
+                                          </a>
+                                        </>
+                                      )}
+                                    </p>
+                                  )}
                                   <small>{r.area}</small>
                                 </td>
                                 <td>
-                                  <span className="badge">{r.status}</span>
+                                  <span className="badge">
+                                    {requestLabel(en, r.status)}
+                                  </span>
                                 </td>
                                 <td>
                                   <div className="button-row">
@@ -308,7 +388,7 @@ export function Admin() {
                                           )
                                         }
                                       >
-                                        {status}
+                                        {moderationLabel(en, status)}
                                       </button>
                                     ))}
                                   </div>

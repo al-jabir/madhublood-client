@@ -56,6 +56,13 @@ export interface DonorProfile {
 }
 export interface BloodRequest {
   coordinatorManaged?: boolean;
+  submittedOnBehalf?: boolean;
+  referral?: {
+    source: string;
+    sourceUrl?: string;
+    verifiedByPhone: boolean;
+    representativeConsent: boolean;
+  };
   id: string;
   _id?: string;
   owner?: string;

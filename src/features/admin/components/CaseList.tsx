@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { adminApi } from "../api/admin.api";
 import { Failure } from "@/components/feedback/Failure";
 import { errorText } from "@/utils/error-text";
+import { useState } from "react";
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
+import { MessageSquare, Flag, CheckCircle2 } from "lucide-react";
 export function CaseList({ tab }: { tab: "reports" | "tickets" }) {
+  const { en } = usePrefs();
+  const [busy, setBusy] = useState<string | null>(null);
   const pagination = useCursorNavigation(tab);
   const client = useQueryClient();
   const q = useQuery({
@@ -16,32 +22,74 @@ export function CaseList({ tab }: { tab: "reports" | "tickets" }) {
   if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
-    <div className="panel">
+    <section className="panel admin-record-panel">
+      <div className="admin-section-heading">
+        <h2>
+          {tab === "reports"
+            ? t(en, "সদস্যদের অভিযোগ", "Member reports")
+            : t(en, "সহায়তার অনুরোধ", "Support requests")}
+        </h2>
+        <p>
+          {t(
+            en,
+            "বিস্তারিত দেখে প্রয়োজনীয় ব্যবস্থা নিন, এরপর নিষ্পত্তি করুন।",
+            "Review the details, take any necessary action, then mark the case resolved.",
+          )}
+        </p>
+      </div>
       {!q.data.items.length ? (
-        <p className="muted">No records.</p>
+        <div className="admin-empty-state">
+          <CheckCircle2 size={28} />
+          <p>{t(en, "এই পাতায় কোনো রেকর্ড নেই।", "No cases on this page.")}</p>
+        </div>
       ) : (
         q.data.items.map((row) => (
-          <div className="list-row" key={row._id}>
-            <div>
-              <strong>{row.status}</strong>
+          <article className="admin-record" key={row._id}>
+            <span className="admin-record-icon">
+              {tab === "reports" ? (
+                <Flag size={18} />
+              ) : (
+                <MessageSquare size={18} />
+              )}
+            </span>
+            <div className="admin-record-body">
+              <div className="admin-record-meta">
+                <span
+                  className={
+                    "badge " + (row.status === "resolved" ? "is-resolved" : "")
+                  }
+                >
+                  {row.status === "resolved"
+                    ? t(en, "নিষ্পত্তি হয়েছে", "Resolved")
+                    : t(en, "পর্যালোচনা বাকি", "Awaiting review")}
+                </span>
+                <small>#{row._id.slice(-6)}</small>
+              </div>
               <p>{tab === "reports" ? row.reason : row.message}</p>
             </div>
             {row.status !== "resolved" && (
               <button
+                className="button secondary small"
+                disabled={busy !== null}
                 onClick={async () => {
+                  setBusy(row._id);
                   try {
                     await adminApi.resolve(tab, row._id);
-                    toast.success("Saved");
+                    toast.success(t(en, "নিষ্পত্তি হয়েছে", "Case resolved"));
                     client.invalidateQueries({ queryKey: ["operations"] });
                   } catch (error) {
                     toast.error(errorText(error));
+                  } finally {
+                    setBusy(null);
                   }
                 }}
               >
-                Resolve
+                {busy === row._id
+                  ? t(en, "সংরক্ষণ হচ্ছে…", "Saving…")
+                  : t(en, "নিষ্পত্তি করুন", "Resolve")}
               </button>
             )}
-          </div>
+          </article>
         ))
       )}
       <CursorPager
@@ -49,6 +97,6 @@ export function CaseList({ tab }: { tab: "reports" | "tickets" }) {
         nextCursor={q.data?.nextCursor}
         busy={q.isFetching}
       />
-    </div>
+    </section>
   );
 }

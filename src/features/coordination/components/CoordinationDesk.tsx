@@ -422,20 +422,25 @@ export function CoordinationDesk() {
           {q.data.total} {t(en, "চলমান অনুরোধ", "open requests")}
         </span>
       </div>
+      <Link className="button secondary" to="/requests/new?onBehalf=1">
+        {t(
+          en,
+          "অন্যের হয়ে রক্তের অনুরোধ যোগ করুন",
+          "Add a request for someone else",
+        )}
+      </Link>
       <CoordinatorTasks
         page={page}
         onSelect={(id) => {
           setSelected(id);
           requestAnimationFrame(() =>
-            document
-              .querySelector(".coord-detail-container")
-              ?.scrollIntoView({
-                block: "start",
-                behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
-                  .matches
-                  ? "auto"
-                  : "smooth",
-              }),
+            document.querySelector(".coord-detail-container")?.scrollIntoView({
+              block: "start",
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? "auto"
+                : "smooth",
+            }),
           );
         }}
       />

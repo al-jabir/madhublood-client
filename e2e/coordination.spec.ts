@@ -88,9 +88,9 @@ test("requester, moderator and donor coordinate through the real UI", async ({
       .locator("tbody tr")
       .filter({ hasText: "Browser Hospital " + suffix });
     await row
-      .getByRole("button", { name: "verification", exact: true })
+      .getByRole("button", { name: "Start review", exact: true })
       .click();
-    await row.getByRole("button", { name: "active", exact: true }).click();
+    await row.getByRole("button", { name: "Approve", exact: true }).click();
     await expect(row).toHaveCount(0);
     await donor.bringToFront();
     await donor.goto("/requests/" + requestId);
