@@ -1,6 +1,6 @@
 # MadhuBlood launch acceptance — 17 October 2026
 
-**Decision: live routing, hosted sessions and real backup/restore passed; hosted-only email delivery still needs correction.** Client 211dfd8 and server 049c0a1 were pushed. Vercel reported successful deployment of the client revision.
+**Decision: live routing, hosted sessions, real backup/restore and hosted-only email delivery passed.** Client 211dfd8 and server 049c0a1 were pushed. Vercel reported successful deployment of the client revision.
 
 ## Local fixes in this audit
 
@@ -28,15 +28,15 @@ The initial deep-link probes found HTTP 404 on /login, /register, /verify-email,
 
 Hosted admin login, session persistence across reload, logout and post-logout /admin protection passed in the in-app browser. The account password was not changed.
 
-The owner confirmed receipt of a password-reset test email. A local development API sharing the Atlas queue was running, so a second hosted-only test was performed with local background jobs disabled. That new job retried; Render mail configuration remains an actual release gate. Do not describe hosted email delivery as fixed solely because a local worker delivered the first message.
+The owner confirmed receipt of a password-reset test email. A local development API sharing the Atlas queue was running, so a second hosted-only test was performed with local background jobs disabled. That new job retried; a private dashboard comparison then identified a mismatched GOOGLE_MAIL_SECRET. The owner corrected it and redeployed. A fresh hosted-only test at 14:37 Asia/Dhaka reached delivered with attempts=0, while the local API had background jobs disabled and no separate local worker ran. The original local jobs configuration was restored afterward. The hosting transport issue is resolved.
 
 The approved real Atlas export was encrypted and restored in a disposable localhost database: 21 collections and 120 documents. The encrypted archive and SHA-256 metadata remain in ignored server/.backups; temporary restored data and URI file were removed. No point-in-time consistency, off-site copy or independent key custody is claimed.
 
 ## Final acceptance steps
 
-1. Complete the Render → GitHub sign-in handoff, inspect the deployed mail transport/URL/secret and worker settings, and correct the mismatch without exposing secrets. The owner authorized this sign-in; the browser currently needs their GitHub credentials, which were not requested in chat.
-2. Rerun approved email delivery with all local workers disabled. Then finish hosted verification/reset acceptance; no existing password has been changed by the current probes.
+1. Deployment routing, existing admin login/reload/logout and hosted-only reset delivery have passed. Preserve these as release checks.
+2. Finish new-account registration/verification and code-consumption acceptance on the hosted environment with an explicitly approved test identity. No existing password was changed by the delivery checks.
 3. Keep the encryption key separately and configure encrypted off-site retention/scheduling. The real local restore drill passed, but off-site recovery is not yet configured.
 4. Confirm operational ownership, admin credential strength/ownership, moderation/privacy procedure and independent uptime/error/worker alerting. The local Codex heartbeat depends on the desktop app.
 
-Do not advertise full production readiness until the hosted email and operational gates pass. Backend details: server/docs/READINESS.md and server/docs/PRODUCTION.md in the sibling checkout.
+Do not advertise full production readiness until the remaining onboarding and operational gates pass. Backend details: server/docs/READINESS.md and server/docs/PRODUCTION.md in the sibling checkout.
