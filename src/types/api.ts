@@ -11,6 +11,7 @@ export interface ApiUser {
   locationLabel?: string;
   gender?: "undisclosed" | "male" | "female" | "other";
   roles: string[];
+  volunteerPermissions?: string[];
   notificationConsent: boolean;
 }
 export interface SessionResponse {
@@ -109,6 +110,7 @@ export interface ManagedUser {
   email: string;
   phone?: string;
   roles: string[];
+  volunteerPermissions?: string[];
   areas: string[];
   profileCompleted: boolean;
 }

@@ -105,9 +105,9 @@ export function UsersPanel() {
                 <div className="user-access-editor-body">
                   <RoleEditor
                     row={row}
-                    save={async (roles, areas) => {
+                    save={async (roles, areas, permissions) => {
                       try {
-                        await superAdminApi.updateRoles(row._id, roles, areas);
+                        await superAdminApi.updateRoles(row._id, roles, areas, permissions);
                         toast.success(t(en, "সংরক্ষণ হয়েছে", "Saved"));
                         client.invalidateQueries({ queryKey: ["operations"] });
                         client.invalidateQueries({

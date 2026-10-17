@@ -1,3 +1,5 @@
+import { useMe } from "@/features/auth/hooks/useMe";
+import { canVolunteer } from "@/utils/volunteer-permissions";
 import { CoordinatorTasks } from "@/features/community-tools/components/StaffTools";
 import {
   DonorSuggestions,
@@ -389,13 +391,24 @@ function RequestDesk({ id }: { id: string }) {
 }
 export function CoordinationDesk() {
   const { en } = usePrefs();
+  const me = useMe();
+  const canManage = canVolunteer(me.data, "coordinate-requests");
+  const canSubmit = canVolunteer(me.data, "submit-referrals");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<string>();
   const q = useQuery({
     queryKey: ["coordination", page],
+    enabled: canManage,
     queryFn: () => coordinationApi.board(page),
     refetchInterval: 30000,
   });
+  if (me.isPending) return <Loading />;
+  if (!canManage) return <section className="panel admin-section-heading">
+    <h2>{t(en,"আপনার স্বেচ্ছাসেবক অনুমতি","Your volunteer access")}</h2>
+    <p>{canSubmit ? t(en,"আপনি অন্যের হয়ে অনুরোধ জমা দিতে পারবেন। পরিচালনার জন্য আলাদা অনুমতি ও দায়িত্ব প্রয়োজন।", "You may submit requests for others. Managing requests requires a separate permission and assignment.") : t(en,"এখনও কোনো কাজের অনুমতি দেওয়া হয়নি। অনুমতির জন্য প্রশাসকের সঙ্গে যোগাযোগ করুন।", "No work permissions have been granted yet. Contact an administrator for access.")}</p>
+    {canSubmit && <Link className="button" to="/requests/new?onBehalf=1">{t(en,"অন্যের হয়ে অনুরোধ যোগ করুন","Add a request for someone else")}</Link>}
+    <Link className="button secondary" to="/dashboard">{t(en,"আমার অ্যাকাউন্টে ফিরুন","Back to my account")}</Link>
+  </section>;
   if (q.isPending) return <Loading />;
   if (q.isError) return <Failure error={q.error} />;
   const active =
@@ -422,13 +435,13 @@ export function CoordinationDesk() {
           {q.data.total} {t(en, "চলমান অনুরোধ", "open requests")}
         </span>
       </div>
-      <Link className="button secondary" to="/requests/new?onBehalf=1">
+      {canSubmit && <Link className="button secondary" to="/requests/new?onBehalf=1">
         {t(
           en,
           "অন্যের হয়ে রক্তের অনুরোধ যোগ করুন",
           "Add a request for someone else",
         )}
-      </Link>
+      </Link>}
       <CoordinatorTasks
         page={page}
         onSelect={(id) => {

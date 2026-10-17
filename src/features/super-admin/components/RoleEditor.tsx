@@ -7,13 +7,14 @@ export function RoleEditor({
   save,
 }: {
   row: ManagedUser;
-  save: (roles: string[], areas: string[]) => void;
+  save: (roles: string[], areas: string[], permissions: string[]) => void;
 }) {
   const { en } = usePrefs();
   const fieldId = useId();
   const [role, setRole] = useState(
     row.roles.find((role) => role !== "user") ?? "user",
   );
+  const [permissions, setPermissions] = useState<string[]>(row.volunteerPermissions ?? []);
   const [area, setArea] = useState(row.areas?.join("\n") ?? "");
   return (
     <form
@@ -35,6 +36,7 @@ export function RoleEditor({
               .split(/\r?\n/)
               .map((value) => value.trim())
               .filter(Boolean),
+            role === "volunteer" ? permissions : [],
           );
       }}
     >
@@ -75,6 +77,14 @@ export function RoleEditor({
           placeholder="Madhupur, Tangail"
         />
       </label>
+      {role === "volunteer" && <fieldset className="volunteer-permission-fields">
+        <legend>{t(en,"স্বেচ্ছাসেবকের কাজের অনুমতি","Volunteer work permissions")}</legend>
+        <p>{t(en,"শুধু ভূমিকা দিলেই কোনো কাজের অনুমতি দেওয়া হয় না। প্রয়োজনীয় কাজ আলাদা করে চালু করুন।", "The role alone grants no work access. Enable only the tasks this person needs.")}</p>
+        {[["submit-referrals","অন্যের হয়ে অনুরোধ জমা","Submit requests for others","প্রকাশের আগে অ্যাডমিন যাচাই করবেন।","Administrator review is required before publication."], ["coordinate-requests","নির্ধারিত অনুরোধ পরিচালনা","Manage assigned requests","অনুমতি ও এলাকার সঙ্গে আলাদা দায়িত্বও মিলতে হবে।","Requires both assigned area and a specific request assignment."]].map(([key,bn,label,descBn,descEn]) => <label key={key}>
+          <input type="checkbox" checked={permissions.includes(key)} onChange={e=>setPermissions(current=>e.target.checked?[...current,key]:current.filter(value=>value!==key))}/>
+          <span><strong>{t(en,bn,label)}</strong><small>{t(en,descBn,descEn)}</small></span>
+        </label>)}
+      </fieldset>}
       <div className="user-access-save">
         <small>
           {t(

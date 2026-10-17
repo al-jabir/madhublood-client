@@ -22,6 +22,7 @@ for (const staff of [true, false])
                 id: "111111111111111111111111",
                 name: "Volunteer",
                 roles: [staff ? "volunteer" : "member"],
+                volunteerPermissions: staff ? ["submit-referrals"] : [],
                 profileCompleted: true,
                 emailVerified: true,
               },

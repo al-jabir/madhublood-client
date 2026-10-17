@@ -176,6 +176,7 @@ test("coordinator sees only the coordination workspace and no assignment control
             id: coordinatorId,
             name: "Coordinator",
             roles: ["volunteer"],
+            volunteerPermissions: ["coordinate-requests"],
             profileCompleted: true,
             emailVerified: true,
           },
@@ -363,5 +364,5 @@ test("coordinator approval preserves a complete area name containing a comma", a
   await card.getByRole("button", { name: "Save role", exact: true }).click();
   await expect
     .poll(() => saved)
-    .toEqual({ roles: ["user", "volunteer"], areas: ["Madhupur, Tangail"] });
+    .toEqual({ roles: ["user", "volunteer"], areas: ["Madhupur, Tangail"], volunteerPermissions: [] });
 });

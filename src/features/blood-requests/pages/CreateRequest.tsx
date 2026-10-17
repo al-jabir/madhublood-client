@@ -1,3 +1,4 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { requestLabel } from "../request-labels";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
@@ -21,9 +22,7 @@ export function CreateRequest() {
   const { en } = usePrefs();
   const nav = useNavigate();
   const { data: me } = useMe();
-  const staff = me?.roles.some((role) =>
-    ["volunteer", "admin", "super-admin"].includes(role),
-  );
+  const staff = canVolunteer(me, "submit-referrals");
 
   const [sourceDefaults, setSourceDefaults] = useState({
     source: "social-media",
