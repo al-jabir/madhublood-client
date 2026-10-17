@@ -182,6 +182,26 @@ test("coordinator sees only the coordination workspace and no assignment control
           },
         },
       });
+    if (path.endsWith("/admin/volunteer-dashboard"))
+      return route.fulfill({
+        json: {
+          stats: {
+            created: 0,
+            pending: 0,
+            open: 0,
+            completed: 0,
+            assignedOpen: 0,
+            callbacks: 0,
+            requestedUnits: 0,
+            familyReportedUnits: 0,
+          },
+          items: [],
+          total: 0,
+          page: 1,
+          canManage: true,
+          canSubmit: false,
+        },
+      });
     return route.fulfill({
       json: { items: [], total: 0, page: 1, canAssign: false },
     });
@@ -189,10 +209,10 @@ test("coordinator sees only the coordination workspace and no assignment control
   await page.goto("/admin?section=users");
   await expect(page.locator(".admin-role")).toHaveText("Coordinator");
   await expect(
-    page.getByRole("heading", { name: "No open assignments" }),
+    page.getByRole("heading", { name: "Volunteer dashboard" }),
   ).toBeVisible();
   if ((page.viewportSize()?.width ?? 1200) <= 900)
-    await page.getByRole("button", {name: "Toggle admin navigation"}).click();
+    await page.getByRole("button", { name: "Toggle admin navigation" }).click();
   const navigation = page.getByRole("navigation", { name: "Admin navigation" });
   await expect(navigation.getByRole("link")).toHaveCount(1);
   await expect(page.getByLabel("Assigned coordinator")).toHaveCount(0);
@@ -290,7 +310,7 @@ test("coordinator approval preserves a complete area name containing a comma", a
     ),
   );
   let saved: unknown;
-  page.on("dialog", (dialog) => dialog.accept());
+  let attempts = 0;
   await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/auth/me"))
@@ -307,6 +327,12 @@ test("coordinator approval preserves a complete area name containing a comma", a
         },
       });
     if (route.request().method() !== "GET") {
+      attempts++;
+      if (attempts === 1)
+        return route.fulfill({
+          status: 500,
+          json: { message: "Temporary failure" },
+        });
       saved = route.request().postDataJSON();
       return route.fulfill({ json: { ok: true } });
     }
@@ -361,8 +387,56 @@ test("coordinator approval preserves a complete area name containing a comma", a
     path: `.runtime/users-edit-${test.info().project.name}.png`,
     fullPage: true,
   });
-  await card.getByRole("button", { name: "Save role", exact: true }).click();
+  await expect(
+    card.getByRole("checkbox", { name: /Submit requests for others/ }),
+  ).not.toBeChecked();
+  await expect(
+    card.getByRole("checkbox", { name: /Manage assigned requests/ }),
+  ).not.toBeChecked();
+  await card
+    .getByRole("checkbox", { name: /Submit requests for others/ })
+    .check();
+  const saveButton = card.getByRole("button", {
+    name: "Save role",
+    exact: true,
+  });
+  await saveButton.click();
+  const modal = page.getByRole("dialog", { name: "Confirm access changes" });
+  await expect(modal).toBeVisible();
+  await expect(modal.getByText("Nusrat", { exact: true })).toBeVisible();
+  await expect(
+    modal.getByRole("button", { name: "Go back", exact: true }),
+  ).toBeFocused();
+  expect(saved).toBeUndefined();
+  await page.keyboard.press("Escape");
+  await expect(modal).toHaveCount(0);
+  await expect(saveButton).toBeFocused();
+  expect(saved).toBeUndefined();
+  await saveButton.click();
+  await modal.getByRole("button", { name: "Go back", exact: true }).click();
+  await expect(modal).toHaveCount(0);
+  expect(saved).toBeUndefined();
+  await saveButton.click();
+  await modal.screenshot({
+    path: `.runtime/access-confirmation-${test.info().project.name}.png`,
+  });
+  await modal
+    .getByRole("button", { name: "Confirm & save", exact: true })
+    .click();
+  await expect(modal.getByRole("alert")).toHaveText(
+    "Changes could not be saved. Please try again.",
+  );
+  await expect(modal).toBeVisible();
+  expect(saved).toBeUndefined();
+  await modal
+    .getByRole("button", { name: "Confirm & save", exact: true })
+    .click();
+  await expect(modal).toHaveCount(0);
   await expect
     .poll(() => saved)
-    .toEqual({ roles: ["user", "volunteer"], areas: ["Madhupur, Tangail"], volunteerPermissions: [] });
+    .toEqual({
+      roles: ["user", "volunteer"],
+      areas: ["Madhupur, Tangail"],
+      volunteerPermissions: ["submit-referrals"],
+    });
 });

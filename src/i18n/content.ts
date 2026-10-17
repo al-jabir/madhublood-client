@@ -2,8 +2,8 @@ export const content: Record<string, [string, string, string, string]> = {
   "how-it-works": [
     "যেভাবে কাজ করে",
     "How it works",
-    "নির্দিষ্ট রক্তের গ্রুপ দিয়ে খুঁজুন। যাচাইকৃত ফোন নম্বর দিয়ে অনুরোধ তৈরি করুন। স্বেচ্ছাসেবী যাচাইয়ের পর অনুরোধ সক্রিয় হয়। সম্মত রক্তদাতা সাড়া দিলে যোগাযোগের তথ্য পাওয়া যায়। হাসপাতালের নির্দেশনায় সমন্বয় করুন এবং রক্তের ব্যবস্থা হলে অনুরোধ বন্ধ করুন।",
-    "Search the specific blood group. Sign in with email, complete your personal profile and submit a request. A volunteer reviews it before activation. When a consenting donor accepts, contact details become available to coordinate with the hospital. Mark the request arranged and completed to stop further matching.",
+    "রক্তের গ্রুপ দিয়ে খুঁজুন। নতুন অনুরোধ যোগ করতে অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিনকে প্রয়োজনের তথ্য জানান। তাঁরা পরিবারের অনুমতি নিয়ে অনুরোধ যোগ করবেন। অ্যাডমিনের যাচাইয়ের পর রক্তদাতারা সাড়া দিতে পারবেন। হাসপাতালের নির্দেশনায় ব্যবস্থা হলে পরিবার নিশ্চিত করবে এবং অ্যাডমিন অনুরোধ সম্পন্ন করবেন।",
+    "Search by blood group. Ask an authorized volunteer or administrator to add a request with the family’s permission. Donors can respond after administrator review. Coordinate with the hospital; the family confirms arrangements and an administrator completes the request.",
   ],
   guidelines: [
     "রক্তদান নির্দেশিকা",

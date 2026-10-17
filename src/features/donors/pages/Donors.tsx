@@ -1,3 +1,5 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
+import { useMe } from "@/features/auth/hooks/useMe";
 import { donorsApi } from "../api/donors.api";
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -22,6 +24,7 @@ import { locationsApi } from "@/features/locations/api/locations.api";
 
 export function Donors() {
   const { en } = usePrefs();
+  const { data: me } = useMe();
   const [params, setParams] = useSearchParams();
 
   // Read URL parameters
@@ -399,20 +402,22 @@ export function Donors() {
                     ? t(en, "সাড়া দিতে প্রস্তুত", "Available")
                     : t(en, "এখন অনুপলব্ধ", "Unavailable")}
                 </span>
-                <Link
-                  to={`/requests/new?bloodGroup=${encodeURIComponent(d.bloodGroup)}&area=${encodeURIComponent(d.area)}`}
-                  className="card-link"
-                >
-                  <Droplets size={15} />
-                  <span>
-                    {t(
-                      en,
-                      "অনুরোধের মাধ্যমে যুক্ত হোন",
-                      "Connect through request",
-                    )}
-                  </span>
-                  <ArrowUpRight size={16} />
-                </Link>
+                {canVolunteer(me, "submit-referrals") && (
+                  <Link
+                    to={`/requests/new?bloodGroup=${encodeURIComponent(d.bloodGroup)}&area=${encodeURIComponent(d.area)}`}
+                    className="card-link"
+                  >
+                    <Droplets size={15} />
+                    <span>
+                      {t(
+                        en,
+                        "অনুরোধের মাধ্যমে যুক্ত হোন",
+                        "Connect through request",
+                      )}
+                    </span>
+                    <ArrowUpRight size={16} />
+                  </Link>
+                )}
               </article>
             ))}
           </div>

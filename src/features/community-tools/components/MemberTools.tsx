@@ -101,6 +101,7 @@ export function AvailabilityReminder() {
 const timelineLabels: Record<string, [string, string]> = {
   updated: ["অনুরোধের তথ্য হালনাগাদ হয়েছে", "Request information updated"],
   "coordination.ready": ["রক্তের ব্যবস্থা সম্পন্ন", "Blood arrangement ready"],
+  "coordination.family-feedback": ["পরিবারের মতামত রাখা হয়েছে", "Family feedback recorded"],
   "coordination.family-confirmed": [
     "পরিবারের ফোনে নিশ্চিতকরণ রাখা হয়েছে",
     "Family confirmation recorded by volunteer",

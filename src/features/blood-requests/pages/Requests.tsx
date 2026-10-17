@@ -1,3 +1,5 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
+import { useMe } from "@/features/auth/hooks/useMe";
 import { useState } from "react";
 import { UrgentFeed } from "@/features/community-tools/components/UrgentFeed";
 import { Link } from "react-router-dom";
@@ -9,6 +11,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 
 export function Requests() {
   const { en } = usePrefs();
+  const { data: me } = useMe();
   const [urgent, setUrgent] = useState(true);
   return (
     <section className="page">
@@ -20,9 +23,11 @@ export function Requests() {
           "Respond to reviewed requests. Every connection begins with consent.",
         )}
       />
-      <Link className="button" to="/requests/new">
-        <Plus size={18} /> {t(en, "নতুন অনুরোধ", "Create a request")}
-      </Link>
+      {canVolunteer(me, "submit-referrals") && (
+        <Link className="button" to="/requests/new">
+          <Plus size={18} /> {t(en, "নতুন অনুরোধ", "Create a request")}
+        </Link>
+      )}
       <div className="spacer" />
       <div className="button-row">
         <button

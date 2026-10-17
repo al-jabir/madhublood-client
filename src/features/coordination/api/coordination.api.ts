@@ -30,6 +30,7 @@ export interface Contact {
 }
 export interface DeskDetail {
   request: Omit<DeskRequest, "summary" | "coordinator" | "confirmed"> & {
+    familyFeedback?: import("./volunteer.api").FamilyFeedback;
     representative: string | null;
     contact: string | null;
   };

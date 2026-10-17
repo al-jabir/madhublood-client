@@ -107,7 +107,12 @@ export function UsersPanel() {
                     row={row}
                     save={async (roles, areas, permissions) => {
                       try {
-                        await superAdminApi.updateRoles(row._id, roles, areas, permissions);
+                        await superAdminApi.updateRoles(
+                          row._id,
+                          roles,
+                          areas,
+                          permissions,
+                        );
                         toast.success(t(en, "সংরক্ষণ হয়েছে", "Saved"));
                         client.invalidateQueries({ queryKey: ["operations"] });
                         client.invalidateQueries({
@@ -115,6 +120,7 @@ export function UsersPanel() {
                         });
                       } catch (error) {
                         toast.error(errorText(error));
+                        throw error;
                       }
                     }}
                   />

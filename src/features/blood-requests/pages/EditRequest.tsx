@@ -1,3 +1,5 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
+import { useMe } from "@/features/auth/hooks/useMe";
 import { requestLabel } from "../request-labels";
 import { Field } from "@/components/ui/Field";
 import { DateTimePicker } from "@/components/ui/DateTimePicker";
@@ -13,6 +15,7 @@ import { errorText } from "@/utils/error-text";
 import { LocationSelector } from "@/features/locations/components/LocationSelector";
 export function EditRequest() {
   const { en } = usePrefs();
+  const me = useMe();
   const { id } = useParams();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -20,7 +23,20 @@ export function EditRequest() {
     queryKey: ["request-edit", id],
     queryFn: async () => requestsApi.detail(id),
   });
-  if (q.isPending) return <Loading />;
+  if (me.isPending || q.isPending) return <Loading />;
+  if (!canVolunteer(me.data, "submit-referrals"))
+    return (
+      <section className="page">
+        <p className="notice">
+          {t(
+            en,
+            "শুধু অনুমোদিত স্বেচ্ছাসেবক ও অ্যাডমিন অনুরোধ সম্পাদনা করতে পারবেন।",
+            "Only authorized volunteers and administrators can edit requests.",
+          )}
+        </p>
+        <Link to="/requests">{t(en, "অনুরোধ দেখুন", "View requests")}</Link>
+      </section>
+    );
   if (q.isError) return <p className="notice error">{errorText(q.error)}</p>;
   const d = q.data;
   if (!d.owner)

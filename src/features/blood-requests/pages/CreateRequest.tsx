@@ -163,6 +163,28 @@ export function CreateRequest() {
       setBusy(false);
     }
   }
+  if (!staff)
+    return (
+      <RequireUser>
+        <section className="page narrow">
+          <PageHeading
+            title={t(
+              en,
+              "অনুরোধ যোগ করার অনুমতি প্রয়োজন",
+              "Request submission is restricted",
+            )}
+            desc={t(
+              en,
+              "শুধু অনুমোদিত স্বেচ্ছাসেবক ও অ্যাডমিন রক্তের অনুরোধ যোগ করতে পারবেন। প্রয়োজনের তথ্য তাঁদের জানান। আপনি প্রকাশিত অনুরোধ দেখতে ও সাড়া দিতে পারবেন।",
+              "Only authorized volunteers and administrators can add blood requests. Share your need with them. You can browse and respond to published requests.",
+            )}
+          />
+          <a className="button" href="/requests">
+            {t(en, "রক্তের অনুরোধ দেখুন", "View blood requests")}
+          </a>
+        </section>
+      </RequireUser>
+    );
   return (
     <RequireUser>
       <section className="page narrow">

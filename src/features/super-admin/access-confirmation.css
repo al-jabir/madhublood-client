@@ -1,0 +1,177 @@
+.access-confirmation {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  margin: auto;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 28px 100px #0006;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.access-confirmation::backdrop {
+  background: #060a12a6;
+  backdrop-filter: blur(5px);
+}
+.access-confirmation-body {
+  padding: 28px;
+}
+.access-confirmation-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.access-confirmation-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  color: var(--red);
+  background: var(--rose);
+}
+.access-confirmation h2 {
+  font-size: 23px;
+  line-height: 1.4;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+.access-confirmation-body > p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 22px;
+}
+.access-confirmation-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: var(--rose);
+  border-radius: 12px;
+}
+.access-confirmation-member > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--red);
+  font-weight: 700;
+  border-radius: 11px;
+  flex: none;
+}
+.access-confirmation-member div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.access-confirmation-member strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.access-confirmation-member small {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.access-confirmation-summary {
+  margin: 20px 0;
+  display: grid;
+  gap: 14px;
+}
+.access-confirmation-summary > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.access-confirmation-summary dt {
+  color: var(--muted);
+}
+.access-confirmation-summary dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.access-confirmation-summary ul {
+  margin: 0;
+  padding-left: 16px;
+}
+.access-confirmation-warning {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  background: var(--rose);
+  border-radius: 12px;
+}
+.access-confirmation-warning svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--red);
+}
+.access-confirmation-warning p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+}
+.access-confirmation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+.access-confirmation-actions .button {
+  font-size: 13px;
+  min-height: 44px;
+  padding: 11px 16px;
+}
+.access-confirmation button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.access-confirmation-spinner {
+  animation: access-confirmation-spin 1s linear infinite;
+}
+@keyframes access-confirmation-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .access-confirmation-spinner {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .access-confirmation-body {
+    padding: 22px;
+  }
+  .access-confirmation h2 {
+    font-size: 21px;
+  }
+  .access-confirmation-summary > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .access-confirmation-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .access-confirmation-actions .button {
+    width: 100%;
+  }
+}
+
+.access-confirmation-error {
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 16px 0 0;
+}

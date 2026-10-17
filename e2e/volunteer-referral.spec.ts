@@ -80,7 +80,9 @@ for (const staff of [true, false])
       const toggle = page.getByLabel("Submit on behalf of someone else");
       if (!staff) {
         await expect(
-          page.getByRole("heading", { name: "Create a blood request" }),
+          page.getByRole("heading", {
+            name: "Request submission is restricted",
+          }),
         ).toBeVisible();
         await expect(toggle).toHaveCount(0);
         return;

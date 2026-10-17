@@ -62,6 +62,18 @@ test("home shows real API counts and consented requester contact has a call acti
     return route.fulfill({ json: { items: [], total: 0 } });
   });
   await page.goto("/");
+  await expect(page.locator("#quick-contact")).toHaveCount(0);
+  await page.getByRole("button", { name: "Member", exact: true }).click();
+  await expect(
+    page
+      .locator(".account-dropdown")
+      .getByRole("link", { name: "Create blood request", exact: true }),
+  ).toHaveCount(0);
+  await page.screenshot({
+    path: `.runtime/member-request-access-${test.info().project.name}.png`,
+    fullPage: false,
+  });
+  await page.keyboard.press("Escape");
   await expect(page.locator(".community-live-grid")).toContainText("32");
   await expect(page.locator(".community-live-grid")).toContainText("19");
   await expect(page.locator(".community-live-section")).toContainText(
@@ -89,8 +101,6 @@ test("home shows real API counts and consented requester contact has a call acti
   ).toBeEnabled();
   await page.goto("/requests/new");
   await expect(
-    page.getByRole("checkbox", {
-      name: "Show my contact number to signed-in users while this request is active.",
-    }),
-  ).not.toBeChecked();
+    page.getByRole("heading", { name: "Request submission is restricted" }),
+  ).toBeVisible();
 });

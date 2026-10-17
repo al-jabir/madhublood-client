@@ -1,3 +1,4 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
@@ -73,14 +74,24 @@ export function AccountMenu() {
               {label}
             </Link>
           ))}
-          <Link to="/requests/new">
-            {t(en, "রক্তের অনুরোধ করুন", "Create blood request")}
-          </Link>
+          {canVolunteer(me, "submit-referrals") && (
+            <Link to="/requests/new">
+              {t(en, "রক্তের অনুরোধ করুন", "Create blood request")}
+            </Link>
+          )}
           {me.roles.some((r) =>
             ["admin", "super-admin", "volunteer"].includes(r),
           ) && (
-            <Link to="/admin?section=coordination">
-              {t(en, "রক্তের সমন্বয়", "Coordination desk")}
+            <Link
+              to={
+                me.roles.some((r) => ["admin", "super-admin"].includes(r))
+                  ? "/admin?section=coordination"
+                  : "/volunteer"
+              }
+            >
+              {me.roles.some((r) => ["admin", "super-admin"].includes(r))
+                ? t(en, "রক্তের সমন্বয়", "Coordination desk")
+                : t(en, "স্বেচ্ছাসেবকের ড্যাশবোর্ড", "Volunteer dashboard")}
             </Link>
           )}
           <button

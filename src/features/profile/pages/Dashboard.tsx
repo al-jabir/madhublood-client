@@ -1,3 +1,4 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
 import { AvailabilityReminder } from "@/features/community-tools/components/MemberTools";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
@@ -172,11 +173,22 @@ export function Dashboard() {
                     : t(en, "অসম্পূর্ণ", "Incomplete")}
                 </strong>
               </div>
-              <Link to="/requests/new" className="panel create-tile">
-                <Plus />
-                <h3>{t(en, "নতুন অনুরোধ", "Create a request")}</h3>
-                <ArrowUpRight />
-              </Link>
+              {canVolunteer(me, "submit-referrals") && (
+                <Link to="/requests/new" className="panel create-tile">
+                  <Plus />
+                  <h3>{t(en, "নতুন অনুরোধ", "Create a request")}</h3>
+                  <ArrowUpRight />
+                </Link>
+              )}
+              {!canVolunteer(me, "submit-referrals") && (
+                <Link to="/requests" className="panel create-tile">
+                  <Activity />
+                  <h3>
+                    {t(en, "প্রকাশিত অনুরোধ দেখুন", "View blood requests")}
+                  </h3>
+                  <ArrowUpRight />
+                </Link>
+              )}
             </div>
 
             {donorProfile.data ? (

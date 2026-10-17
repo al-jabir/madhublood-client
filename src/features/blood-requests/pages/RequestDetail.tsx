@@ -1,3 +1,5 @@
+import { FamilyFeedback } from "@/features/coordination/components/FamilyFeedback";
+import { canVolunteer } from "@/utils/volunteer-permissions";
 import {
   RequestTimeline,
   DonorSuggestions,
@@ -38,7 +40,10 @@ export function RequestDetail() {
   });
   const r = useQuery({
     queryKey: ["responses", id],
-    enabled: !!q.data?.owner && q.data.owner === me?.id,
+    enabled:
+      !!q.data?.owner &&
+      q.data.owner === me?.id &&
+      q.data.canViewResponses !== false,
     queryFn: async () => requestsApi.responses(id),
   });
   const mutation = useMutation({
@@ -185,19 +190,29 @@ export function RequestDetail() {
         {item.owner === me?.id ? (
           <>
             <RequestCoordination id={id!} status={item.status} />
+            {canVolunteer(me, "submit-referrals") &&
+              !["cancelled", "rejected", "expired"].includes(item.status) && (
+                <FamilyFeedback
+                  key={id}
+                  id={id!}
+                  units={item.units}
+                  feedback={item.familyFeedback}
+                />
+              )}
             <div className="request-tool-stack">
               <RequestTimeline id={id!} />
               <DonorSuggestions id={id!} />
             </div>
-            {["submitted", "verification", "active"].includes(item.status) && (
-              <Link className="text-link" to={`/requests/${id}/edit`}>
-                {t(
-                  en,
-                  "সম্পাদনা করে আবার যাচাইয়ের জন্য জমা দিন",
-                  "Edit request & resubmit for review",
-                )}
-              </Link>
-            )}
+            {canVolunteer(me, "submit-referrals") &&
+              ["submitted", "verification", "active"].includes(item.status) && (
+                <Link className="text-link" to={`/requests/${id}/edit`}>
+                  {t(
+                    en,
+                    "সম্পাদনা করে আবার যাচাইয়ের জন্য জমা দিন",
+                    "Edit request & resubmit for review",
+                  )}
+                </Link>
+              )}
             <div className="button-row">
               {(item.status === "arranged"
                 ? ["completed", "cancelled"]
@@ -236,7 +251,15 @@ export function RequestDetail() {
                 ))}
             </div>
             <h3>{t(en, "রক্তদাতাদের সাড়া", "Donor responses")}</h3>
-            {r.isError ? (
+            {item.canViewResponses === false ? (
+              <p className="notice">
+                {t(
+                  en,
+                  "রক্তদাতাদের সঙ্গে যোগাযোগের জন্য পরিচালনার অনুমতি ও এই অনুরোধের দায়িত্ব প্রয়োজন।",
+                  "Viewing donor responses requires coordination permission and assignment to this request.",
+                )}
+              </p>
+            ) : r.isError ? (
               <Failure error={r.error} />
             ) : r.data?.items.length ? (
               r.data.items.map((x) => (

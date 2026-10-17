@@ -1,3 +1,5 @@
+import { canVolunteer } from "@/utils/volunteer-permissions";
+import { useMe } from "@/features/auth/hooks/useMe";
 import { AnnouncementBanner } from "@/features/community-tools/components/MemberTools";
 import { CommunityStats } from "../components/CommunityStats";
 import { DemoExamples } from "@/features/demo/DemoExamples";
@@ -34,6 +36,7 @@ import { donorsApi } from "@/features/donors/api/donors.api";
 
 export function Home() {
   const { en } = usePrefs();
+  const { data: me } = useMe();
   const nav = useNavigate();
 
   // Quick Request Form State (Hero Section)
@@ -228,97 +231,124 @@ export function Home() {
                 </span>
               </div>
 
-              <form
-                onSubmit={handleQuickRequestSubmit}
-                className="quick-form-grid"
-              >
-                <div className="quick-field-group">
-                  <label htmlFor="quick-blood" className="quick-field-label">
-                    {t(en, "প্রয়োজনীয় রক্তের গ্রুপ", "Required Blood Group")}
-                  </label>
-                  <select
-                    id="quick-blood"
-                    value={quickBlood}
-                    onChange={(e) => setQuickBlood(e.target.value)}
-                    className="quick-field-select"
-                    required
-                  >
-                    {groups.map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {canVolunteer(me, "submit-referrals") ? (
+                <form
+                  onSubmit={handleQuickRequestSubmit}
+                  className="quick-form-grid"
+                >
+                  <div className="quick-field-group">
+                    <label htmlFor="quick-blood" className="quick-field-label">
+                      {t(
+                        en,
+                        "প্রয়োজনীয় রক্তের গ্রুপ",
+                        "Required Blood Group",
+                      )}
+                    </label>
+                    <select
+                      id="quick-blood"
+                      value={quickBlood}
+                      onChange={(e) => setQuickBlood(e.target.value)}
+                      className="quick-field-select"
+                      required
+                    >
+                      {groups.map((g) => (
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="quick-two-cols">
+                  <div className="quick-two-cols">
+                    <div className="quick-field-group">
+                      <label
+                        htmlFor="quick-contact"
+                        className="quick-field-label"
+                      >
+                        {t(en, "মোবাইল নম্বর", "Mobile Number")}
+                      </label>
+                      <input
+                        id="quick-contact"
+                        type="tel"
+                        value={quickPhone}
+                        onChange={(e) => setQuickPhone(e.target.value)}
+                        placeholder="01XXXXXXXXX"
+                        className="quick-field-input"
+                        pattern="01[3-9][0-9]{8}"
+                        maxLength={11}
+                        autoComplete="tel"
+                        required
+                      />
+                    </div>
+                    <div className="quick-field-group">
+                      <label
+                        htmlFor="quick-units"
+                        className="quick-field-label"
+                      >
+                        {t(en, "ব্যাগের সংখ্যা", "Units (Bags)")}
+                      </label>
+                      <input
+                        id="quick-units"
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={quickUnits}
+                        onChange={(e) => setQuickUnits(Number(e.target.value))}
+                        className="quick-field-input"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div className="quick-field-group">
                     <label
-                      htmlFor="quick-contact"
+                      htmlFor="quick-hospital"
                       className="quick-field-label"
                     >
-                      {t(en, "মোবাইল নম্বর", "Mobile Number")}
+                      {t(en, "হাসপাতালের নাম ও এলাকা", "Hospital & Area")}
                     </label>
                     <input
-                      id="quick-contact"
-                      type="tel"
-                      value={quickPhone}
-                      onChange={(e) => setQuickPhone(e.target.value)}
-                      placeholder="01XXXXXXXXX"
-                      className="quick-field-input"
-                      pattern="01[3-9][0-9]{8}"
-                      maxLength={11}
-                      autoComplete="tel"
-                      required
-                    />
-                  </div>
-                  <div className="quick-field-group">
-                    <label htmlFor="quick-units" className="quick-field-label">
-                      {t(en, "ব্যাগের সংখ্যা", "Units (Bags)")}
-                    </label>
-                    <input
-                      id="quick-units"
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={quickUnits}
-                      onChange={(e) => setQuickUnits(Number(e.target.value))}
+                      id="quick-hospital"
+                      type="text"
+                      value={quickHospital}
+                      onChange={(e) => setQuickHospital(e.target.value)}
+                      placeholder={t(
+                        en,
+                        "যেমন: মধুপুর উপজেলা স্বাস্থ্য কমপ্লেক্স",
+                        "e.g. Madhupur Upazila Health Complex",
+                      )}
                       className="quick-field-input"
                       required
                     />
                   </div>
-                </div>
 
-                <div className="quick-field-group">
-                  <label htmlFor="quick-hospital" className="quick-field-label">
-                    {t(en, "হাসপাতালের নাম ও এলাকা", "Hospital & Area")}
-                  </label>
-                  <input
-                    id="quick-hospital"
-                    type="text"
-                    value={quickHospital}
-                    onChange={(e) => setQuickHospital(e.target.value)}
-                    placeholder={t(
-                      en,
-                      "যেমন: মধুপুর উপজেলা স্বাস্থ্য কমপ্লেক্স",
-                      "e.g. Madhupur Upazila Health Complex",
-                    )}
-                    className="quick-field-input"
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn-post-emergency">
-                  <Send size={16} />
-                  <span>
+                  <button type="submit" className="btn-post-emergency">
+                    <Send size={16} />
+                    <span>
+                      {t(
+                        en,
+                        "জরুরি রক্তের অনুরোধ পোস্ট করুন",
+                        "Post Emergency Blood Request",
+                      )}
+                    </span>
+                  </button>
+                </form>
+              ) : (
+                <div className="quick-form-grid">
+                  <h3>{t(en, "রক্তের প্রয়োজন?", "Need blood?")}</h3>
+                  <p className="muted">
                     {t(
                       en,
-                      "জরুরি রক্তের অনুরোধ পোস্ট করুন",
-                      "Post Emergency Blood Request",
+                      "রক্তের অনুরোধ যোগ করতে অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিনের সঙ্গে যোগাযোগ করুন। আপনার হয়ে তাঁরা তথ্য যাচাই করে অনুরোধ যোগ করবেন।",
+                      "Contact an authorized volunteer or administrator to add a blood request. They will verify the details and post it on your behalf.",
                     )}
-                  </span>
-                </button>
-              </form>
+                  </p>
+                  <Link className="btn-post-emergency" to="/requests">
+                    {t(en, "রক্তের অনুরোধ দেখুন", "View blood requests")}
+                    <ArrowRight size={17} />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -672,13 +702,15 @@ export function Home() {
                 <span className="donor-meta-val">{donor.area}</span>
               </div>
 
-              <Link
-                to={`/requests/new?bloodGroup=${encodeURIComponent(donor.bloodGroup)}&area=${encodeURIComponent(donor.area)}`}
-                className="btn-donor-request"
-              >
-                <Send size={13} />
-                <span>{t(en, "অনুরোধ পাঠান", "Request Blood")}</span>
-              </Link>
+              {canVolunteer(me, "submit-referrals") && (
+                <Link
+                  to={`/requests/new?bloodGroup=${encodeURIComponent(donor.bloodGroup)}&area=${encodeURIComponent(donor.area)}`}
+                  className="btn-donor-request"
+                >
+                  <Send size={13} />
+                  <span>{t(en, "অনুরোধ পাঠান", "Request Blood")}</span>
+                </Link>
+              )}
             </div>
           ))}
         </div>

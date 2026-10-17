@@ -51,6 +51,11 @@ const Dashboard = lazy(() =>
     default: module.Dashboard,
   })),
 );
+const VolunteerDashboard = lazy(() =>
+  import("@/features/coordination/components/VolunteerDashboard").then((m) => ({
+    default: m.VolunteerDashboard,
+  })),
+);
 const Admin = lazy(() =>
   import("@/features/admin/pages/Admin").then((module) => ({
     default: module.Admin,
@@ -98,6 +103,7 @@ export function AppRouter() {
         <Route path="/reset-password" element={<Verify reset />} />
         <Route path="/verify-email" element={<Verify />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/volunteer" element={<VolunteerDashboard />} />
         <Route path="/admin" element={<Admin />} />
         <Route
           path="/403"

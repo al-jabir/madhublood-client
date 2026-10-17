@@ -1,3 +1,4 @@
+import { VolunteerDashboard } from "@/features/coordination/components/VolunteerDashboard";
 import "../admin-workspace.css";
 import { requestLabel } from "@/features/blood-requests/request-labels";
 import { moderationLabel } from "../admin-labels";
@@ -277,21 +278,29 @@ export function Admin() {
               </div>
             </div>
             <div className="admin-content">
-              <div className="admin-page-heading">
-                <span>MadhuBlood / {t(en, "পরিচালনা", "Administration")}</span>
-                <h1>{selected.label}</h1>
-                <p>
-                  {t(
-                    en,
-                    "অনুমতি অনুযায়ী তথ্য ও কাজ পরিচালনা করুন।",
-                    "Manage records and actions within your assigned permissions.",
-                  )}
-                </p>
-              </div>
+              {administrator && (
+                <div className="admin-page-heading">
+                  <span>
+                    MadhuBlood / {t(en, "পরিচালনা", "Administration")}
+                  </span>
+                  <h1>{selected.label}</h1>
+                  <p>
+                    {t(
+                      en,
+                      "অনুমতি অনুযায়ী তথ্য ও কাজ পরিচালনা করুন।",
+                      "Manage records and actions within your assigned permissions.",
+                    )}
+                  </p>
+                </div>
+              )}
               {selected.key === "community" ? (
                 <CommunityOperations />
               ) : selected.key === "coordination" ? (
-                <CoordinationDesk />
+                administrator ? (
+                  <CoordinationDesk />
+                ) : (
+                  <VolunteerDashboard embedded />
+                )
               ) : selected.key === "overview" ? (
                 <>
                   <Operations selected="analytics" />

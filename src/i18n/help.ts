@@ -2,14 +2,14 @@ export const helpFaq = [
   [
     "কীভাবে শুরু করব?",
     "How do I get started?",
-    "রক্তদাতা খুঁজতে অ্যাকাউন্ট লাগে না। অনুরোধ করতে বা রক্তদাতা হতে ইমেইল দিয়ে নিবন্ধন করুন, তারপর প্রোফাইলে নাম ও এলাকা পূরণ করুন।",
-    "You can browse donors without an account. To request blood or become a donor, register with email and complete your name and area in your profile.",
+    "রক্তদাতা ও প্রকাশিত অনুরোধ দেখতে অ্যাকাউন্ট লাগে না। রক্তদাতা হিসেবে সাড়া দিতে নিবন্ধন করে প্রোফাইল পূরণ করুন। নতুন অনুরোধ শুধু অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিন যোগ করেন।",
+    "Browse donors and published requests without an account. Register and complete your profile to respond as a donor. Only authorized volunteers and administrators can add requests.",
   ],
   [
     "রক্তের অনুরোধ কীভাবে করব?",
     "How do I request blood?",
-    "প্রয়োজনীয় গ্রুপ, ব্যাগের সংখ্যা, হাসপাতাল, সময় ও যোগাযোগের তথ্য দিয়ে অনুরোধ জমা দিন। পর্যালোচনার পরে অনুরোধ সক্রিয় হলে রক্তদাতারা সাড়া দিতে পারবেন।",
-    "Submit the blood group, units, hospital, required time and contact details. After staff review and activation, donors can respond. Check progress in Dashboard → Overview.",
+    "অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিনকে রক্তের গ্রুপ, ব্যাগের সংখ্যা, হাসপাতাল, সময় ও প্রতিনিধির নম্বর জানান। তাঁরা যাচাই করে আপনার হয়ে অনুরোধ যোগ করবেন। পরিবারের অ্যাকাউন্ট থাকা প্রয়োজন নেই।",
+    "Share the blood group, units, hospital, required time and representative contact with an authorized volunteer or administrator. They verify and submit the request on your behalf. The family does not need an account.",
   ],
   [
     "রক্তদাতা হতে কী করব?",
@@ -46,8 +46,8 @@ export const helpSteps = [
   [
     "২. রক্ত খুঁজুন বা রক্তদাতা হোন",
     "2. Find blood or become a donor",
-    "প্রয়োজন হলে গ্রুপ ও এলাকা দিয়ে খুঁজুন এবং অনুরোধ জমা দিন। রক্তদাতা হতে ঐচ্ছিক donor profile পূরণ করে availability চালু করুন।",
-    "Search by group and area and submit a request when you need blood. To volunteer, open Dashboard → Donor form and enable availability.",
+    "গ্রুপ ও এলাকা দিয়ে খুঁজুন। নতুন অনুরোধ যোগ করতে অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিনকে জানান। রক্তদাতা হতে রক্তদাতার ফর্ম পূরণ করুন।",
+    "Search by group and area. Ask an authorized volunteer or administrator to add a request. To become a donor, complete Dashboard → Donor form.",
   ],
   [
     "৩. পর্যালোচনা ও সম্মতি",
@@ -58,7 +58,7 @@ export const helpSteps = [
   [
     "৪. হাসপাতালের সঙ্গে সমন্বয়",
     "4. Coordinate with the hospital",
-    "হাসপাতালের স্বাস্থ্যকর্মী রক্তদান ও সামঞ্জস্য যাচাই করবেন। ব্যবস্থা হলে অনুরোধ আপডেট করুন, কাজ শেষ হলে complete করুন।",
-    "Hospital staff assess donation suitability and compatibility. Mark your request arranged when ready and completed when finished.",
+    "হাসপাতালের স্বাস্থ্যকর্মী রক্তদান ও সামঞ্জস্য যাচাই করবেন। পরিবার রক্তের ব্যবস্থা পাওয়ার কথা দায়িত্বপ্রাপ্ত স্বেচ্ছাসেবককে জানাবে; অ্যাডমিন অনুরোধ সম্পন্ন করবেন।",
+    "Hospital staff assess donation suitability and compatibility. The family confirms arrangements with the responsible volunteer; an administrator completes the request.",
   ],
 ];

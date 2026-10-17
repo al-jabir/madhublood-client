@@ -1,4 +1,5 @@
 import { useMe } from "@/features/auth/hooks/useMe";
+import { FamilyFeedback } from "./FamilyFeedback";
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { CoordinatorTasks } from "@/features/community-tools/components/StaffTools";
 import {
@@ -35,6 +36,7 @@ import "../coordination.css";
 async function refresh() {
   await Promise.all(
     [
+      "volunteer-dashboard",
       "coordination",
       "coordination-detail",
       "coordination-tasks",
@@ -202,7 +204,7 @@ function DonorContact({
     </form>
   );
 }
-function RequestDesk({ id }: { id: string }) {
+export function RequestDesk({ id }: { id: string }) {
   const { en } = usePrefs();
   const detail = useQuery({
     queryKey: ["coordination-detail", id],
@@ -347,6 +349,12 @@ function RequestDesk({ id }: { id: string }) {
           </Link>
         </div>
       )}
+      <FamilyFeedback
+        key={id}
+        id={id}
+        units={d.summary.required}
+        feedback={d.request.familyFeedback}
+      />
       <div className="coord-completion">
         <CheckCheck size={22} />
         <div>
@@ -403,12 +411,37 @@ export function CoordinationDesk() {
     refetchInterval: 30000,
   });
   if (me.isPending) return <Loading />;
-  if (!canManage) return <section className="panel admin-section-heading">
-    <h2>{t(en,"আপনার স্বেচ্ছাসেবক অনুমতি","Your volunteer access")}</h2>
-    <p>{canSubmit ? t(en,"আপনি অন্যের হয়ে অনুরোধ জমা দিতে পারবেন। পরিচালনার জন্য আলাদা অনুমতি ও দায়িত্ব প্রয়োজন।", "You may submit requests for others. Managing requests requires a separate permission and assignment.") : t(en,"এখনও কোনো কাজের অনুমতি দেওয়া হয়নি। অনুমতির জন্য প্রশাসকের সঙ্গে যোগাযোগ করুন।", "No work permissions have been granted yet. Contact an administrator for access.")}</p>
-    {canSubmit && <Link className="button" to="/requests/new?onBehalf=1">{t(en,"অন্যের হয়ে অনুরোধ যোগ করুন","Add a request for someone else")}</Link>}
-    <Link className="button secondary" to="/dashboard">{t(en,"আমার অ্যাকাউন্টে ফিরুন","Back to my account")}</Link>
-  </section>;
+  if (!canManage)
+    return (
+      <section className="panel admin-section-heading">
+        <h2>{t(en, "আপনার স্বেচ্ছাসেবক অনুমতি", "Your volunteer access")}</h2>
+        <p>
+          {canSubmit
+            ? t(
+                en,
+                "আপনি অন্যের হয়ে অনুরোধ জমা দিতে পারবেন। পরিচালনার জন্য আলাদা অনুমতি ও দায়িত্ব প্রয়োজন।",
+                "You may submit requests for others. Managing requests requires a separate permission and assignment.",
+              )
+            : t(
+                en,
+                "এখনও কোনো কাজের অনুমতি দেওয়া হয়নি। অনুমতির জন্য প্রশাসকের সঙ্গে যোগাযোগ করুন।",
+                "No work permissions have been granted yet. Contact an administrator for access.",
+              )}
+        </p>
+        {canSubmit && (
+          <Link className="button" to="/requests/new?onBehalf=1">
+            {t(
+              en,
+              "অন্যের হয়ে অনুরোধ যোগ করুন",
+              "Add a request for someone else",
+            )}
+          </Link>
+        )}
+        <Link className="button secondary" to="/dashboard">
+          {t(en, "আমার অ্যাকাউন্টে ফিরুন", "Back to my account")}
+        </Link>
+      </section>
+    );
   if (q.isPending) return <Loading />;
   if (q.isError) return <Failure error={q.error} />;
   const active =
@@ -435,13 +468,20 @@ export function CoordinationDesk() {
           {q.data.total} {t(en, "চলমান অনুরোধ", "open requests")}
         </span>
       </div>
-      {canSubmit && <Link className="button secondary" to="/requests/new?onBehalf=1">
-        {t(
-          en,
-          "অন্যের হয়ে রক্তের অনুরোধ যোগ করুন",
-          "Add a request for someone else",
-        )}
-      </Link>}
+      {q.data.canAssign && (
+        <Link className="button secondary" to="/volunteer">
+          {t(en, "আমার স্বেচ্ছাসেবকের কাজ", "My volunteer dashboard")}
+        </Link>
+      )}
+      {canSubmit && (
+        <Link className="button secondary" to="/requests/new?onBehalf=1">
+          {t(
+            en,
+            "অন্যের হয়ে রক্তের অনুরোধ যোগ করুন",
+            "Add a request for someone else",
+          )}
+        </Link>
+      )}
       <CoordinatorTasks
         page={page}
         onSelect={(id) => {

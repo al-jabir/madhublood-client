@@ -56,7 +56,9 @@ export interface DonorProfile {
   lastDonation?: string;
 }
 export interface BloodRequest {
+  familyFeedback?: import("@/features/coordination/api/volunteer.api").FamilyFeedback;
   coordinatorManaged?: boolean;
+  canViewResponses?: boolean;
   submittedOnBehalf?: boolean;
   referral?: {
     source: string;
