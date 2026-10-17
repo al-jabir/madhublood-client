@@ -112,13 +112,13 @@ export function RootLayout() {
             {t(en, "হোম", "Home")}
           </NavLink>
           <NavLink to="/donors">
-            {t(en, "রক্তদাতা খুঁজুন", "Find donors")}
+            {t(en, "রক্তদাতা খুঁজুন", "Find Donors")}
           </NavLink>
           <NavLink to="/requests">
-            {t(en, "রক্তের অনুরোধ", "Blood requests")}
+            {t(en, "রক্তের অনুরোধ", "Blood Requests")}
           </NavLink>
           <NavLink to="/how-it-works">
-            {t(en, "যেভাবে কাজ করে", "How it works")}
+            {t(en, "যেভাবে কাজ করে", "How It Works")}
           </NavLink>
           {me?.roles.some((r) => ["admin", "super-admin"].includes(r)) && (
             <NavLink to="/admin">{t(en, "পরিচালনা", "Moderation")}</NavLink>
@@ -138,7 +138,7 @@ export function RootLayout() {
             </button>
             <button className="icon" type="button" onClick={toggleTheme}>
               {dark ? <Sun size={18} /> : <Moon size={18} />}
-              {t(en, "থিম পরিবর্তন", "Switch theme")}
+              {t(en, "থিম পরিবর্তন", "Switch Theme")}
             </button>
             {!me && (
               <Link to="/register">
@@ -199,14 +199,14 @@ export function RootLayout() {
           )}
           {!me && (
             <Link to="/login" className="header-signin">
-              {t(en, "লগ ইন", "Sign in")}
+              {t(en, "লগ ইন", "Sign In")}
             </Link>
           )}
           {me ? (
             <AccountMenu />
           ) : (
             <Link className="button small" to="/register">
-              {t(en, "রক্তদাতা হোন", "Become a donor")}
+              {t(en, "রক্তদাতা হোন", "Become  Donor")}
               <ArrowUpRight size={16} />
             </Link>
           )}
