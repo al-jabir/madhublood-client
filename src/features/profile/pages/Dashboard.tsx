@@ -1,3 +1,4 @@
+import { AvailabilityReminder } from "@/features/community-tools/components/MemberTools";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { ProfileOverview } from "@/features/profile/components/ProfileOverview";
@@ -72,6 +73,7 @@ export function Dashboard() {
   return (
     <RequireUser>
       <section className="page dashboard-page">
+        <AvailabilityReminder />
         <PageHeading
           title={`${t(en, "স্বাগতম", "Welcome")}, ${me?.name ?? ""}`}
           desc={t(

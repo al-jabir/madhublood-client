@@ -1,3 +1,7 @@
+import {
+  RequestTimeline,
+  DonorSuggestions,
+} from "@/features/community-tools/components/MemberTools";
 import { RequestCoordination } from "@/features/coordination/components/RequestCoordination";
 import { requestLabel } from "../request-labels";
 import { donorsApi } from "@/features/donors/api/donors.api";
@@ -140,6 +144,10 @@ export function RequestDetail() {
         {item.owner === me?.id ? (
           <>
             <RequestCoordination id={id!} status={item.status} />
+            <div className="request-tool-stack">
+              <RequestTimeline id={id!} />
+              <DonorSuggestions id={id!} />
+            </div>
             {["submitted", "verification", "active"].includes(item.status) && (
               <Link className="text-link" to={`/requests/${id}/edit`}>
                 {t(

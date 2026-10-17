@@ -1,3 +1,8 @@
+import { CoordinatorTasks } from "@/features/community-tools/components/StaffTools";
+import {
+  DonorSuggestions,
+  RequestTimeline,
+} from "@/features/community-tools/components/MemberTools";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -30,6 +35,8 @@ async function refresh() {
     [
       "coordination",
       "coordination-detail",
+      "coordination-tasks",
+      "request-timeline",
       "coordination-progress",
       "request",
       "requests",
@@ -294,6 +301,13 @@ function RequestDesk({ id }: { id: string }) {
           </a>
         </div>
       )}
+      <DonorSuggestions id={id} />
+      <details>
+        <summary>
+          {t(en, "অনুরোধের ঘটনাক্রম দেখুন", "View request timeline")}
+        </summary>
+        <RequestTimeline id={id} />
+      </details>
       <div className="coord-section-heading">
         <h3>{t(en, "রক্তদাতাদের সঙ্গে যোগাযোগ", "Donor follow-up")}</h3>
         <p>
@@ -408,6 +422,23 @@ export function CoordinationDesk() {
           {q.data.total} {t(en, "চলমান অনুরোধ", "open requests")}
         </span>
       </div>
+      <CoordinatorTasks
+        page={page}
+        onSelect={(id) => {
+          setSelected(id);
+          requestAnimationFrame(() =>
+            document
+              .querySelector(".coord-detail-container")
+              ?.scrollIntoView({
+                block: "start",
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                  .matches
+                  ? "auto"
+                  : "smooth",
+              }),
+          );
+        }}
+      />
       <div className="coord-layout">
         <aside className="coord-list">
           <h3>
@@ -474,23 +505,25 @@ export function CoordinationDesk() {
             </div>
           )}
         </aside>
-        {active ? (
-          <RequestDesk key={active} id={active} />
-        ) : (
-          <div className="coord-empty">
-            <ClipboardList size={36} />
-            <h2>
-              {t(en, "এই মুহূর্তে কোনো দায়িত্ব নেই", "No open assignments")}
-            </h2>
-            <p>
-              {t(
-                en,
-                "Admin দায়িত্ব দিলে এখানে অনুরোধ দেখাবে।",
-                "Requests will appear here when an administrator assigns them.",
-              )}
-            </p>
-          </div>
-        )}
+        <div className="coord-detail-container">
+          {active ? (
+            <RequestDesk key={active} id={active} />
+          ) : (
+            <div className="coord-empty">
+              <ClipboardList size={36} />
+              <h2>
+                {t(en, "এই মুহূর্তে কোনো দায়িত্ব নেই", "No open assignments")}
+              </h2>
+              <p>
+                {t(
+                  en,
+                  "Admin দায়িত্ব দিলে এখানে অনুরোধ দেখাবে।",
+                  "Requests will appear here when an administrator assigns them.",
+                )}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

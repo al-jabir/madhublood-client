@@ -1,3 +1,4 @@
+import { AnnouncementBanner } from "@/features/community-tools/components/MemberTools";
 import { CommunityStats } from "../components/CommunityStats";
 import { DemoExamples } from "@/features/demo/DemoExamples";
 import { helpFaq, helpSteps } from "@/i18n/help";
@@ -25,7 +26,7 @@ import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
 import { t } from "@/i18n/translate";
 import { locationsApi } from "@/features/locations/api/locations.api";
-import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
+import { communityToolsApi } from "@/features/community-tools/api/community-tools.api";
 import { Failure } from "@/components/feedback/Failure";
 import { Empty } from "@/components/feedback/Empty";
 import { Loading } from "@/components/feedback/Loading";
@@ -60,7 +61,7 @@ export function Home() {
 
   const urgentRequests = useQuery({
     queryKey: ["requests", "home"],
-    queryFn: () => requestsApi.list(1),
+    queryFn: () => communityToolsApi.urgent({ page: 1 }),
     staleTime: 60000,
   });
 
@@ -147,6 +148,7 @@ export function Home() {
 
   return (
     <>
+      <AnnouncementBanner />
       {/* ======================================================================
           1. HERO SECTION (রক্তের বন্ধনে বাঁচুক একটি জীবন + Quick Request Form)
           ====================================================================== */}
@@ -183,9 +185,7 @@ export function Home() {
             <div className="hero-action-buttons">
               <Link to="/donors" className="btn-primary-red">
                 <Search size={18} />
-                <span>
-                  {t(en, "রক্তদাতা খুঁজুন", "Find Donors")}
-                </span>
+                <span>{t(en, "রক্তদাতা খুঁজুন", "Find Donors")}</span>
               </Link>
               <Link to="/register" className="btn-outline-donor">
                 <Heart size={18} color="#dc2626" />
@@ -582,7 +582,11 @@ export function Home() {
                     rel="noopener noreferrer"
                     className="btn-card-whatsapp"
                     title={t(en, "WhatsApp-এ শেয়ার করুন", "Share on WhatsApp")}
-                    aria-label={t(en, "WhatsApp-এ শেয়ার করুন", "Share on WhatsApp")}
+                    aria-label={t(
+                      en,
+                      "WhatsApp-এ শেয়ার করুন",
+                      "Share on WhatsApp",
+                    )}
                   >
                     <MessageCircle size={15} />
                   </a>

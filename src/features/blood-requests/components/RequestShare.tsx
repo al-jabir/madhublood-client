@@ -1,3 +1,4 @@
+import { downloadRequestCard } from "../share-card";
 import { useState } from "react";
 import { Share2, Copy, Check, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -25,7 +26,6 @@ export function RequestShare({
   component = "whole",
   requiredAt,
   en,
-  contact,
 }: RequestShareProps) {
   const [copied, setCopied] = useState(false);
 
@@ -45,7 +45,6 @@ export function RequestShare({
       `📍 Area: ${area}\n` +
       `📦 Required: ${units} unit(s) (${requestLabel(en, component)})\n` +
       `🕒 Needed by: ${formattedDate}\n` +
-      (contact ? `📞 Contact: ${contact.replace(/^\+88/, "")}\n` : "") +
       `🔗 View details & respond: ${requestUrl}`
     : `🚨 জরুরি রক্তের প্রয়োজন (মধুপুর)!\n` +
       `🩸 রক্তের গ্রুপ: ${bloodGroup}\n` +
@@ -53,7 +52,6 @@ export function RequestShare({
       `📍 এলাকা: ${area}\n` +
       `📦 পরিমাণ: ${units} ইউনিট (${requestLabel(en, component)})\n` +
       `🕒 প্রয়োজনের সময়: ${formattedDate}\n` +
-      (contact ? `📞 যোগাযোগ: ${contact.replace(/^\+88/, "")}\n` : "") +
       `🔗 বিস্তারিত দেখুন ও সাড়া দিন: ${requestUrl}`;
 
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -120,6 +118,31 @@ export function RequestShare({
       </div>
 
       <div className="request-share-actions">
+        <button
+          type="button"
+          className="btn-share-copy"
+          onClick={() =>
+            downloadRequestCard({
+              id,
+              bloodGroup,
+              hospital,
+              area,
+              units,
+              requiredAt,
+              en,
+            }).catch(() =>
+              toast.error(
+                t(
+                  en,
+                  "ছবি তৈরি করা যায়নি",
+                  "Could not create the share image",
+                ),
+              ),
+            )
+          }
+        >
+          {t(en, "শেয়ার কার্ড ডাউনলোড", "Download share card")}
+        </button>
         <a
           href={whatsappUrl}
           target="_blank"

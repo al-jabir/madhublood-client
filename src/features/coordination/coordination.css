@@ -323,3 +323,7 @@
     padding: 16px;
   }
 }
+
+.coord-detail-container {
+  min-width: 0;
+}

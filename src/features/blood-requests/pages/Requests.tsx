@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { UrgentFeed } from "@/features/community-tools/components/UrgentFeed";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
@@ -7,6 +9,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 
 export function Requests() {
   const { en } = usePrefs();
+  const [urgent, setUrgent] = useState(true);
   return (
     <section className="page">
       <PageHeading
@@ -21,7 +24,23 @@ export function Requests() {
         <Plus size={18} /> {t(en, "নতুন অনুরোধ", "Create a request")}
       </Link>
       <div className="spacer" />
-      <RequestList />
+      <div className="button-row">
+        <button
+          className={"button " + (urgent ? "" : "secondary")}
+          aria-pressed={urgent}
+          onClick={() => setUrgent(true)}
+        >
+          {t(en, "জরুরি অনুরোধ", "Urgent feed")}
+        </button>
+        <button
+          className={"button " + (!urgent ? "" : "secondary")}
+          aria-pressed={!urgent}
+          onClick={() => setUrgent(false)}
+        >
+          {t(en, "সব অনুরোধ", "All requests")}
+        </button>
+      </div>
+      {urgent ? <UrgentFeed /> : <RequestList />}
     </section>
   );
 }

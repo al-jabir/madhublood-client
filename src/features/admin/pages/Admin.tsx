@@ -1,3 +1,4 @@
+import { CommunityOperations } from "@/features/community-tools/components/StaffTools";
 import { CoordinationDesk } from "@/features/coordination/components/CoordinationDesk";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -47,6 +48,11 @@ export function Admin() {
     ["admin", "super-admin"].includes(r),
   );
   const entries = [
+    {
+      key: "community",
+      label: t(en, "ঘোষণা ও পর্যালোচনা", "Announcements & review"),
+      icon: Flag,
+    },
     {
       key: "coordination",
       label: t(en, "রক্তের সমন্বয়", "Coordination desk"),
@@ -226,7 +232,9 @@ export function Admin() {
                   )}
                 </p>
               </div>
-              {selected.key === "coordination" ? (
+              {selected.key === "community" ? (
+                <CommunityOperations />
+              ) : selected.key === "coordination" ? (
                 <CoordinationDesk />
               ) : selected.key === "overview" ? (
                 <>
