@@ -68,7 +68,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
         ).toBeVisible();
         await page
           .getByRole("navigation", { name: "Main navigation" })
-          .getByRole("link", { name: "Find donors", exact: true })
+          .getByRole("link", { name: /find donors/i })
           .click();
         await expect(toggle).toHaveAttribute("aria-expanded", "false");
       }

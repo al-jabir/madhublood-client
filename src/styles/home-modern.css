@@ -1216,36 +1216,244 @@
     flex-direction: column;
     text-align: center;
     gap: 8px;
+    padding: 8px 12px;
   }
+
+  /* Hero Section */
+  .home-hero-section {
+    padding: 24px 0 32px;
+  }
+  .home-hero-grid {
+    padding: 0 16px;
+    gap: 24px;
+  }
+  .hero-pill-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .hero-headline {
+    font-size: clamp(24px, 6.8vw, 32px);
+    line-height: 1.25;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .hero-lead-text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .hero-action-buttons {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+    width: 100%;
+  }
+  .hero-action-buttons .btn-primary-red,
+  .hero-action-buttons .btn-outline-donor {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 18px;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+  .hero-trust-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
+  }
+  .hero-trust-item {
+    font-size: 13.5px;
+    gap: 6px;
+  }
+
+  /* Hero Quick Request Card */
+  .quick-request-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  }
+  .quick-card-header {
+    margin-bottom: 16px;
+  }
+  .quick-card-title {
+    font-size: 16px;
+  }
+  .quick-card-title .card-icon-wrap {
+    width: 32px;
+    height: 32px;
+  }
+  .badge-emergency {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  .quick-two-cols {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .quick-field-label {
+    font-size: 13px;
+  }
+  .quick-field-input,
+  .quick-field-select {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .btn-post-emergency {
+    min-height: 46px;
+    font-size: 15px;
+  }
+
+  /* Dark Search Section */
   .dark-search-section {
-    margin: 36px auto 48px;
+    margin: 28px auto 36px;
     padding: 0 16px;
   }
   .dark-search-box {
-    padding: 24px 20px;
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+  .dark-search-pill {
+    font-size: 12px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+  }
+  .dark-search-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .dark-search-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
   }
   .dark-search-form {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
   }
-  .urgent-requests-grid {
-    grid-template-columns: 1fr;
+  .dark-field-label {
+    font-size: 13px;
+    margin-bottom: 5px;
   }
+  .dark-select {
+    min-height: 44px;
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+  .btn-dark-search {
+    width: 100%;
+    min-height: 44px;
+    font-size: 15px;
+    margin-top: 4px;
+  }
+  .dark-checkbox-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .dark-checkbox-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* Content Sections Common */
+  .section-wrapper {
+    margin: 0 auto 36px;
+    padding: 0 16px;
+  }
+  .section-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 21px;
+  }
+  .section-subtitle {
+    font-size: 13.5px;
+  }
+  .urgent-requests-grid,
   .donors-showcase-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
-  .how-steps-grid {
-    grid-template-columns: 1fr;
+  .urgent-req-card,
+  .donor-showcase-card {
+    padding: 18px 16px;
+    border-radius: 12px;
   }
+  .urgent-card-hospital {
+    font-size: 16.5px;
+  }
+  .urgent-card-actions,
+  .donor-card-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .urgent-card-actions .btn-card-details,
+  .urgent-card-actions .btn-card-whatsapp,
+  .donor-card-actions .btn-donor-profile,
+  .donor-card-actions .btn-donor-request {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Live Stats */
+  .community-live-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .community-live-grid a {
+    padding: 12px 10px;
+  }
+  .community-live-grid strong {
+    font-size: 22px;
+  }
+  .community-live-grid span {
+    font-size: 12px;
+  }
+
+  /* How It Works, Eligibility, FAQ */
+  .how-steps-grid,
   .eligibility-subgrid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
+  .how-steps-card,
+  .eligibility-container {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+  .eligibility-header h2 {
+    font-size: 20px;
+  }
+  .faq-question-btn {
+    padding: 14px 12px;
+    font-size: 14px;
+  }
+  .faq-answer-content {
+    padding: 12px 14px;
+    font-size: 13.5px;
+  }
+
+  /* Footer */
   .footer-inner-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
   }
   .footer-bottom-bar {
     flex-direction: column;
     text-align: center;
+    gap: 8px;
   }
 }
 

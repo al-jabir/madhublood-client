@@ -1,4 +1,3 @@
-import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { AnnouncementBanner } from "@/features/community-tools/components/MemberTools";
 import { CommunityStats } from "../components/CommunityStats";
@@ -260,7 +259,6 @@ export function Home() {
                 </span>
               </div>
 
-              {canVolunteer(me, "submit-referrals") ? (
                 <form
                   onSubmit={handleQuickRequestSubmit}
                   className="quick-form-grid"
@@ -362,22 +360,6 @@ export function Home() {
                     </span>
                   </button>
                 </form>
-              ) : (
-                <div className="quick-form-grid">
-                  <h3>{t(en, "রক্তের প্রয়োজন?", "Need blood?")}</h3>
-                  <p className="muted">
-                    {t(
-                      en,
-                      "রক্তের অনুরোধ যোগ করতে অনুমোদিত স্বেচ্ছাসেবক বা অ্যাডমিনের সঙ্গে যোগাযোগ করুন। আপনার হয়ে তাঁরা তথ্য যাচাই করে অনুরোধ যোগ করবেন।",
-                      "Contact an authorized volunteer or administrator to add a blood request. They will verify the details and post it on your behalf.",
-                    )}
-                  </p>
-                  <Link className="btn-post-emergency" to="/requests">
-                    {t(en, "রক্তের অনুরোধ দেখুন", "View blood requests")}
-                    <ArrowRight size={17} />
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -731,15 +713,13 @@ export function Home() {
                 <span className="donor-meta-val">{donor.area}</span>
               </div>
 
-              {canVolunteer(me, "submit-referrals") && (
-                <Link
-                  to={`/requests/new?bloodGroup=${encodeURIComponent(donor.bloodGroup)}&area=${encodeURIComponent(donor.area)}`}
-                  className="btn-donor-request"
-                >
-                  <Send size={13} />
-                  <span>{t(en, "অনুরোধ পাঠান", "Request Blood")}</span>
-                </Link>
-              )}
+              <Link
+                to={`/requests/new?bloodGroup=${encodeURIComponent(donor.bloodGroup)}&area=${encodeURIComponent(donor.area)}`}
+                className="btn-donor-request"
+              >
+                <Send size={13} />
+                <span>{t(en, "অনুরোধ পাঠান", "Request Blood")}</span>
+              </Link>
             </div>
           ))}
         </div>

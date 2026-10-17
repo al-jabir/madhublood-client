@@ -61,14 +61,14 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           replace: true,
           state: { email: data.user.email, returnTo, codeQueued: true },
         });
+      else if (returnTo && data.user.profileCompleted)
+        nav(returnTo.pathname, { state: returnTo.state });
       else if (
         data.user.roles.some((role) =>
           ["admin", "super-admin", "volunteer"].includes(role),
         )
       )
         nav("/admin");
-      else if (returnTo && data.user.profileCompleted)
-        nav(returnTo.pathname, { state: returnTo.state });
       else nav("/dashboard?tab=profile", { state: { returnTo } });
     },
   });
