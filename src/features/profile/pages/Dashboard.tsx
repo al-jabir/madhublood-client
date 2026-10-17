@@ -110,8 +110,15 @@ export function Dashboard() {
             </button>
           ))}
           {me?.roles.some((r: string) =>
-            ["admin", "volunteer", "super-admin"].includes(r),
+            ["admin", "super-admin"].includes(r),
           ) && <Link to="/admin">{t(en, "পরিচালনা", "Moderation")}</Link>}
+          {(me?.roles.includes("volunteer") ||
+            canVolunteer(me, "submit-referrals") ||
+            canVolunteer(me, "coordinate-requests")) && (
+            <Link to="/volunteer">
+              {t(en, "স্বেচ্ছাসেবক ড্যাশবোর্ড", "Volunteer desk")}
+            </Link>
+          )}
         </div>
         {me?.profileCompleted && returnTo && (
           <div className="notice">
@@ -185,6 +192,21 @@ export function Dashboard() {
                   <Activity />
                   <h3>
                     {t(en, "প্রকাশিত অনুরোধ দেখুন", "View blood requests")}
+                  </h3>
+                  <ArrowUpRight />
+                </Link>
+              )}
+              {(me?.roles.includes("volunteer") ||
+                canVolunteer(me, "submit-referrals") ||
+                canVolunteer(me, "coordinate-requests")) && (
+                <Link to="/volunteer" className="panel create-tile">
+                  <HeartHandshake />
+                  <h3>
+                    {t(
+                      en,
+                      "স্বেচ্ছাসেবকের ড্যাশবোর্ড",
+                      "Volunteer workspace",
+                    )}
                   </h3>
                   <ArrowUpRight />
                 </Link>

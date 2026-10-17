@@ -22,6 +22,7 @@ import { notificationsApi } from "@/features/notifications/api/notifications.api
 import { Loading } from "@/components/feedback/Loading";
 import { content } from "@/i18n/content";
 import { PlatformNotice } from "@/features/super-admin/components/PlatformNotice";
+import { canVolunteer } from "@/utils/volunteer-permissions";
 
 export function RootLayout() {
   useDocumentPreferences();
@@ -119,6 +120,17 @@ export function RootLayout() {
           <NavLink to="/how-it-works">
             {t(en, "যেভাবে কাজ করে", "How it works")}
           </NavLink>
+          {me?.roles.some((r) => ["admin", "super-admin"].includes(r)) && (
+            <NavLink to="/admin">{t(en, "পরিচালনা", "Moderation")}</NavLink>
+          )}
+          {me &&
+            (me.roles.includes("volunteer") ||
+              canVolunteer(me, "submit-referrals") ||
+              canVolunteer(me, "coordinate-requests")) && (
+              <NavLink to="/volunteer">
+                {t(en, "স্বেচ্ছাসেবক", "Volunteer")}
+              </NavLink>
+            )}
           <div className="mobile-nav-tools">
             <button className="icon" type="button" onClick={toggleLang}>
               <Languages size={17} />

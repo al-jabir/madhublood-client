@@ -12,6 +12,9 @@ import {
   History,
   Phone,
   MessageSquare,
+  Search,
+  UserRound,
+  Edit3,
 } from "lucide-react";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { RequireUser } from "@/features/auth/components/RequireUser";
@@ -38,6 +41,8 @@ export function VolunteerDashboard({
   const { en } = usePrefs();
   const me = useMe();
   const [params, setParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [groupFilter, setGroupFilter] = useState("all");
   const tab = ["overview", "requests", "tasks", "history"].includes(
     params.get("tab") ?? "",
   )
@@ -72,6 +77,27 @@ export function VolunteerDashboard({
     refetchInterval: 30000,
     placeholderData: keepPreviousData,
   });
+  const requestsList =
+    (tab === "overview" || tab === "requests") && q.data
+      ? (q.data.items as VolunteerRequest[])
+          .filter((r) => {
+            if (tab !== "requests") return true;
+            if (groupFilter !== "all" && r.bloodGroup !== groupFilter)
+              return false;
+            if (searchQuery.trim()) {
+              const term = searchQuery.toLowerCase().trim();
+              const matchHospital = r.hospital?.toLowerCase().includes(term);
+              const matchArea = r.area?.toLowerCase().includes(term);
+              const matchBlood = r.bloodGroup?.toLowerCase().includes(term);
+              const matchRep = r.representative?.toLowerCase().includes(term);
+              return Boolean(
+                matchHospital || matchArea || matchBlood || matchRep,
+              );
+            }
+            return true;
+          })
+          .slice(0, tab === "overview" ? 6 : 12)
+      : [];
   function navigate(values: Record<string, string>) {
     setSelected(undefined);
     setParams({ ...values });
@@ -139,12 +165,23 @@ export function VolunteerDashboard({
               )}
             </p>
           </div>
-          {submit && (
-            <Link className="button" to="/requests/new?onBehalf=1">
-              <Plus size={17} />
-              {t(en, "রক্তের প্রয়োজন যোগ করুন", "Add a blood request")}
-            </Link>
-          )}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              className="button secondary"
+              disabled={q.isFetching}
+              onClick={() => q.refetch()}
+              title={t(en, "তথ্য আপডেট করুন", "Refresh data")}
+            >
+              <RefreshCw size={15} />
+              {t(en, "রিফ্রেশ", "Refresh")}
+            </button>
+            {submit && (
+              <Link className="button" to="/requests/new?onBehalf=1">
+                <Plus size={17} />
+                {t(en, "রক্তের প্রয়োজন যোগ করুন", "Add a blood request")}
+              </Link>
+            )}
+          </div>
         </div>
         {!submit && !manage ? (
           <div className="volunteer-empty">
@@ -244,6 +281,7 @@ export function VolunteerDashboard({
                                     ? { tab: "tasks" }
                                     : {
                                         tab: "requests",
+                                        list: "mine",
                                         ...(destination === "pending" ||
                                         destination === "completed"
                                           ? { status: String(destination) }
@@ -402,34 +440,77 @@ export function VolunteerDashboard({
                       )}
                     </div>
                     {tab === "requests" && (
-                      <div className="volunteer-list-switch">
-                        <button
-                          aria-pressed={!assigned}
-                          onClick={() => navigate({ tab, list: "mine" })}
-                        >
-                          {t(en, "আমার যোগ করা", "Added by me")}
-                        </button>
-                        {manage && (
+                      <>
+                        <div className="volunteer-list-switch">
                           <button
-                            aria-pressed={assigned}
-                            onClick={() =>
-                              navigate({
-                                tab,
-                                list: "assigned",
-                                status: "open",
-                              })
-                            }
+                            aria-pressed={!assigned}
+                            onClick={() => navigate({ tab, list: "mine" })}
                           >
-                            {t(en, "আমার দায়িত্বে", "Assigned to me")}
+                            {t(en, "আমার যোগ করা", "Added by me")}
                           </button>
-                        )}
-                      </div>
+                          {manage && (
+                            <button
+                              aria-pressed={assigned}
+                              onClick={() =>
+                                navigate({
+                                  tab,
+                                  list: "assigned",
+                                  status: "open",
+                                })
+                              }
+                            >
+                              {t(en, "আমার দায়িত্বে", "Assigned to me")}
+                            </button>
+                          )}
+                        </div>
+                        <div className="volunteer-search-bar">
+                          <div className="volunteer-search-input">
+                            <Search size={15} />
+                            <input
+                              type="search"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              placeholder={t(
+                                en,
+                                "হাসপাতাল, এলাকা বা রোগীর নাম দিয়ে খুঁজুন...",
+                                "Search by hospital, area or patient...",
+                              )}
+                            />
+                          </div>
+                          <select
+                            className="volunteer-group-select"
+                            value={groupFilter}
+                            onChange={(e) => setGroupFilter(e.target.value)}
+                            aria-label={t(
+                              en,
+                              "রক্তের গ্রুপ",
+                              "Filter blood group",
+                            )}
+                          >
+                            <option value="all">
+                              {t(en, "সব রক্তের গ্রুপ", "All blood groups")}
+                            </option>
+                            {[
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-",
+                            ].map((bg) => (
+                              <option key={bg} value={bg}>
+                                {bg}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
                     )}
-                    {q.data.items.length ? (
+                    {requestsList.length ? (
                       <div className="volunteer-request-grid">
-                        {(q.data.items as VolunteerRequest[])
-                          .slice(0, tab === "overview" ? 6 : 12)
-                          .map((r) => (
+                        {requestsList.map((r) => (
                             <article
                               key={r._id}
                               className="volunteer-request-card"
@@ -438,12 +519,56 @@ export function VolunteerDashboard({
                                 <strong className="volunteer-blood">
                                   {r.bloodGroup}
                                 </strong>
-                                <span className="badge">
-                                  {requestLabel(en, r.status)}
-                                </span>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "6px",
+                                    alignItems: "center",
+                                    flexWrap: "wrap",
+                                  }}
+                                >
+                                  {tab === "overview" && (
+                                    <span className="badge">
+                                      {r.owner === me.data?.id
+                                        ? t(en, "আমার যোগ করা", "My submission")
+                                        : t(en, "আমার দায়িত্বে", "Assigned")}
+                                    </span>
+                                  )}
+                                  {r.urgency === "emergency" && (
+                                    <span className="badge danger">
+                                      {t(en, "জরুরী", "Emergency")}
+                                    </span>
+                                  )}
+                                  <span className="badge">
+                                    {requestLabel(en, r.status)}
+                                  </span>
+                                </div>
                               </div>
                               <h3>{r.hospital}</h3>
                               <p>{r.area}</p>
+                              {r.representative && (
+                                <div className="volunteer-requester-info">
+                                  <span>
+                                    <UserRound size={13} />
+                                    {r.representative}
+                                  </span>
+                                  {r.contact && (
+                                    <a
+                                      href={`tel:${r.contact}`}
+                                      className="volunteer-call-link"
+                                      onClick={(e) => e.stopPropagation()}
+                                      title={t(
+                                        en,
+                                        "প্রতিনিধিকে ফোন করুন",
+                                        "Call requester",
+                                      )}
+                                    >
+                                      <Phone size={13} />
+                                      {r.contact}
+                                    </a>
+                                  )}
+                                </div>
+                              )}
                               <div className="volunteer-request-info">
                                 <strong>
                                   {n(r.units)}{" "}
@@ -487,49 +612,59 @@ export function VolunteerDashboard({
                                   {t(en, "অনুরোধ দেখুন", "View request")}
                                   <ArrowUpRight size={15} />
                                 </Link>
-                                {assigned &&
-                                manage &&
-                                [
-                                  "active",
-                                  "donors-contacted",
-                                  "arranged",
-                                ].includes(r.status) ? (
-                                  <button
-                                    onClick={() =>
-                                      setSelected({
-                                        id: r._id,
-                                        work: true,
-                                        units: r.units,
-                                      })
-                                    }
-                                  >
-                                    {t(en, "যোগাযোগ ও অগ্রগতি", "Follow up")}
-                                  </button>
-                                ) : (
-                                  submit &&
-                                  ![
-                                    "cancelled",
-                                    "rejected",
-                                    "expired",
+                                {manage &&
+                                  [
+                                    "active",
+                                    "donors-contacted",
+                                    "arranged",
                                   ].includes(r.status) && (
                                     <button
                                       onClick={() =>
                                         setSelected({
                                           id: r._id,
-                                          work: false,
+                                          work: true,
                                           units: r.units,
-                                          feedback: r.familyFeedback,
                                         })
                                       }
                                     >
-                                      {t(
-                                        en,
-                                        "পরিবারের মতামত",
-                                        "Family feedback",
-                                      )}
+                                      {t(en, "যোগাযোগ ও অগ্রগতি", "Follow up")}
                                     </button>
-                                  )
+                                  )}
+                                {!["cancelled", "rejected", "expired"].includes(
+                                  r.status,
+                                ) && (
+                                  <button
+                                    onClick={() =>
+                                      setSelected({
+                                        id: r._id,
+                                        work: false,
+                                        units: r.units,
+                                        feedback: r.familyFeedback,
+                                      })
+                                    }
+                                  >
+                                    {t(
+                                      en,
+                                      "পরিবারের মতামত",
+                                      "Family feedback",
+                                    )}
+                                  </button>
                                 )}
+                                {r.owner === me.data?.id &&
+                                  submit &&
+                                  [
+                                    "submitted",
+                                    "verification",
+                                    "active",
+                                  ].includes(r.status) && (
+                                    <Link
+                                      to={`/requests/${r._id}/edit`}
+                                      className="volunteer-edit-link"
+                                    >
+                                      <Edit3 size={13} />
+                                      {t(en, "সম্পাদনা", "Edit")}
+                                    </Link>
+                                  )}
                               </div>
                             </article>
                           ))}
@@ -538,24 +673,36 @@ export function VolunteerDashboard({
                       <div className="volunteer-empty">
                         <ClipboardList size={30} />
                         <h3>
-                          {t(
-                            en,
-                            "এই তালিকায় এখনও কোনো অনুরোধ নেই",
-                            "No requests in this list yet",
-                          )}
-                        </h3>
-                        <p>
-                          {assigned
+                          {searchQuery || groupFilter !== "all"
                             ? t(
                                 en,
-                                "অ্যাডমিন দায়িত্ব দিলে এখানে অনুরোধ দেখা যাবে।",
-                                "Requests will appear when an administrator assigns them to you.",
+                                "কোনো অনুরোধ পাওয়া যায়নি",
+                                "No requests match your filter",
                               )
                             : t(
                                 en,
-                                "আপনার যোগ করা অনুরোধ এখানে থাকবে।",
-                                "Your submitted requests will appear here.",
+                                "এই তালিকায় এখনও কোনো অনুরোধ নেই",
+                                "No requests in this list yet",
                               )}
+                        </h3>
+                        <p>
+                          {searchQuery || groupFilter !== "all"
+                            ? t(
+                                en,
+                                "ফিল্টার বা সার্চ পরিবর্তন করে আবার চেষ্টা করুন।",
+                                "Try adjusting your search query or blood group filter.",
+                              )
+                            : assigned
+                              ? t(
+                                  en,
+                                  "অ্যাডমিন দায়িত্ব দিলে এখানে অনুরোধ দেখা যাবে।",
+                                  "Requests will appear when an administrator assigns them to you.",
+                                )
+                              : t(
+                                  en,
+                                  "আপনার যোগ করা অনুরোধ এখানে থাকবে।",
+                                  "Your submitted requests will appear here.",
+                                )}
                         </p>
                       </div>
                     )}
@@ -605,18 +752,29 @@ export function VolunteerDashboard({
                               <p>{task.hospital}</p>
                               <small>{date(task.nextContactAt)}</small>
                             </div>
-                            <button
-                              className="button secondary small"
-                              onClick={() =>
-                                setSelected({
-                                  id: task.requestId,
-                                  work: true,
-                                  units: 0,
-                                })
-                              }
-                            >
-                              {t(en, "ফোন ও আপডেট", "Call & update")}
-                            </button>
+                            <div className="volunteer-task-actions">
+                              {task.phone && (
+                                <a
+                                  className="button secondary small"
+                                  href={`tel:${task.phone}`}
+                                >
+                                  <Phone size={14} />
+                                  {task.phone}
+                                </a>
+                              )}
+                              <button
+                                className="button small"
+                                onClick={() =>
+                                  setSelected({
+                                    id: task.requestId,
+                                    work: true,
+                                    units: 0,
+                                  })
+                                }
+                              >
+                                {t(en, "আপডেট ও কাজ", "Update")}
+                              </button>
+                            </div>
                           </article>
                         ))}
                       </div>

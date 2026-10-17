@@ -13,6 +13,11 @@ export interface VolunteerRequest {
   area: string;
   status: string;
   requiredAt: string;
+  urgency?: string;
+  representative?: string;
+  contact?: string;
+  owner?: string;
+  createdAt?: string;
   familyFeedback?: FamilyFeedback;
 }
 export interface VolunteerTask {
@@ -20,6 +25,7 @@ export interface VolunteerTask {
   requestId: string;
   donorId: string;
   name: string;
+  phone?: string;
   hospital: string;
   bloodGroup: string;
   nextContactAt: string;
