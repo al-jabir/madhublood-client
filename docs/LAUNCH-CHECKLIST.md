@@ -1,6 +1,6 @@
 # MadhuBlood launch acceptance — 17 October 2026
 
-**Decision: local release candidate prepared; public launch acceptance pending.** Latest source changes are not committed, pushed or deployed by this audit. The currently deployed frontend has broken direct page URLs.
+**Decision: live routing, hosted sessions and real backup/restore passed; hosted-only email delivery still needs correction.** Client 211dfd8 and server 049c0a1 were pushed. Vercel reported successful deployment of the client revision.
 
 ## Local fixes in this audit
 
@@ -22,18 +22,21 @@
 - Atlas (read-only): ping/topology/email identity indexes pass; active queue has zero failed/overdue jobs.
 - Google bridge: authentication and quota pass; no email sent.
 
-## Current hosted blocker
+## Hosted acceptance update
 
-Read-only HTTPS probes found HTTP 404 for /login, /register, /verify-email, /forgot-password, /dashboard, /admin, /requests, /requests/new and /donors. Homepage, proxied /api/ready (ready=true, database=connected), and /api/v1/platform (maintenance=false, registrationOpen=true) return HTTP 200.
+The initial deep-link probes found HTTP 404 on /login, /register, /verify-email, /forgot-password, /dashboard, /admin, /requests, /requests/new and /donors. After the client push and Vercel deployment, all ten client route probes and both proxied API probes returned HTTP 200. The SPA routing blocker is resolved.
 
-The local Vercel configuration fix must be reviewed and deployed, then the public probe rerun. Local Vite tests cannot prove Vercel routing is repaired on the hosting platform.
+Hosted admin login, session persistence across reload, logout and post-logout /admin protection passed in the in-app browser. The account password was not changed.
+
+The owner confirmed receipt of a password-reset test email. A local development API sharing the Atlas queue was running, so a second hosted-only test was performed with local background jobs disabled. That new job retried; Render mail configuration remains an actual release gate. Do not describe hosted email delivery as fixed solely because a local worker delivered the first message.
+
+The approved real Atlas export was encrypted and restored in a disposable localhost database: 21 collections and 120 documents. The encrypted archive and SHA-256 metadata remain in ignored server/.backups; temporary restored data and URI file were removed. No point-in-time consistency, off-site copy or independent key custody is claimed.
 
 ## Final acceptance steps
 
-1. Review and publish the intended client/server changes. Record exact deployed revisions and keep a rollback revision. Do not commit .env, test artifacts, account files or backups.
-2. After deployment, run `npm run deployment:verify` from client and server. All routes and API probes must pass.
-3. With an explicitly approved recipient, verify actual register/verify/login/logout/password-reset delivery and cookies on the hosted website. Do not send messages or create real accounts without that authorization.
-4. With explicit approval for copying production personal/authentication data, run the documented encrypted Atlas backup and isolated restore drill. Previous synthetic backup results do not satisfy this step. No actual production backup was made during this audit.
-5. Confirm operational ownership, credential strength/ownership, backup retention, moderation/privacy procedure and independent uptime/error/worker alerting. The local Codex heartbeat depends on the desktop app.
+1. Complete the Render → GitHub sign-in handoff, inspect the deployed mail transport/URL/secret and worker settings, and correct the mismatch without exposing secrets. The owner authorized this sign-in; the browser currently needs their GitHub credentials, which were not requested in chat.
+2. Rerun approved email delivery with all local workers disabled. Then finish hosted verification/reset acceptance; no existing password has been changed by the current probes.
+3. Keep the encryption key separately and configure encrypted off-site retention/scheduling. The real local restore drill passed, but off-site recovery is not yet configured.
+4. Confirm operational ownership, admin credential strength/ownership, moderation/privacy procedure and independent uptime/error/worker alerting. The local Codex heartbeat depends on the desktop app.
 
-Do not advertise full production readiness until these hosted and operational gates pass. Backend details: server/docs/READINESS.md and server/docs/PRODUCTION.md in the sibling checkout.
+Do not advertise full production readiness until the hosted email and operational gates pass. Backend details: server/docs/READINESS.md and server/docs/PRODUCTION.md in the sibling checkout.
