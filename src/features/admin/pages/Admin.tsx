@@ -101,7 +101,7 @@ export function Admin() {
     entries.find((entry) => entry.key === params.get("section")) ?? entries[0];
   const q = useQuery({
     queryKey: ["moderation"],
-    enabled: !!allowed,
+    enabled: !!allowed && ["requests", "donors"].includes(selected.key),
     queryFn: adminApi.queue,
   });
   async function moderate(path: string, data: unknown) {

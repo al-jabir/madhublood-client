@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ export function CaseList({ tab }: { tab: "reports" | "tickets" }) {
     queryKey: ["operations", tab, pagination.after],
     queryFn: () => adminApi.cases(tab, pagination.after),
   });
-  if (q.isPending) return <p role="status">Loading…</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <div className="panel">

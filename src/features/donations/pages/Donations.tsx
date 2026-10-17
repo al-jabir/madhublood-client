@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
 import { donationsApi } from "@/features/donations/api/donations.api";
@@ -12,6 +14,7 @@ import { Field } from "@/components/ui/Field";
 import { errorText } from "@/utils/error-text";
 
 export function Donations() {
+  const [date, setDate] = useState("");
   const pagination = useCursorNavigation("");
   const q = useQuery({
     queryKey: ["donations", pagination.after],
@@ -25,22 +28,29 @@ export function Donations() {
         onSubmit={async (e) => {
           e.preventDefault();
           const form = e.currentTarget;
+          if (!date) {
+            toast.error("Choose a donation date first");
+            return;
+          }
           try {
             await donationsApi.record(Object.fromEntries(new FormData(form)));
             qc.invalidateQueries({ queryKey: ["donations"] });
             toast.success("Donation recorded");
             form.reset();
+            setDate("");
+            qc.invalidateQueries({ queryKey: ["community-stats"] });
           } catch (e) {
             toast.error(errorText(e));
           }
         }}
       >
         <Field label="Donation date">
-          <input
-            type="date"
+          <DatePicker
             name="date"
+            value={date}
+            onChange={setDate}
             required
-            max={new Date().toISOString().slice(0, 10)}
+            max={new Date().toLocaleDateString("en-CA")}
           />
         </Field>
         <Field label="Hospital">

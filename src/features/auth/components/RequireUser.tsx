@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useMe } from "@/features/auth/hooks/useMe";
@@ -6,6 +8,7 @@ import { Failure } from "@/components/feedback/Failure";
 import { Info } from "@/components/feedback/Info";
 
 export function RequireUser({ children }: { children: React.ReactNode }) {
+  const { en } = usePrefs();
   const q = useMe();
   const location = useLocation();
   return q.isPending ? (
@@ -14,8 +17,12 @@ export function RequireUser({ children }: { children: React.ReactNode }) {
     <Failure error={q.error} />
   ) : !q.data ? (
     <Info
-      title="লগ ইন প্রয়োজন · Sign in required"
-      text="এই কাজের জন্য আপনার অ্যাকাউন্টে লগ ইন করুন।"
+      title={t(en, "লগ ইন প্রয়োজন", "Sign in required")}
+      text={t(
+        en,
+        "এই কাজের জন্য আপনার অ্যাকাউন্টে লগ ইন করুন।",
+        "Sign in to your account to continue.",
+      )}
       action
       actionState={{
         returnTo: { pathname: location.pathname, state: location.state },

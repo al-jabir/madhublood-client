@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ export function AuditPanel() {
     queryKey: ["operations", "audit-logs", pagination.after],
     queryFn: () => superAdminApi.audit(pagination.after),
   });
-  if (q.isPending) return <p role="status">Loading…</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <div className="panel">

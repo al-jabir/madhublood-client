@@ -1,17 +1,12 @@
 import { DemoExamples } from "@/features/demo/DemoExamples";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 import { useMe } from "@/features/auth/hooks/useMe";
-import { Loading } from "@/components/feedback/Loading";
+import { AnalyticsPanel } from "./AnalyticsPanel";
 import { CaseList } from "./CaseList";
 import { UsersPanel } from "@/features/super-admin/components/UsersPanel";
 import { AuditPanel } from "@/features/super-admin/components/AuditPanel";
 import { LocationsPanel } from "@/features/locations/components/LocationsPanel";
 import { SettingsPanel } from "@/features/super-admin/components/SettingsPanel";
-const AnalyticsPanel = lazy(() =>
-  import("./AnalyticsPanel").then((module) => ({
-    default: module.AnalyticsPanel,
-  })),
-);
 export type Tab =
   | "demo-data"
   | "analytics"
@@ -52,7 +47,7 @@ export function Operations({ selected }: { selected?: Tab }) {
           ))}
         </div>
       )}
-      <Suspense fallback={<Loading />}>
+      <>
         {tab === "demo-data" ? (
           <DemoExamples manage />
         ) : tab === "analytics" ? (
@@ -68,7 +63,7 @@ export function Operations({ selected }: { selected?: Tab }) {
         ) : (
           <AuditPanel />
         )}
-      </Suspense>
+      </>
     </section>
   );
 }

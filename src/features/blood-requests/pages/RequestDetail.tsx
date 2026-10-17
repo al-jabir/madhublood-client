@@ -1,3 +1,4 @@
+import { requestLabel } from "../request-labels";
 import { donorsApi } from "@/features/donors/api/donors.api";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
@@ -39,7 +40,7 @@ export function RequestDetail() {
       requestsApi.action(id, path, data),
     onSuccess: () => {
       qc.invalidateQueries();
-      toast.success("Updated");
+      toast.success(t(en, "আপডেট হয়েছে", "Updated"));
     },
     onError: (e) => toast.error(errorText(e)),
   });
@@ -62,7 +63,7 @@ export function RequestDetail() {
     !donor.data
       ? t(
           en,
-          "আপনার Donor form এখনো পূরণ করা নেই।",
+          "আপনার রক্তদাতার তথ্য এখনো পূরণ করা নেই।",
           "Your donor profile has not been set up yet.",
         )
       : "",
@@ -76,7 +77,7 @@ export function RequestDetail() {
     donor.data && !donor.data.available
       ? t(
           en,
-          "রক্তদানে প্রস্তুত থাকলে Donor form-এ availability চালু করুন।",
+          "রক্তদানে প্রস্তুত থাকলে রক্তদাতার তথ্যে রক্তদানে প্রস্তুত থাকার অপশন চালু করুন।",
           "If you are ready to donate, enable availability in your Donor form.",
         )
       : "",
@@ -100,12 +101,15 @@ export function RequestDetail() {
     <section className="page narrow">
       <PageHeading title={`${item.bloodGroup} · ${item.hospital}`} />
       <div className="panel">
-        <span className="badge">{item.status}</span>
+        <span className="badge">{requestLabel(en, item.status)}</span>
         <h2>
-          {item.units} units · {item.component}
+          {item.units} {t(en, "ইউনিট", "units")} ·{" "}
+          {requestLabel(en, item.component)}
         </h2>
         <p>{item.area}</p>
-        <p>{new Date(item.requiredAt).toLocaleString()}</p>
+        <p>
+          {new Date(item.requiredAt).toLocaleString(en ? "en-BD" : "bn-BD")}
+        </p>
         {item.contact && (
           <div className="request-contact-card">
             <div>
@@ -123,7 +127,11 @@ export function RequestDetail() {
           <>
             {["submitted", "verification", "active"].includes(item.status) && (
               <Link className="text-link" to={`/requests/${id}/edit`}>
-                Edit request & resubmit for review
+                {t(
+                  en,
+                  "সম্পাদনা করে আবার যাচাইয়ের জন্য জমা দিন",
+                  "Edit request & resubmit for review",
+                )}
               </Link>
             )}
             <div className="button-row">
@@ -136,25 +144,33 @@ export function RequestDetail() {
                     : []
               ).map((status) => (
                 <button
-                  key={status}
+                  key={requestLabel(en, status)}
                   className="button secondary"
                   disabled={mutation.isPending}
                   onClick={() => {
-                    if (confirm(`Mark this request ${status}?`))
+                    if (
+                      confirm(
+                        t(
+                          en,
+                          `অনুরোধের অবস্থা «${requestLabel(false, status)}» করবেন?`,
+                          `Mark this request ${requestLabel(true, status)}?`,
+                        ),
+                      )
+                    )
                       mutation.mutate({ path: "status", data: { status } });
                   }}
                 >
-                  {status}
+                  {requestLabel(en, status)}
                 </button>
               ))}
             </div>
-            <h3>Donor responses</h3>
+            <h3>{t(en, "রক্তদাতাদের সাড়া", "Donor responses")}</h3>
             {r.isError ? (
               <Failure error={r.error} />
             ) : r.data?.items.length ? (
               r.data.items.map((x) => (
                 <p key={x.id}>
-                  {x.response} · {x.name} {x.phone}
+                  {requestLabel(en, x.response)} · {x.name} {x.phone}
                 </p>
               ))
             ) : (
@@ -240,14 +256,14 @@ export function RequestDetail() {
                     request: id,
                     reason: new FormData(form).get("reason"),
                   });
-                  toast.success("Report submitted");
+                  toast.success(t(en, "অভিযোগ জমা হয়েছে", "Report submitted"));
                   form.reset();
                 } catch (err) {
                   toast.error(errorText(err));
                 }
               }}
             >
-              <Field label="Report a concern">
+              <Field label={t(en, "সমস্যা জানান", "Report a concern")}>
                 <textarea
                   name="reason"
                   required
@@ -255,7 +271,9 @@ export function RequestDetail() {
                   maxLength={500}
                 />
               </Field>
-              <button className="button secondary">Submit report</button>
+              <button className="button secondary">
+                {t(en, "অভিযোগ জমা দিন", "Submit report")}
+              </button>
             </form>
           </RequireUser>
         )}

@@ -1,5 +1,22 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/me"))
+      return route.fulfill({ status: 401, json: {} });
+    if (path.endsWith("/platform"))
+      return route.fulfill({
+        json: {
+          maintenance: false,
+          registrationOpen: true,
+          supportMessage: "",
+        },
+      });
+    return route.fulfill({ json: { items: [], total: 0 } });
+  });
+});
 test("Bangla home, blood group filtering, consent form and language preferences", async ({
   page,
 }) => {
@@ -16,8 +33,11 @@ test("Bangla home, blood group filtering, consent form and language preferences"
   await page.getByLabel("Blood group", { exact: true }).selectOption("O+");
   await page.locator(".dark-search-form button[type=submit]").click();
   await expect(page).toHaveURL(/bloodGroup=O%2B/);
-  await expect(page.locator(".filter-bar select").first()).toHaveValue("O+");
-  await page.getByRole("button", { name: "Change language" }).click();
+  await expect(page.locator("#results-blood")).toHaveValue("O+");
+  if (test.info().project.name === "mobile") {
+    await page.getByRole("button", { name: "Toggle navigation" }).click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
+  } else await page.getByRole("button", { name: "Change language" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Find Blood Donors",
@@ -58,11 +78,11 @@ test("private workflow is gated and unknown routes offer recovery", async ({
 }) => {
   await page.goto("/requests/new");
   await expect(
-    page.getByRole("heading", { name: /Sign in required/ }),
+    page.getByRole("heading", { name: "লগ ইন প্রয়োজন" }),
   ).toBeVisible();
   await page.goto("/unknown-route");
   await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Back home" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "হোমে ফিরুন" })).toHaveAttribute(
     "href",
     "/",
   );

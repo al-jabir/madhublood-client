@@ -52,6 +52,7 @@ export function AccountMenu() {
       <button
         ref={trigger}
         className="account-trigger"
+        aria-label={me.name || t(en, "আমার অ্যাকাউন্ট", "My account")}
         aria-expanded={open}
         aria-controls="account-links"
         onClick={() => setOpen(!open)}

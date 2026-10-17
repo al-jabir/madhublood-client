@@ -1,3 +1,5 @@
+import { requestLabel } from "../request-labels";
+import { Loading } from "@/components/feedback/Loading";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -16,18 +18,7 @@ export function RequestList({ compact = false }: { compact?: boolean }) {
     queryKey: ["requests", page],
     queryFn: async () => requestsApi.list(page),
   });
-  if (q.isPending)
-    return (
-      <div
-        className="skeleton-grid"
-        role="status"
-        aria-label="Loading requests"
-      >
-        {[1, 2, 3].map((i) => (
-          <div className="skeleton" key={i} />
-        ))}
-      </div>
-    );
+  if (q.isPending) return <Loading />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <>
@@ -45,7 +36,9 @@ export function RequestList({ compact = false }: { compact?: boolean }) {
             <Link to={"/requests/" + r.id} className="request-card" key={r.id}>
               <div className="card-top">
                 <span className="blood-type">{r.bloodGroup}</span>
-                <span className={"badge " + r.urgency}>{r.urgency}</span>
+                <span className={"badge " + r.urgency}>
+                  {requestLabel(en, r.urgency)}
+                </span>
               </div>
               <h3>{r.hospital}</h3>
               <p>
@@ -54,7 +47,8 @@ export function RequestList({ compact = false }: { compact?: boolean }) {
               </p>
               <p>
                 <Droplets size={15} />
-                {r.units} {t(en, "ইউনিট", "units")} · {r.component}
+                {r.units} {t(en, "ইউনিট", "units")} ·{" "}
+                {requestLabel(en, r.component)}
               </p>
               <p>
                 <Clock size={15} />

@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import { RootLayout } from "@/layouts/RootLayout";
@@ -60,6 +62,7 @@ const Article = lazy(() =>
   })),
 );
 export function AppRouter() {
+  const { en } = usePrefs();
   return (
     <Routes>
       <Route element={<RootLayout />}>
@@ -101,14 +104,25 @@ export function AppRouter() {
           element={
             <Info
               title="403"
-              text="এই পৃষ্ঠায় আপনার প্রবেশাধিকার নেই। Access denied."
+              text={t(
+                en,
+                "এই পৃষ্ঠায় আপনার প্রবেশাধিকার নেই।",
+                "Access denied.",
+              )}
             />
           }
         />
         <Route
           path="/500"
           element={
-            <Info title="500" text="সাময়িক সমস্যা হয়েছে। Please try again." />
+            <Info
+              title="500"
+              text={t(
+                en,
+                "সাময়িক সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+                "Something went wrong. Please try again.",
+              )}
+            />
           }
         />
         {Object.keys(content).map((key) => (
@@ -117,7 +131,10 @@ export function AppRouter() {
         <Route
           path="*"
           element={
-            <Info title="404" text="পৃষ্ঠাটি পাওয়া যায়নি। Page not found." />
+            <Info
+              title="404"
+              text={t(en, "পৃষ্ঠাটি পাওয়া যায়নি।", "Page not found.")}
+            />
           }
         />
       </Route>

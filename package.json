@@ -13,7 +13,8 @@
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
-    "format": "prettier --write src tests e2e *.ts *.json"
+    "format": "prettier --write src tests e2e *.ts *.json",
+    "deployment:verify": "node scripts/check-hosted.mjs"
   },
   "dependencies": {
     "@fontsource/hind-siliguri": "^5.3.0",

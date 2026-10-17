@@ -1,26 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/services/http";
+import { demoApi } from "./api/demo.api";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { toast } from "sonner";
 import { errorText } from "@/utils/error-text";
-interface Example {
-  kind: string;
-  name: string;
-  bloodGroup: string;
-  area: string;
-  hospital?: string;
-  units?: number;
-}
 export function DemoExamples({ manage = false }: { manage?: boolean }) {
   const { en } = usePrefs();
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
   const q = useQuery({
     queryKey: ["demo-data"],
-    queryFn: async () =>
-      (await api.get<{ total: number; items: Example[] }>("/demo-data")).data,
+    queryFn: demoApi.list,
     retry: false,
   });
   async function change(clear: boolean) {
@@ -37,8 +28,8 @@ export function DemoExamples({ manage = false }: { manage?: boolean }) {
       return;
     setBusy(true);
     try {
-      if (clear) await api.delete("/demo-data");
-      else await api.post("/demo-data");
+      if (clear) await demoApi.clear();
+      else await demoApi.generate();
       await q.refetch();
       setPage(0);
       toast.success(t(en, "Demo তথ্য আপডেট হয়েছে", "Demo data updated"));

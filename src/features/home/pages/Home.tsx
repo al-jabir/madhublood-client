@@ -421,43 +421,16 @@ export function Home() {
                       ? t(en, "একটি এলাকা বেছে নিন", "Select an area")
                       : t(en, "মধুপুরের সব এলাকা", "Anywhere in Madhupur")}
                 </option>
-                {locationType ? (
-                  (locationType === "union"
-                    ? unions
-                    : [...municipalities, ...localities]
-                  ).map((item) => (
-                    <option key={item._id} value={item.name}>
-                      {item.name}
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    {locationType !== "union" && (
-                      <optgroup
-                        label={t(
-                          en,
-                          "পৌরসভা ও ওয়ার্ড",
-                          "Municipality & wards",
-                        )}
-                      >
-                        {[...municipalities, ...localities].map((item) => (
-                          <option key={item._id} value={item.name}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {locationType !== "municipality" && (
-                      <optgroup label={t(en, "ইউনিয়ন", "Unions")}>
-                        {unions.map((item) => (
-                          <option key={item._id} value={item.name}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </>
-                )}
+                {(locationType === "union"
+                  ? unions
+                  : locationType === "municipality"
+                    ? [...municipalities, ...localities]
+                    : [...municipalities, ...localities, ...unions]
+                ).map((item) => (
+                  <option key={item._id} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 

@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
@@ -14,7 +15,7 @@ export function AnalyticsPanel() {
     queryKey: ["operations", "analytics"],
     queryFn: adminApi.analytics,
   });
-  if (q.isPending) return <p role="status">Loading…</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <div className="panel">

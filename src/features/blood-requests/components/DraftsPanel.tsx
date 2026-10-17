@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { requestsApi, type RequestDraft } from "../api/blood-requests.api";
@@ -34,7 +35,7 @@ export function DraftsPanel({
         )}
       </p>
       {q.isError && <p role="alert">{errorText(q.error)}</p>}
-      {q.isPending && <p role="status">{t(en, "লোড হচ্ছে…", "Loading...")}</p>}
+      {q.isPending && <Loading compact />}
       {q.data?.items.map((draft) => (
         <div className="list-row" key={draft._id}>
           <span>

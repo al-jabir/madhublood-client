@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { superAdminApi } from "../api/super-admin.api";
@@ -12,7 +13,7 @@ export function UsersPanel() {
     queryKey: ["operations", "users", page],
     queryFn: () => superAdminApi.users(page),
   });
-  if (q.isPending) return <p role="status">Loading…</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <div className="panel">
@@ -25,7 +26,9 @@ export function UsersPanel() {
               <strong>{row.name || row.email}</strong>
               <small>
                 {row.roles.join(", ")} ·{" "}
-                {row.profileCompleted ? "Profile complete" : "Profile incomplete"}
+                {row.profileCompleted
+                  ? "Profile complete"
+                  : "Profile incomplete"}
               </small>
             </div>
             <RoleEditor

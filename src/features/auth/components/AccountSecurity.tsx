@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { Monitor, LogOut, ShieldCheck } from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
@@ -61,7 +62,7 @@ export function AccountSecurity() {
     <>
       <h3>Active sessions</h3>
       <p>Review your sign-ins and sign out of sessions you no longer use.</p>
-      {sessions.isPending && <p role="status">Loading sessions...</p>}
+      {sessions.isPending && <Loading compact />}
       {sessions.isError && <p role="alert">{errorText(sessions.error)}</p>}
       <div className="session-cards">
         {sessions.data?.items.map((session) => (

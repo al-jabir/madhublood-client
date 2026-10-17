@@ -1,0 +1,106 @@
+.blood-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 240px;
+  padding: 32px 20px;
+  color: var(--red, #aa263c);
+  text-align: center;
+}
+.blood-loader-symbol {
+  width: 88px;
+  height: 88px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.blood-loader-symbol svg {
+  width: 42px;
+  height: 52px;
+  animation: blood-breathe 1.8s ease-in-out infinite;
+}
+.blood-loader-orbit {
+  position: absolute;
+  inset: 0;
+  border: 2px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: blood-orbit 1.2s linear infinite;
+}
+.blood-loader-copy strong {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  color: var(--ink, #292923);
+}
+.blood-loader-copy strong span {
+  color: var(--red, #aa263c);
+}
+.blood-loader-copy p {
+  font-size: 12px;
+  color: var(--muted, #68685f);
+  line-height: 1.8;
+  margin: 9px 0 0;
+}
+.blood-loader-compact {
+  min-height: 120px;
+  flex-direction: row;
+  gap: 16px;
+  text-align: left;
+  padding: 20px 12px;
+}
+.blood-loader-compact .blood-loader-symbol {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+.blood-loader-compact .blood-loader-symbol svg {
+  width: 23px;
+  height: 30px;
+}
+.blood-loader-compact .blood-loader-copy strong {
+  font-size: 16px;
+}
+.blood-loader-compact .blood-loader-copy p {
+  margin-top: 4px;
+}
+.boot-preloader {
+  min-height: 100svh;
+  background: var(--bg, #fffefa);
+}
+@keyframes blood-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes blood-breathe {
+  0%,
+  100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blood-loader-orbit,
+  .blood-loader-symbol svg {
+    animation: none;
+  }
+}
+
+.boot-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+@media (prefers-color-scheme: dark) {
+  .boot-preloader {
+    --bg: #111315;
+    --ink: #f3f1ee;
+    --muted: #9ca3af;
+    --red: #ef4444;
+  }
+}

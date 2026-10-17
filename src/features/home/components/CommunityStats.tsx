@@ -1,19 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { api } from "@/services/http";
+import { communityApi, type Stats } from "../api/community.api";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
-interface Stats {
-  activeRequests: number;
-  availableDonors: number;
-  recordedDonations: number;
-  contributingDonors: number;
-}
 export function CommunityStats() {
   const { en } = usePrefs();
   const q = useQuery({
     queryKey: ["community-stats"],
-    queryFn: async () => (await api.get<Stats>("/community-stats")).data,
+    queryFn: communityApi.stats,
     refetchInterval: 60000,
   });
   const metrics = [

@@ -37,7 +37,9 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       const clean = await page.locator(".site-header").evaluate((header) => {
         const controls = Array.from(
           header.querySelector(".header-actions")!.children,
-        ).map((item) => item.getBoundingClientRect());
+        )
+          .map((item) => item.getBoundingClientRect())
+          .filter((r) => r.width > 0);
         return controls.every(
           (r, i) =>
             r.left >= 0 &&
@@ -47,10 +49,17 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       });
       expect(clean).toBe(true);
       expect(
+        await page
+          .locator(".site-header")
+          .evaluate((header) => header.getBoundingClientRect().height),
+      ).toBeLessThan(110);
+      expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      if (loggedIn)
+        await page.screenshot({ path: `.runtime/header-compact-${width}.png` });
       if (width < 1200) {
         const toggle = page.getByRole("button", { name: "Toggle navigation" });
         await toggle.click();

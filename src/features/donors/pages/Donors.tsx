@@ -127,13 +127,25 @@ export function Donors() {
     group || union || locality || area || available || verified,
   );
 
+  const selectedLocationId = locQ.data?.items.find(
+    (item) => item.name === effectiveArea,
+  )?._id;
   const q = useQuery({
-    queryKey: ["donors", group, effectiveArea, available, verified, page],
+    queryKey: [
+      "donors",
+      group,
+      effectiveArea,
+      selectedLocationId,
+      available,
+      verified,
+      page,
+    ],
     queryFn: async ({ signal }) =>
       donorsApi.search(
         {
           bloodGroup: group || undefined,
           area: effectiveArea || undefined,
+          locationId: selectedLocationId,
           available: available ? "true" : undefined,
           verified: verified ? "true" : undefined,
           page,
@@ -380,7 +392,7 @@ export function Donors() {
                 <h3>{d.name}</h3>
                 <p>
                   <MapPin size={15} />
-                  {d.area}
+                  {d.locationLabel || d.area}
                 </p>
                 <span className={"badge " + (d.available ? "available" : "")}>
                   {d.available

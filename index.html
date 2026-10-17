@@ -8,11 +8,34 @@
       name="description"
       content="MadhuBlood — voluntary blood donor coordination in Madhupur, Tangail."
     />
+    <link rel="stylesheet" href="/preloader.css" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>MadhuBlood — রক্তের বন্ধনে বাঁচুক জীবন</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="blood-loader boot-preloader" role="status" aria-live="polite">
+        <div class="blood-loader-symbol" aria-hidden="true">
+          <span class="blood-loader-orbit"></span
+          ><svg viewBox="0 0 64 72" fill="none">
+            <path
+              d="M32 4C27 17 11 29 11 44a21 21 0 0 0 42 0C53 29 37 17 32 4Z"
+              fill="currentColor"
+            />
+            <path
+              d="m32 51-10-9c-7-7 2-16 10-8 8-8 17 1 10 8l-10 9Z"
+              stroke="white"
+              stroke-width="2.5"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="blood-loader-copy">
+          <strong>Madhu<span>Blood</span></strong>
+          <p>আপনার জন্য প্রস্তুত হচ্ছে…</p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

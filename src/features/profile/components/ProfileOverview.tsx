@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+import { locationsApi } from "@/features/locations/api/locations.api";
 import { useState } from "react";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { usePrefs } from "@/store/preferences.store";
@@ -7,6 +9,18 @@ export function ProfileOverview() {
   const { data: me } = useMe();
   const { en } = usePrefs();
   const [editing, setEditing] = useState(false);
+  const locations = useQuery({
+    queryKey: ["locations", 50],
+    queryFn: () => locationsApi.list(50),
+  });
+  const selectedLocation = locations.data?.items.find(
+    (item) => item._id === me?.locationId,
+  );
+  const displayedArea =
+    me?.locationLabel ||
+    (selectedLocation && !me?.area?.startsWith(selectedLocation.name)
+      ? `${selectedLocation.name}, ${me?.area ?? ""}`
+      : me?.area);
   if (!me?.profileCompleted || editing)
     return (
       <section className="profile-editor">
@@ -42,7 +56,7 @@ export function ProfileOverview() {
             t(en, "যোগাযোগের নম্বর", "Contact phone"),
             me.phone?.replace(/^\+88/, ""),
           ],
-          [t(en, "এলাকা", "Area"), me.area],
+          [t(en, "এলাকা", "Area"), displayedArea],
           [
             t(en, "ইমেইল যাচাই", "Email verification"),
             me.emailVerified

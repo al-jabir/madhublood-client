@@ -119,6 +119,21 @@ export function RootLayout() {
           <NavLink to="/how-it-works">
             {t(en, "যেভাবে কাজ করে", "How it works")}
           </NavLink>
+          <div className="mobile-nav-tools">
+            <button className="icon" type="button" onClick={toggleLang}>
+              <Languages size={17} />
+              {en ? "বাংলা" : "English"}
+            </button>
+            <button className="icon" type="button" onClick={toggleTheme}>
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+              {t(en, "থিম পরিবর্তন", "Switch theme")}
+            </button>
+            {!me && (
+              <Link to="/register">
+                {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
+              </Link>
+            )}
+          </div>
         </nav>
         <div className="header-actions">
           <button

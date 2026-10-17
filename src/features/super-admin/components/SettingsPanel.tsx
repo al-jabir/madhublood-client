@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { superAdminApi } from "../api/super-admin.api";
@@ -20,7 +21,7 @@ export function SettingsPanel() {
     },
     onError: (error) => toast.error(errorText(error)),
   });
-  if (q.isPending) return <p role="status">Loading settings...</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   const value = (key: string) =>
     q.data.items.find((item) => item.key === key)?.value;

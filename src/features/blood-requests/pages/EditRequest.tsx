@@ -1,3 +1,7 @@
+import { requestLabel } from "../request-labels";
+import { Field } from "@/components/ui/Field";
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { Loading } from "@/components/feedback/Loading";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
@@ -16,19 +20,20 @@ export function EditRequest() {
     queryKey: ["request-edit", id],
     queryFn: async () => requestsApi.detail(id),
   });
-  if (q.isPending)
-    return (
-      <div className="loading" role="status">
-        Loading…
-      </div>
-    );
+  if (q.isPending) return <Loading />;
   if (q.isError) return <p className="notice error">{errorText(q.error)}</p>;
   const d = q.data;
   if (!d.owner)
     return (
       <section className="page">
         <h1>403</h1>
-        <p>Only the owner can edit this request.</p>
+        <p>
+          {t(
+            en,
+            "শুধু অনুরোধকারী এই অনুরোধ সম্পাদনা করতে পারবেন।",
+            "Only the owner can edit this request.",
+          )}
+        </p>
       </section>
     );
   return (
@@ -36,7 +41,11 @@ export function EditRequest() {
       <div className="page-heading">
         <h1>{t(en, "অনুরোধ সম্পাদনা", "Edit request")}</h1>
         <p>
-          Edits return the request to moderation before it can become active.
+          {t(
+            en,
+            "সম্পাদনার পরে অনুরোধটি আবার যাচাই করা হবে।",
+            "Edits return the request to moderation before it can become active.",
+          )}
         </p>
       </div>
       <form
@@ -45,6 +54,20 @@ export function EditRequest() {
           e.preventDefault();
           setBusy(true);
           const data = Object.fromEntries(new FormData(e.currentTarget));
+          if (
+            !data.requiredAt ||
+            Date.parse(String(data.requiredAt)) <= Date.now()
+          ) {
+            toast.error(
+              t(
+                en,
+                "ভবিষ্যতের তারিখ ও সময় নির্বাচন করুন।",
+                "Choose a future date and time.",
+              ),
+            );
+            setBusy(false);
+            return;
+          }
           try {
             await requestsApi.edit(id, {
               ...data,
@@ -53,7 +76,13 @@ export function EditRequest() {
               contactConsent: data.contactConsent === "on",
               shareContactWithMembers: data.shareContactWithMembers === "on",
             });
-            toast.success("Updated and submitted for review");
+            toast.success(
+              t(
+                en,
+                "আপডেট করে যাচাইয়ের জন্য জমা হয়েছে",
+                "Updated and submitted for review",
+              ),
+            );
             nav("/requests/" + id);
           } catch (err) {
             toast.error(errorText(err));
@@ -63,42 +92,57 @@ export function EditRequest() {
         }}
       >
         {[
-          ["representative", "Representative", "text"],
-          ["contact", "Mobile number", "tel"],
-          ["hospital", "Hospital", "text"],
-          ["units", "Units", "number"],
-          ["requiredAt", "Required by", "datetime-local"],
+          ["representative", t(en, "প্রতিনিধির নাম", "Representative"), "text"],
+          ["contact", t(en, "মোবাইল নম্বর", "Mobile number"), "tel"],
+          ["hospital", t(en, "হাসপাতাল", "Hospital"), "text"],
+          ["units", t(en, "ইউনিট", "Units"), "number"],
+          [
+            "requiredAt",
+            t(en, "প্রয়োজনের সময়", "Required by"),
+            "datetime-local",
+          ],
         ].map(([name, label, type]) => (
-          <label className="field" key={name}>
-            {label}
-            <input
-              name={name}
-              type={type}
-              defaultValue={
-                name === "requiredAt"
-                  ? new Date(
-                      new Date(d[name]).getTime() -
-                        new Date(d[name]).getTimezoneOffset() * 60000,
-                    )
-                      .toISOString()
-                      .slice(0, 16)
-                  : String(d[name as keyof typeof d] ?? "")
-              }
-              required
-              min={name === "units" ? 1 : undefined}
-              max={name === "units" ? 20 : undefined}
-            />
-          </label>
+          <Field label={label} key={name}>
+            {name === "requiredAt" ? (
+              <DateTimePicker
+                name="requiredAt"
+                defaultValue={new Date(
+                  new Date(d.requiredAt).getTime() -
+                    new Date(d.requiredAt).getTimezoneOffset() * 60000,
+                )
+                  .toISOString()
+                  .slice(0, 16)}
+              />
+            ) : (
+              <input
+                name={name}
+                type={type}
+                defaultValue={
+                  name === "requiredAt"
+                    ? new Date(
+                        new Date(d[name]).getTime() -
+                          new Date(d[name]).getTimezoneOffset() * 60000,
+                      )
+                        .toISOString()
+                        .slice(0, 16)
+                    : String(d[name as keyof typeof d] ?? "")
+                }
+                required
+                min={name === "units" ? 1 : undefined}
+                max={name === "units" ? 20 : undefined}
+              />
+            )}
+          </Field>
         ))}
         <label className="field">
-          Area
+          {t(en, "এলাকা", "Area")}
           <LocationSelector
             defaultLocationId={d.locationId}
             defaultArea={d.area}
           />
         </label>
         <label className="field">
-          Blood group
+          {t(en, "রক্তের গ্রুপ", "Blood group")}
           <select name="bloodGroup" defaultValue={d.bloodGroup}>
             {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((g) => (
               <option key={g}>{g}</option>
@@ -106,23 +150,27 @@ export function EditRequest() {
           </select>
         </label>
         <label className="field">
-          Component
+          {t(en, "উপাদান", "Component")}
           <select name="component" defaultValue={d.component}>
             {["whole-blood", "red-cells", "platelets", "plasma"].map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} value={s}>
+                {requestLabel(en, s)}
+              </option>
             ))}
           </select>
         </label>
         <label className="field">
-          Urgency
+          {t(en, "জরুরিতা", "Urgency")}
           <select name="urgency" defaultValue={d.urgency}>
             {["routine", "urgent", "critical"].map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} value={s}>
+                {requestLabel(en, s)}
+              </option>
             ))}
           </select>
         </label>
         <label className="field">
-          Instructions
+          {t(en, "নির্দেশনা", "Instructions")}
           <textarea
             name="instructions"
             defaultValue={d.instructions}
@@ -136,7 +184,11 @@ export function EditRequest() {
             defaultChecked={d.contactConsent}
             required
           />
-          I consent to sharing my contact with accepting donors.
+          {t(
+            en,
+            "সাড়া দেওয়া রক্তদাতাদের সঙ্গে যোগাযোগের তথ্য শেয়ার করতে সম্মত।",
+            "I consent to sharing my contact with accepting donors.",
+          )}
         </label>
         <label className="checkbox span2">
           <input
@@ -151,10 +203,10 @@ export function EditRequest() {
           )}
         </label>
         <button className="button" disabled={busy}>
-          Save and resubmit
+          {t(en, "সংরক্ষণ করে আবার জমা দিন", "Save and resubmit")}
         </button>
         <Link className="button secondary" to={"/requests/" + id}>
-          Cancel editing
+          {t(en, "সম্পাদনা বাতিল", "Cancel editing")}
         </Link>
       </form>
     </section>

@@ -1,3 +1,5 @@
+import { usePrefs } from "@/store/preferences.store";
+import { t } from "@/i18n/translate";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -12,6 +14,7 @@ export function Info({
   action?: boolean;
   actionState?: unknown;
 }) {
+  const { en } = usePrefs();
   return (
     <section className="page narrow">
       <div className="panel empty">
@@ -23,7 +26,9 @@ export function Info({
           state={actionState}
           className="button"
         >
-          {action ? "Sign in" : "Back home"}
+          {action
+            ? t(en, "লগ ইন করুন", "Sign in")
+            : t(en, "হোমে ফিরুন", "Back home")}
           <ArrowRight size={17} />
         </Link>
       </div>

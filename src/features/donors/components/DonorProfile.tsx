@@ -1,3 +1,5 @@
+import { DatePicker } from "@/components/ui/DatePicker";
+import { useMe } from "@/features/auth/hooks/useMe";
 import { donorsApi } from "@/features/donors/api/donors.api";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +13,7 @@ import { errorText } from "@/utils/error-text";
 import { LocationSelector } from "@/features/locations/components/LocationSelector";
 
 export function DonorProfile() {
+  const { data: me } = useMe();
   const q = useQuery({
     queryKey: ["profile"],
     queryFn: async () => donorsApi.me(),
@@ -21,13 +24,14 @@ export function DonorProfile() {
   const d = q.data;
   return (
     <form
+      key={JSON.stringify(d)}
       className="panel form-grid"
       onSubmit={async (e) => {
         e.preventDefault();
         const form = new FormData(e.currentTarget);
         setBusy(true);
         try {
-          await donorsApi.update({
+          const saved = await donorsApi.update({
             locationId: form.get("locationId") || undefined,
             bloodGroup: form.get("bloodGroup"),
             area: form.get("area"),
@@ -40,7 +44,11 @@ export function DonorProfile() {
               : {}),
           });
           toast.success("Profile saved");
-          qc.invalidateQueries({ queryKey: ["profile"] });
+          qc.setQueryData(["profile"], saved);
+          await Promise.all([
+            qc.invalidateQueries({ queryKey: ["donors"] }),
+            qc.invalidateQueries({ queryKey: ["community-stats"] }),
+          ]);
         } catch (e) {
           toast.error(errorText(e));
         } finally {
@@ -57,16 +65,17 @@ export function DonorProfile() {
       </Field>
       <Field label="General area (never your home address)">
         <LocationSelector
-          defaultLocationId={d?.locationId}
-          defaultArea={d?.area}
+          defaultLocationId={d?.locationId ?? me?.locationId}
+          defaultArea={
+            d?.locationLabel ?? d?.area ?? me?.locationLabel ?? me?.area ?? ""
+          }
         />
       </Field>
       <Field label="Last donation date (optional)">
-        <input
-          type="date"
+        <DatePicker
           name="lastDonation"
           defaultValue={d?.lastDonation}
-          max={new Date().toISOString().slice(0, 10)}
+          max={new Date().toLocaleDateString("en-CA")}
         />
       </Field>
       {[

@@ -1,3 +1,4 @@
+import { Loading } from "@/components/feedback/Loading";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { locationsApi } from "../api/locations.api";
@@ -9,7 +10,7 @@ export function LocationsPanel() {
     queryKey: ["operations", "locations"],
     queryFn: () => locationsApi.list(50),
   });
-  if (q.isPending) return <p role="status">Loading…</p>;
+  if (q.isPending) return <Loading compact />;
   if (q.isError) return <Failure error={q.error} />;
   return (
     <div className="panel">

@@ -1,3 +1,5 @@
+import { requestLabel } from "../request-labels";
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
 import { requestsApi } from "../api/blood-requests.api";
 import React, { useState, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
@@ -36,6 +38,7 @@ export function CreateRequest() {
   const urlArea = searchParams.get("area") || "";
 
   const [busy, setBusy] = useState(false);
+  const [requiredAt, setRequiredAt] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const [draftId, setDraftId] = useState<string>();
   const [draftLocation, setDraftLocation] = useState({ id: "", area: "" });
@@ -67,11 +70,13 @@ export function CreateRequest() {
       ) {
         if (key === "requiredAt" && typeof value === "string") {
           const date = new Date(value);
-          input.value = new Date(
+          const localDateTime = new Date(
             date.getTime() - date.getTimezoneOffset() * 60000,
           )
             .toISOString()
             .slice(0, 16);
+          input.value = localDateTime;
+          setRequiredAt(localDateTime);
         } else input.value = String(value ?? "");
       }
     }
@@ -101,6 +106,19 @@ export function CreateRequest() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const values = valuesFrom(e.currentTarget);
+    if (
+      !values.requiredAt ||
+      Date.parse(String(values.requiredAt)) <= Date.now()
+    ) {
+      toast.error(
+        t(
+          en,
+          "ভবিষ্যতের তারিখ ও সময় নির্বাচন করুন।",
+          "Choose a future date and time.",
+        ),
+      );
+      return;
+    }
     setBusy(true);
     try {
       if (draftId) await requestsApi.saveDraft(values, draftId);
@@ -109,7 +127,9 @@ export function CreateRequest() {
         : await requestsApi.create(values);
       await qc.invalidateQueries({ queryKey: ["request-drafts"] });
       await qc.invalidateQueries({ queryKey: ["my-requests"] });
-      toast.success("Submitted for verification");
+      toast.success(
+        t(en, "যাচাইয়ের জন্য জমা হয়েছে", "Submitted for verification"),
+      );
       nav("/requests/" + data._id);
     } catch (e) {
       toast.error(errorText(e));
@@ -122,7 +142,11 @@ export function CreateRequest() {
       <section className="page narrow">
         <PageHeading
           title={t(en, "রক্তের অনুরোধ তৈরি করুন", "Create a blood request")}
-          desc="Requests are reviewed before they become public. Complete your personal profile first."
+          desc={t(
+            en,
+            "প্রকাশের আগে অনুরোধ যাচাই করা হয়। আগে আপনার ব্যক্তিগত প্রোফাইল পূরণ করুন।",
+            "Requests are reviewed before they become public. Complete your personal profile first.",
+          )}
         />
         <DraftsPanel onLoad={loadDraft} />
         {draftId && (
@@ -130,8 +154,13 @@ export function CreateRequest() {
             {t(en, "সংরক্ষিত খসড়া সম্পাদনা করছেন", "Editing a saved draft")}
           </p>
         )}
-        <form ref={formRef} className="panel form-grid" onSubmit={submit}>
-          <Field label="প্রতিনিধির নাম · Representative">
+        <form
+          ref={formRef}
+          className="panel form-grid"
+          onSubmit={submit}
+          onReset={() => setRequiredAt("")}
+        >
+          <Field label={t(en, "প্রতিনিধির নাম", "Representative")}>
             <input
               name="representative"
               required
@@ -139,7 +168,7 @@ export function CreateRequest() {
               maxLength={80}
             />
           </Field>
-          <Field label="যোগাযোগ · Mobile">
+          <Field label={t(en, "যোগাযোগ", "Mobile")}>
             <input
               name="contact"
               type="tel"
@@ -149,21 +178,23 @@ export function CreateRequest() {
               pattern="01[3-9][0-9]{8}"
             />
           </Field>
-          <Field label="রক্তের গ্রুপ · Blood group">
+          <Field label={t(en, "রক্তের গ্রুপ", "Blood group")}>
             <select name="bloodGroup" defaultValue={urlBlood || "O+"}>
               {groups.map((g) => (
                 <option key={g}>{g}</option>
               ))}
             </select>
           </Field>
-          <Field label="উপাদান · Component">
+          <Field label={t(en, "উপাদান", "Component")}>
             <select name="component">
               {["whole-blood", "red-cells", "platelets", "plasma"].map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>
+                  {requestLabel(en, s)}
+                </option>
               ))}
             </select>
           </Field>
-          <Field label="ইউনিট · Units">
+          <Field label={t(en, "ইউনিট", "Units")}>
             <input
               name="units"
               type="number"
@@ -173,14 +204,14 @@ export function CreateRequest() {
               required
             />
           </Field>
-          <Field label="জরুরিতা · Urgency">
+          <Field label={t(en, "জরুরিতা", "Urgency")}>
             <select name="urgency">
-              <option value="urgent">Urgent</option>
-              <option value="critical">Critical</option>
-              <option value="routine">Routine</option>
+              <option value="urgent">{t(en, "জরুরি", "Urgent")}</option>
+              <option value="critical">{t(en, "অতি জরুরি", "Critical")}</option>
+              <option value="routine">{t(en, "সাধারণ", "Routine")}</option>
             </select>
           </Field>
-          <Field label="হাসপাতাল · Hospital">
+          <Field label={t(en, "হাসপাতাল", "Hospital")}>
             <input
               name="hospital"
               minLength={3}
@@ -189,17 +220,21 @@ export function CreateRequest() {
               required
             />
           </Field>
-          <Field label="এলাকা · Area">
+          <Field label={t(en, "এলাকা", "Area")}>
             <LocationSelector
               key={draftId ?? urlArea ?? "new"}
               defaultLocationId={draftLocation.id}
               defaultArea={draftLocation.area || urlArea || "মধুপুর, টাঙ্গাইল"}
             />
           </Field>
-          <Field label="প্রয়োজনের সময় · Required by">
-            <input type="datetime-local" name="requiredAt" required />
+          <Field label={t(en, "প্রয়োজনের সময়", "Required by")}>
+            <DateTimePicker
+              name="requiredAt"
+              value={requiredAt}
+              onChange={setRequiredAt}
+            />
           </Field>
-          <Field label="নির্দেশনা · Instructions (private)">
+          <Field label={t(en, "নির্দেশনা", "Instructions (private)")}>
             <textarea name="instructions" maxLength={500} />
           </Field>
           <label className="checkbox span2">
@@ -211,16 +246,24 @@ export function CreateRequest() {
             )}
           </label>
           <label className="checkbox span2">
-            <input name="contactConsent" type="checkbox" required />I consent to
-            sharing this contact with donors who accept this request.
+            <input name="contactConsent" type="checkbox" required />
+            {t(
+              en,
+              "এই অনুরোধে সাড়া দেওয়া রক্তদাতাদের সঙ্গে আমার যোগাযোগের তথ্য শেয়ার করতে সম্মত।",
+              "I consent to sharing this contact with donors who accept this request.",
+            )}
           </label>
           <p className="notice span2">
-            Hospital staff must confirm blood component, compatibility, and
-            donor eligibility. Do not include medical records or identity
-            documents.
+            {t(
+              en,
+              "রক্তের উপাদান, সামঞ্জস্য ও রক্তদাতার উপযুক্ততা হাসপাতাল যাচাই করবে। চিকিৎসার নথি বা পরিচয়পত্র যুক্ত করবেন না।",
+              "Hospital staff must confirm blood component, compatibility, and donor eligibility. Do not include medical records or identity documents.",
+            )}
           </p>
           <button className="button" disabled={busy}>
-            {busy ? "Submitting…" : "যাচাইয়ের জন্য জমা দিন · Submit"}
+            {busy
+              ? t(en, "জমা হচ্ছে…", "Submitting…")
+              : t(en, "যাচাইয়ের জন্য জমা দিন", "Submit for review")}
           </button>
           <button
             type="button"

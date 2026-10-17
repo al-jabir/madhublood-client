@@ -8,6 +8,7 @@ export interface ApiUser {
   verificationRequired?: boolean;
   locationId?: string;
   area?: string;
+  locationLabel?: string;
   gender?: "undisclosed" | "male" | "female" | "other";
   roles: string[];
   notificationConsent: boolean;
@@ -34,6 +35,7 @@ export interface DonorCard {
   name: string;
   bloodGroup: string;
   area: string;
+  locationLabel?: string;
   available: boolean;
   verified: boolean;
 }
@@ -43,6 +45,7 @@ export interface DonorProfile {
   displayName: string;
   bloodGroup: string;
   area: string;
+  locationLabel?: string;
   locationId?: string;
   available: boolean;
   verified: boolean;
@@ -62,6 +65,7 @@ export interface BloodRequest {
   units: number;
   hospital: string;
   area: string;
+  locationLabel?: string;
   locationId?: string;
   requiredAt: string;
   urgency: string;

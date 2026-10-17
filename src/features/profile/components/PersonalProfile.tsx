@@ -101,7 +101,7 @@ export function PersonalProfile() {
       <Field label={t(en, "এলাকা", "General area")}>
         <LocationSelector
           defaultLocationId={me?.locationId}
-          defaultArea={me?.area ?? ""}
+          defaultArea={me?.locationLabel ?? me?.area ?? ""}
         />
       </Field>
       <p className="muted span2">
