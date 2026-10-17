@@ -55,6 +55,7 @@ export interface DonorProfile {
   lastDonation?: string;
 }
 export interface BloodRequest {
+  coordinatorManaged?: boolean;
   id: string;
   _id?: string;
   owner?: string;

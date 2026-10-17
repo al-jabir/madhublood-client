@@ -1,3 +1,4 @@
+import { CoordinationDesk } from "@/features/coordination/components/CoordinationDesk";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +47,11 @@ export function Admin() {
     ["admin", "super-admin"].includes(r),
   );
   const entries = [
+    {
+      key: "coordination",
+      label: t(en, "রক্তের সমন্বয়", "Coordination desk"),
+      icon: ClipboardList,
+    },
     {
       key: "overview",
       label: t(en, "সারসংক্ষেপ", "Overview"),
@@ -96,12 +102,15 @@ export function Admin() {
           },
         ]
       : []),
-  ];
+  ].filter((entry) => administrator || entry.key === "coordination");
   const selected =
-    entries.find((entry) => entry.key === params.get("section")) ?? entries[0];
+    entries.find((entry) => entry.key === params.get("section")) ??
+    entries.find(
+      (entry) => entry.key === (administrator ? "overview" : "coordination"),
+    )!;
   const q = useQuery({
     queryKey: ["moderation"],
-    enabled: !!allowed && ["requests", "donors"].includes(selected.key),
+    enabled: !!administrator && ["requests", "donors"].includes(selected.key),
     queryFn: adminApi.queue,
   });
   async function moderate(path: string, data: unknown) {
@@ -184,7 +193,7 @@ export function Admin() {
                   ? "Super admin"
                   : administrator
                     ? "Admin"
-                    : "Volunteer"}
+                    : t(en, "সমন্বয়কারী", "Coordinator")}
               </span>
               <div className="admin-topbar-actions">
                 <button
@@ -217,10 +226,16 @@ export function Admin() {
                   )}
                 </p>
               </div>
-              {selected.key === "overview" ? (
+              {selected.key === "coordination" ? (
+                <CoordinationDesk />
+              ) : selected.key === "overview" ? (
                 <>
                   <Operations selected="analytics" />
                   <div className="admin-quick-actions">
+                    <Link to="/admin?section=coordination">
+                      {t(en, "রক্তের সমন্বয় করুন", "Open coordination desk")}
+                      <ArrowUpRight size={18} />
+                    </Link>
                     <Link to="/admin?section=requests">
                       {t(en, "অনুরোধ পর্যালোচনা করুন", "Review blood requests")}
                       <ArrowUpRight size={18} />

@@ -34,7 +34,9 @@ import { DonorProfile } from "@/features/donors/components/DonorProfile";
 import { Donations } from "@/features/donations/pages/Donations";
 import { Notifications } from "@/features/notifications/pages/Notifications";
 import { setCsrf } from "@/services/http";
-import { Mail } from "lucide-react";
+import { Mail, HeartHandshake } from "lucide-react";
+import { donorsApi } from "@/features/donors/api/donors.api";
+import { DonorEligibilityCard } from "@/features/donors/components/DonorEligibilityCard";
 
 export function Dashboard() {
   const { en } = usePrefs();
@@ -60,6 +62,12 @@ export function Dashboard() {
     queryKey: ["my-requests", pagination.after],
     enabled: !!me,
     queryFn: async () => requestsApi.mine(pagination.after),
+  });
+
+  const donorProfile = useQuery({
+    queryKey: ["profile"],
+    enabled: !!me && !me.verificationRequired,
+    queryFn: donorsApi.me,
   });
   return (
     <RequireUser>
@@ -168,6 +176,44 @@ export function Dashboard() {
                 <ArrowUpRight />
               </Link>
             </div>
+
+            {donorProfile.data ? (
+              <DonorEligibilityCard
+                lastDonation={donorProfile.data.lastDonation}
+                available={donorProfile.data.available}
+                bloodGroup={donorProfile.data.bloodGroup}
+                en={en}
+                onNavigateToDonorTab={() => setTab("donor")}
+              />
+            ) : me?.profileCompleted ? (
+              <div className="panel donor-invitation-tile">
+                <HeartHandshake size={28} className="red" />
+                <div>
+                  <h4>
+                    {t(
+                      en,
+                      "আপনি কি রক্তদানে আগ্রহী?",
+                      "Are you interested in donating blood?",
+                    )}
+                  </h4>
+                  <p>
+                    {t(
+                      en,
+                      "রক্তদাতা ফর্ম পূরণ করে রক্তদানে প্রস্তুত থাকুন। আপনার রক্তে বেঁচে যেতে পারে একটি জীবন।",
+                      "Complete your donor details to register as a voluntary lifesaver in Madhupur.",
+                    )}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => setTab("donor")}
+                >
+                  {t(en, "রক্তদাতা ফর্ম পূরণ করুন", "Join as donor")}
+                </button>
+              </div>
+            ) : null}
+
             <h2>{t(en, "আমার অনুরোধ", "My requests")}</h2>
             <CursorPager
               navigation={pagination}

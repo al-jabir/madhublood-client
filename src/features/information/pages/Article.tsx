@@ -10,6 +10,8 @@ import { Field } from "@/components/ui/Field";
 import { RequireUser } from "@/features/auth/components/RequireUser";
 import { content } from "@/i18n/content";
 import { errorText } from "@/utils/error-text";
+import { BloodCompatibilityGuide } from "../components/BloodCompatibilityGuide";
+import { MadhupurEmergencyDirectory } from "../components/MadhupurEmergencyDirectory";
 
 export function Article({ page }: { page: string }) {
   const { en } = usePrefs();
@@ -29,9 +31,11 @@ export function Article({ page }: { page: string }) {
           <p>{c[en ? 3 : 2]}</p>
         )}
         {page === "how-it-works" && (
-          <Link className="button" to="/donors">
-            {t(en, "রক্তদাতা খুঁজুন", "Find donors")} <ArrowRight size={17} />
-          </Link>
+          <div className="article-cta">
+            <Link className="button" to="/donors">
+              {t(en, "রক্তদাতা খুঁজুন", "Find donors")} <ArrowRight size={17} />
+            </Link>
+          </div>
         )}
         {page === "contact" && (
           <RequireUser>
@@ -61,9 +65,24 @@ export function Article({ page }: { page: string }) {
           </RequireUser>
         )}
       </div>
+
+      {(page === "how-it-works" || page === "guidelines") && (
+        <BloodCompatibilityGuide en={en} />
+      )}
+
+      {(page === "how-it-works" || page === "contact") && (
+        <MadhupurEmergencyDirectory en={en} />
+      )}
+
       <div className="article-links">
-        <Link to="/guidelines">Donation guidelines</Link>
-        <Link to="/faq">FAQ</Link>
+        <Link to="/guidelines">
+          {t(en, "রক্তদান নির্দেশিকা", "Donation guidelines")}
+        </Link>
+        <Link to="/faq">{t(en, "সাধারণ প্রশ্ন", "FAQ")}</Link>
+        <Link to="/how-it-works">
+          {t(en, "যেভাবে কাজ করে", "How it works")}
+        </Link>
+        <Link to="/contact">{t(en, "জরুরি যোগাযোগ", "Contact & Support")}</Link>
       </div>
     </section>
   );

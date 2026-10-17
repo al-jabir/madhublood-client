@@ -8,7 +8,11 @@ export function DateTimePicker({
   value,
   defaultValue = "",
   onChange,
+  required = true,
+  title,
 }: {
+  required?: boolean;
+  title?: string;
   id?: string;
   name: string;
   value?: string;
@@ -42,8 +46,8 @@ export function DateTimePicker({
         value={date}
         onChange={(day) => update(day)}
         min={today}
-        required
-        title={t(en, "কখন রক্ত প্রয়োজন", "When is blood needed?")}
+        required={required}
+        title={title ?? t(en, "কখন রক্ত প্রয়োজন", "When is blood needed?")}
       />
       <div className="time-select-row">
         <div>

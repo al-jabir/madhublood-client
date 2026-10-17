@@ -19,6 +19,7 @@ import {
   UserCheck,
   Send,
   ShieldCheck,
+  MessageCircle,
 } from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
 import { groups } from "@/features/donors/constants/blood-groups";
@@ -570,9 +571,25 @@ export function Home() {
                   <CheckCircle2 size={13} />
                   <span>{t(en, "যাচাইকৃত অনুরোধ", "Verified Request")}</span>
                 </div>
-                <Link to={`/requests/${req.id}`} className="btn-card-help">
-                  {t(en, "সাহায্য করুন", "Help Now")}
-                </Link>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                      en
+                        ? `🚨 URGENT BLOOD NEEDED (${req.bloodGroup}) in Madhupur!\n🏥 Hospital: ${req.hospital}\n📍 Area: ${req.area}\n📦 Units: ${req.units}\n🔗 Details: ${window.location.origin}/requests/${req.id}`
+                        : `🚨 জরুরি রক্তের প্রয়োজন (${req.bloodGroup}) - মধুপুর!\n🏥 হাসপাতাল: ${req.hospital}\n📍 এলাকা: ${req.area}\n📦 পরিমাণ: ${req.units} ব্যাগ\n🔗 বিস্তারিত: ${window.location.origin}/requests/${req.id}`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-card-whatsapp"
+                    title={t(en, "WhatsApp-এ শেয়ার করুন", "Share on WhatsApp")}
+                    aria-label={t(en, "WhatsApp-এ শেয়ার করুন", "Share on WhatsApp")}
+                  >
+                    <MessageCircle size={15} />
+                  </a>
+                  <Link to={`/requests/${req.id}`} className="btn-card-help">
+                    {t(en, "সাহায্য করুন", "Help Now")}
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

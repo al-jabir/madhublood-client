@@ -1,3 +1,4 @@
+import { RequestCoordination } from "@/features/coordination/components/RequestCoordination";
 import { requestLabel } from "../request-labels";
 import { donorsApi } from "@/features/donors/api/donors.api";
 import { usePrefs } from "@/store/preferences.store";
@@ -16,6 +17,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 import { Field } from "@/components/ui/Field";
 import { RequireUser } from "@/features/auth/components/RequireUser";
 import { errorText } from "@/utils/error-text";
+import { RequestShare } from "../components/RequestShare";
 
 export function RequestDetail() {
   const { en } = usePrefs();
@@ -123,8 +125,21 @@ export function RequestDetail() {
           </div>
         )}
         {item.instructions && <p>{item.instructions}</p>}
+
+        <RequestShare
+          id={item.id}
+          bloodGroup={item.bloodGroup}
+          hospital={item.hospital}
+          area={item.area}
+          units={item.units}
+          component={item.component}
+          requiredAt={item.requiredAt}
+          en={en}
+          contact={item.contact}
+        />
         {item.owner === me?.id ? (
           <>
+            <RequestCoordination id={id!} status={item.status} />
             {["submitted", "verification", "active"].includes(item.status) && (
               <Link className="text-link" to={`/requests/${id}/edit`}>
                 {t(
@@ -142,27 +157,32 @@ export function RequestDetail() {
                   : ["submitted", "verification"].includes(item.status)
                     ? ["cancelled"]
                     : []
-              ).map((status) => (
-                <button
-                  key={requestLabel(en, status)}
-                  className="button secondary"
-                  disabled={mutation.isPending}
-                  onClick={() => {
-                    if (
-                      confirm(
-                        t(
-                          en,
-                          `অনুরোধের অবস্থা «${requestLabel(false, status)}» করবেন?`,
-                          `Mark this request ${requestLabel(true, status)}?`,
-                        ),
+              )
+                .filter(
+                  (status) =>
+                    status !== "completed" || !item.coordinatorManaged,
+                )
+                .map((status) => (
+                  <button
+                    key={requestLabel(en, status)}
+                    className="button secondary"
+                    disabled={mutation.isPending}
+                    onClick={() => {
+                      if (
+                        confirm(
+                          t(
+                            en,
+                            `অনুরোধের অবস্থা «${requestLabel(false, status)}» করবেন?`,
+                            `Mark this request ${requestLabel(true, status)}?`,
+                          ),
+                        )
                       )
-                    )
-                      mutation.mutate({ path: "status", data: { status } });
-                  }}
-                >
-                  {requestLabel(en, status)}
-                </button>
-              ))}
+                        mutation.mutate({ path: "status", data: { status } });
+                    }}
+                  >
+                    {requestLabel(en, status)}
+                  </button>
+                ))}
             </div>
             <h3>{t(en, "রক্তদাতাদের সাড়া", "Donor responses")}</h3>
             {r.isError ? (

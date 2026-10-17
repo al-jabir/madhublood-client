@@ -78,7 +78,11 @@ export function AccountMenu() {
           </Link>
           {me.roles.some((r) =>
             ["admin", "super-admin", "volunteer"].includes(r),
-          ) && <Link to="/admin">{t(en, "পরিচালনা", "Moderation")}</Link>}
+          ) && (
+            <Link to="/admin?section=coordination">
+              {t(en, "রক্তের সমন্বয়", "Coordination desk")}
+            </Link>
+          )}
           <button
             disabled={busy}
             onClick={async () => {

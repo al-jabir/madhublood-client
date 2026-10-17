@@ -80,8 +80,10 @@ export function DemoExamples({ manage = false }: { manage?: boolean }) {
       <div className="card-grid">
         {items.slice(page * 9, page * 9 + 9).map((item) => (
           <article className="donor-card" key={item.name}>
-            <span className="blood-type">{item.bloodGroup}</span>
-            <span className="badge">{t(en, "ডেমো", "Demo")}</span>
+            <div className="card-top">
+              <span className="blood-type">{item.bloodGroup}</span>
+              <span className="badge">{t(en, "ডেমো", "Demo")}</span>
+            </div>
             <h3>{item.name}</h3>
             <p>{item.area}</p>
             <p>

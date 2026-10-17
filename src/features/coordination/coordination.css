@@ -1,0 +1,325 @@
+.coord-desk {
+  display: grid;
+  gap: 24px;
+}
+.coord-intro {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 20px;
+}
+.coord-intro h2,
+.coord-detail h2 {
+  font-size: clamp(21px, 2vw, 28px);
+  margin: 0 0 6px;
+}
+.coord-intro p,
+.coord-detail p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.coord-intro-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: #ef444419;
+  color: #ef4444;
+}
+.coord-intro > .badge {
+  margin-left: auto;
+}
+.coord-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.coord-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.coord-list > h3 {
+  margin: 0 0 4px;
+}
+.coord-request {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+  width: 100%;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+}
+.coord-request.is-selected {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px #ef444419;
+}
+.coord-request > strong {
+  font-size: 16px;
+}
+.coord-request small,
+.coord-donor small,
+.coord-contact small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.coord-group {
+  font-size: 21px;
+  color: #ef4444;
+}
+.coord-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.coord-progress {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #94a3b825;
+}
+.coord-progress > span {
+  display: block;
+  height: 100%;
+  background: #ef4444;
+  border-radius: 10px;
+}
+.coord-detail {
+  min-width: 0;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  display: grid;
+  gap: 22px;
+}
+.coord-eyebrow {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+.coord-blood {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ef4444;
+  background: #ef444412;
+  border-radius: 16px;
+  padding: 14px;
+}
+.coord-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.coord-metrics > div {
+  display: grid;
+  gap: 5px;
+  padding: 17px 12px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 14px;
+}
+.coord-metrics strong {
+  font-size: 28px;
+  line-height: 1.2;
+}
+.coord-metrics span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.coord-metrics > div:last-child {
+  background: #ef44440d;
+  color: #ef4444;
+}
+.coord-detail p.coord-hint {
+  font-size: 12px;
+}
+.coord-assignment {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 18px;
+  background: #94a3b80a;
+  border-radius: 14px;
+}
+.coord-assignment label {
+  flex: 1;
+  min-width: 180px;
+}
+.coord-detail label,
+.coord-donor label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.coord-detail select,
+.coord-detail textarea {
+  width: 100%;
+  min-width: 0;
+}
+.coord-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #22c55e0d;
+  border-radius: 12px;
+}
+.coord-contact {
+  padding: 16px 0;
+  border-block: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.coord-section-heading h3,
+.coord-completion h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+.coord-section-heading p,
+.coord-completion p {
+  font-size: 13px;
+}
+.coord-donor {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 16px;
+}
+.coord-donor > .button {
+  justify-self: start;
+}
+.coord-donor details summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+}
+.coord-donor details[open] summary {
+  margin-bottom: 14px;
+}
+.coord-completion {
+  display: flex;
+  align-items: start;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #22c55e09;
+  border: 1px solid #22c55e25;
+  padding: 20px;
+  border-radius: 14px;
+}
+.coord-completion > div {
+  flex: 1;
+  min-width: 180px;
+}
+.coord-completion > svg {
+  flex: none;
+  color: #16a34a;
+}
+.coord-empty {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--muted);
+  border: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 16px;
+}
+.coord-empty h2,
+.coord-empty h3,
+.coord-empty p {
+  margin: 0;
+}
+.coord-owner {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #22c55e35;
+  border-radius: 16px;
+  margin-block: 24px;
+  background: #22c55e08;
+}
+.coord-owner h3,
+.coord-owner p {
+  margin: 0;
+}
+.coord-owner .button {
+  justify-self: start;
+}
+.coord-owner p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.coord-detail .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 1100px) {
+  .coord-layout {
+    grid-template-columns: 1fr;
+  }
+  .coord-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .coord-list > h3,
+  .coord-list > .coord-between {
+    grid-column: 1/-1;
+  }
+}
+@media (max-width: 600px) {
+  .coord-intro {
+    padding: 18px;
+    flex-wrap: wrap;
+  }
+  .coord-intro > div:nth-child(2) {
+    flex: 1;
+    min-width: 180px;
+  }
+  .coord-intro > .badge {
+    margin-left: 0;
+  }
+  .coord-list {
+    grid-template-columns: 1fr;
+  }
+  .coord-detail {
+    padding: 18px;
+    gap: 20px;
+  }
+  .coord-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .coord-assignment {
+    padding: 14px;
+  }
+  .coord-assignment .button {
+    width: 100%;
+  }
+  .coord-donor {
+    padding: 16px;
+  }
+  .coord-owner {
+    padding: 16px;
+  }
+}

@@ -72,6 +72,16 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
       else nav("/dashboard?tab=profile", { state: { returnTo } });
     },
   });
+  const loginError =
+    !register && isAxiosError(m.error) && m.error.response?.status === 401;
+  const serverMessage = m.error ? errorText(m.error) : "";
+  const wrongPassword =
+    loginError && serverMessage.startsWith("Incorrect password.");
+  const missingAccount =
+    loginError && serverMessage.startsWith("No account found with this email.");
+  const lockedAccount =
+    loginError &&
+    serverMessage.startsWith("Too many unsuccessful sign-in attempts.");
   return (
     <AuthLayout>
       <div className="form-intro">
@@ -89,7 +99,13 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           )}
         </p>
       </div>
-      <form className="auth-form" onSubmit={handleSubmit((v) => m.mutate(v))}>
+      <form
+        className="auth-form"
+        onChange={() => {
+          if (m.isError) m.reset();
+        }}
+        onSubmit={handleSubmit((v) => m.mutate(v))}
+      >
         {typeof location.state?.message === "string" && (
           <p className="notice" role="status">
             {location.state.message}
@@ -97,6 +113,8 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         )}
         <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
           <input
+            aria-invalid={!!errors.email || !!missingAccount}
+            aria-describedby={missingAccount ? "auth-error-message" : undefined}
             type="email"
             autoComplete="email"
             maxLength={254}
@@ -106,6 +124,8 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
         </Field>
         <Field label={t(en, "পাসওয়ার্ড", "Password")}>
           <PasswordInput
+            aria-invalid={!!errors.password || !!wrongPassword}
+            aria-describedby={wrongPassword ? "auth-error-message" : undefined}
             autoComplete={register ? "new-password" : "current-password"}
             placeholder="••••••••"
             {...r("password")}
@@ -134,25 +154,45 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           </label>
         )}
         {m.isError && (
-          <div className="notice auth-action-error" role="alert">
+          <div
+            id="auth-error-message"
+            className="notice auth-action-error"
+            role="alert"
+          >
             <p>
               {isAxiosError(m.error) &&
               m.error.response?.status === 409 &&
               register
                 ? t(
                     en,
-                    "এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে। আবার register না করে লগ ইন করুন।",
+                    "এই ইমেইলে আগে থেকেই অ্যাকাউন্ট আছে। লগ ইন করুন অথবা পাসওয়ার্ড ফিরে পান।",
                     "This email is already registered. Sign in instead of creating another account.",
                   )
-                : isAxiosError(m.error) &&
-                    m.error.response?.status === 401 &&
-                    !register
+                : wrongPassword
                   ? t(
                       en,
-                      "ইমেইল বা পাসওয়ার্ড মেলেনি। আগে register করে থাকলে তথ্য ঠিক করুন বা password reset করুন। নতুন হলে account তৈরি করুন।",
-                      "Email or password did not match. If you already registered, check your details or reset your password. New here? Create an account first.",
+                      "পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করুন অথবা পাসওয়ার্ড ফিরে পান।",
+                      "Incorrect password. Try again or reset your password.",
                     )
-                  : errorText(m.error)}
+                  : missingAccount
+                    ? t(
+                        en,
+                        "এই ইমেইলে কোনো অ্যাকাউন্ট নেই। আগে অ্যাকাউন্ট তৈরি করুন।",
+                        "No account found with this email. Create an account first.",
+                      )
+                    : lockedAccount
+                      ? t(
+                          en,
+                          "অনেকবার ভুল তথ্য দেওয়া হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+                          "Too many unsuccessful sign-in attempts. Please try again later.",
+                        )
+                      : loginError
+                        ? t(
+                            en,
+                            "ইমেইল বা পাসওয়ার্ড মেলেনি। তথ্য ঠিক করে আবার চেষ্টা করুন অথবা পাসওয়ার্ড ফিরে পান।",
+                            "Email or password did not match. If you already registered, check your details or reset your password. New here? Create an account first.",
+                          )
+                        : errorText(m.error)}
             </p>
             <div className="auth-error-actions">
               {register ? (
@@ -162,14 +202,14 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
                 >
                   {t(en, "লগ ইন করুন", "Sign in")}
                 </Link>
-              ) : (
+              ) : !wrongPassword && !lockedAccount ? (
                 <Link
                   to="/register"
                   state={{ returnTo, email: getValues("email") }}
                 >
                   {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
                 </Link>
-              )}
+              ) : null}
               <Link to="/forgot-password" state={{ email: getValues("email") }}>
                 {t(en, "পাসওয়ার্ড ফিরে পান", "Reset password")}
               </Link>
