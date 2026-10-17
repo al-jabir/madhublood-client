@@ -1911,7 +1911,7 @@ header nav a.active {
 }
 .admin-shell {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   min-height: 100vh;
   background: var(--surface);
 }
@@ -1926,6 +1926,13 @@ header nav a.active {
   flex-direction: column;
   gap: 28px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.admin-sidebar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 .admin-brand {
   display: flex;

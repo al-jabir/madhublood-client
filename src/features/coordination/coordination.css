@@ -327,3 +327,17 @@
 .coord-detail-container {
   min-width: 0;
 }
+
+.coord-whatsapp-btn {
+  color: #15803d !important;
+  border-color: rgba(22, 163, 74, 0.3) !important;
+}
+
+[data-theme="dark"] .coord-whatsapp-btn {
+  color: #4ade80 !important;
+  border-color: rgba(74, 222, 128, 0.3) !important;
+}
+
+.coord-whatsapp-btn:hover {
+  background: rgba(22, 163, 74, 0.08) !important;
+}

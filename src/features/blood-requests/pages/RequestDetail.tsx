@@ -187,6 +187,37 @@ export function RequestDetail() {
           en={en}
           contact={item.contact}
         />
+        {canVolunteer(me, "coordinate-requests") && (
+          <div
+            className="notice"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <strong>
+                {t(en, "স্বেচ্ছাসেবক ড্যাশবোর্ড", "Volunteer workspace")}
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "12px" }}>
+                {t(
+                  en,
+                  "এই অনুরোধের ফলো-আপ ও রক্তদাতা সমন্বয় পরিচালনা করুন।",
+                  "Coordinate donor follow-ups and family feedback in your workspace.",
+                )}
+              </p>
+            </div>
+            <Link
+              to="/volunteer?tab=requests&list=assigned"
+              className="button small"
+            >
+              {t(en, "ড্যাশবোর্ডে যান", "Open workspace")}
+            </Link>
+          </div>
+        )}
         {item.owner === me?.id ? (
           <>
             <RequestCoordination id={id!} status={item.status} />

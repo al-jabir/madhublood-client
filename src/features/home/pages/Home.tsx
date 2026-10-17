@@ -33,6 +33,8 @@ import { Failure } from "@/components/feedback/Failure";
 import { Empty } from "@/components/feedback/Empty";
 import { Loading } from "@/components/feedback/Loading";
 import { donorsApi } from "@/features/donors/api/donors.api";
+import { superAdminApi } from "@/features/super-admin/api/super-admin.api";
+import { MaintenanceView } from "../components/MaintenanceView";
 
 export function Home() {
   const { en } = usePrefs();
@@ -55,17 +57,32 @@ export function Home() {
   // FAQ Accordion State (first item open by default)
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
-  // Live Queries from Server
+  // Platform Query to check maintenance mode
+  const platform = useQuery({
+    queryKey: ["platform"],
+    queryFn: superAdminApi.platform,
+    staleTime: 15000,
+    refetchInterval: 15000,
+  });
+
+  const isMaintenance = Boolean(platform.data?.maintenance);
+  const isAdmin = Boolean(
+    me && (me.roles.includes("admin") || me.roles.includes("super-admin")),
+  );
+
+  // Live Queries from Server (paused during maintenance unless admin)
   const locations = useQuery({
     queryKey: ["locations", 50],
     queryFn: () => locationsApi.list(50),
     staleTime: 600000,
+    enabled: !isMaintenance || isAdmin,
   });
 
   const urgentRequests = useQuery({
     queryKey: ["requests", "home"],
     queryFn: () => communityToolsApi.urgent({ page: 1 }),
     staleTime: 60000,
+    enabled: !isMaintenance || isAdmin,
   });
 
   const activeDonors = useQuery({
@@ -77,6 +94,7 @@ export function Home() {
         page: 1,
       }),
     staleTime: 60000,
+    enabled: !isMaintenance || isAdmin,
   });
 
   // Handlers
@@ -148,6 +166,17 @@ export function Home() {
       ),
     }));
   const displayedDonors = (activeDonors.data?.items ?? []).slice(0, 4);
+
+  if (isMaintenance && !isAdmin) {
+    return (
+      <MaintenanceView
+        supportMessage={platform.data?.supportMessage}
+        isFetching={platform.isFetching}
+        onRefresh={() => platform.refetch()}
+        isAdmin={false}
+      />
+    );
+  }
 
   return (
     <>

@@ -263,6 +263,11 @@
   color: var(--ink);
   font-weight: 500;
 }
+.volunteer-requester-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
 .volunteer-call-link {
   display: inline-flex;
   align-items: center;
@@ -274,6 +279,84 @@
 }
 .volunteer-call-link:hover {
   text-decoration: underline;
+}
+.volunteer-whatsapp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #15803d;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 12px;
+  transition: opacity 0.15s ease;
+}
+[data-theme="dark"] .volunteer-whatsapp-link {
+  color: #4ade80;
+}
+.volunteer-whatsapp-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+.volunteer-whatsapp-btn {
+  color: #15803d !important;
+  border-color: rgba(22, 163, 74, 0.3) !important;
+}
+[data-theme="dark"] .volunteer-whatsapp-btn {
+  color: #4ade80 !important;
+  border-color: rgba(74, 222, 128, 0.3) !important;
+}
+.volunteer-whatsapp-btn:hover {
+  background: rgba(22, 163, 74, 0.08) !important;
+}
+.volunteer-copy-post-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.volunteer-copy-post-btn:hover {
+  background: var(--line);
+  border-color: var(--ink);
+}
+.volunteer-sort-select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  outline: none;
+}
+.volunteer-sort-select:focus {
+  border-color: var(--red);
+}
+.volunteer-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.volunteer-export-btn:hover {
+  background: var(--surface);
+  border-color: var(--red);
+  color: var(--red);
 }
 .volunteer-request-info {
   display: grid;

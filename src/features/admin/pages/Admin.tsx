@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   Languages,
+  HeartHandshake,
 } from "lucide-react";
 import { toast } from "sonner";
 import { adminApi } from "../api/admin.api";
@@ -100,8 +101,10 @@ export function Admin() {
     },
     {
       key: "coordination",
-      label: t(en, "রক্তের সমন্বয়", "Coordination desk"),
-      icon: ClipboardList,
+      label: administrator
+        ? t(en, "রক্তের সমন্বয়", "Coordination desk")
+        : t(en, "স্বেচ্ছাসেবক ড্যাশবোর্ড", "Volunteer desk"),
+      icon: HeartHandshake,
     },
     {
       key: "overview",

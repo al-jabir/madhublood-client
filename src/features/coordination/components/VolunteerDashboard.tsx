@@ -15,7 +15,12 @@ import {
   Search,
   UserRound,
   Edit3,
+  Share2,
+  Download,
+  MessageCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+import { getWhatsAppUrl } from "@/utils/whatsapp";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { RequireUser } from "@/features/auth/components/RequireUser";
 import { usePrefs } from "@/store/preferences.store";
@@ -43,6 +48,7 @@ export function VolunteerDashboard({
   const [params, setParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"newest" | "urgent" | "deadline">("newest");
   const tab = ["overview", "requests", "tasks", "history"].includes(
     params.get("tab") ?? "",
   )
@@ -96,6 +102,25 @@ export function VolunteerDashboard({
             }
             return true;
           })
+          .sort((a, b) => {
+            if (sortBy === "urgent") {
+              const urgencyRank = (u?: string) =>
+                u === "emergency" ? 2 : u === "urgent" ? 1 : 0;
+              const diff = urgencyRank(b.urgency) - urgencyRank(a.urgency);
+              if (diff !== 0) return diff;
+              return (
+                new Date(a.requiredAt).getTime() -
+                new Date(b.requiredAt).getTime()
+              );
+            }
+            if (sortBy === "deadline") {
+              return (
+                new Date(a.requiredAt).getTime() -
+                new Date(b.requiredAt).getTime()
+              );
+            }
+            return 0;
+          })
           .slice(0, tab === "overview" ? 6 : 12)
       : [];
   function navigate(values: Record<string, string>) {
@@ -143,6 +168,193 @@ export function VolunteerDashboard({
       "Request completed",
     ),
   };
+
+  function copyPostText(r: VolunteerRequest) {
+    const isEmergency = r.urgency === "emergency";
+    const header = isEmergency
+      ? "🚨 জরুরী রক্তের প্রয়োজন 🚨"
+      : "🩸 রক্তের প্রয়োজন 🩸";
+    const reqDate = new Date(r.requiredAt).toLocaleString(
+      en ? "en-GB" : "bn-BD",
+      {
+        dateStyle: "medium",
+        timeStyle: "short",
+      },
+    );
+    const url = `${window.location.origin}/requests/${r._id}`;
+    const bloodTag = `#${r.bloodGroup.replace("+", "Positive").replace("-", "Negative")}`;
+
+    const text = `${header}
+রক্তের গ্রুপ: ${r.bloodGroup}
+প্রয়োজন: ${r.units} ব্যাগ
+হাসপাতাল: ${r.hospital}
+এলাকা: ${r.area}
+প্রয়োজনের সময়: ${reqDate}
+${r.contact ? `যোগাযোগ: ${r.contact} ${r.representative ? `(${r.representative})` : ""}` : ""}
+
+বিস্তারিত ও রক্তদানে সম্মতি জানাতে ভিজিট করুন:
+${url}
+
+#BloodDonation #MadhupurBlood #SaveLives ${bloodTag}`;
+
+    const copyWithFallback = () => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        toast.success(
+          t(en, "সোশ্যাল মিডিয়া পোস্ট কপি হয়েছে!", "Post copy ready to share!"),
+        );
+      } catch {
+        toast.error(t(en, "কপি করতে সমস্যা হয়েছে", "Failed to copy text"));
+      }
+      document.body.removeChild(textarea);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () =>
+          toast.success(
+            t(
+              en,
+              "সোশ্যাল মিডিয়া পোস্ট কপি হয়েছে!",
+              "Post copy ready to share!",
+            ),
+          ),
+        () => copyWithFallback(),
+      );
+    } else {
+      copyWithFallback();
+    }
+  }
+
+  function downloadCsv(
+    filename: string,
+    headers: string[],
+    rows: (string | number)[][],
+  ) {
+    const escapeCsv = (str: string | number) => {
+      const val = String(str ?? "").replace(/"/g, '""');
+      return `"${val}"`;
+    };
+    const csvContent =
+      "\ufeff" +
+      [headers.map(escapeCsv).join(",")]
+        .concat(rows.map((row) => row.map(escapeCsv).join(",")))
+        .join("\r\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCsv() {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    if (tab === "requests" || tab === "overview") {
+      const list = requestsList;
+      if (!list.length) {
+        toast.error(
+          t(en, "এক্সপোর্ট করার মতো কোনো অনুরোধ নেই", "No requests to export"),
+        );
+        return;
+      }
+      const headers = [
+        "রক্তের গ্রুপ",
+        "হাসপাতাল",
+        "এলাকা",
+        "ব্যাগ",
+        "প্রয়োজনের সময়",
+        "অবস্থা",
+        "জরুরী",
+        "প্রতিনিধি",
+        "যোগাযোগ",
+        "অনুরোধ লিঙ্ক",
+      ];
+      const rows = list.map((r) => [
+        r.bloodGroup,
+        r.hospital,
+        r.area,
+        r.units,
+        new Date(r.requiredAt).toLocaleString(en ? "en-GB" : "bn-BD"),
+        requestLabel(en, r.status),
+        r.urgency === "emergency" ? "জরুরী" : "সাধারণ",
+        r.representative || "",
+        r.contact || "",
+        `${window.location.origin}/requests/${r._id}`,
+      ]);
+      downloadCsv(`madhublood-requests-${timestamp}.csv`, headers, rows);
+      toast.success(
+        t(en, "অনুরোধের CSV ডাউনলোড হয়েছে", "Requests CSV exported"),
+      );
+    } else if (tab === "tasks") {
+      const list = (q.data?.items as VolunteerTask[]) || [];
+      if (!list.length) {
+        toast.error(
+          t(en, "এক্সপোর্ট করার মতো কোনো কাজ নেই", "No tasks to export"),
+        );
+        return;
+      }
+      const headers = [
+        "রক্তদাতার নাম",
+        "রক্তের গ্রুপ",
+        "হাসপাতাল",
+        "ফোন",
+        "যোগাযোগের সময়",
+        "অনুরোধ লিঙ্ক",
+      ];
+      const rows = list.map((task) => [
+        task.name,
+        task.bloodGroup,
+        task.hospital,
+        task.phone || "",
+        new Date(task.nextContactAt).toLocaleString(en ? "en-GB" : "bn-BD"),
+        `${window.location.origin}/requests/${task.requestId}`,
+      ]);
+      downloadCsv(`madhublood-tasks-${timestamp}.csv`, headers, rows);
+      toast.success(
+        t(en, "কাজের তালিকার CSV ডাউনলোড হয়েছে", "Tasks CSV exported"),
+      );
+    } else if (tab === "history") {
+      const list = (q.data?.items as VolunteerActivity[]) || [];
+      if (!list.length) {
+        toast.error(
+          t(en, "এক্সপোর্ট করার মতো কোনো রেকর্ড নেই", "No history to export"),
+        );
+        return;
+      }
+      const headers = [
+        "তারিখ ও সময়",
+        "কাজের বিবরণ",
+        "রক্তের গ্রুপ",
+        "হাসপাতাল",
+        "অনুরোধ লিঙ্ক",
+      ];
+      const rows = list.map((item) => [
+        new Date(item.createdAt).toLocaleString(en ? "en-GB" : "bn-BD"),
+        events[item.action] || item.action,
+        item.bloodGroup,
+        item.hospital,
+        `${window.location.origin}/requests/${item.requestId}`,
+      ]);
+      downloadCsv(`madhublood-activity-${timestamp}.csv`, headers, rows);
+      toast.success(
+        t(
+          en,
+          "কাজের ইতিহাসের CSV ডাউনলোড হয়েছে",
+          "Activity history CSV exported",
+        ),
+      );
+    }
+  }
+
   return (
     <RequireUser>
       <section
@@ -505,6 +717,38 @@ export function VolunteerDashboard({
                               </option>
                             ))}
                           </select>
+                          <select
+                            className="volunteer-sort-select"
+                            value={sortBy}
+                            onChange={(e) =>
+                              setSortBy(
+                                e.target.value as
+                                  | "newest"
+                                  | "urgent"
+                                  | "deadline",
+                              )
+                            }
+                            aria-label={t(en, "বাছাই করুন", "Sort requests")}
+                          >
+                            <option value="newest">
+                              {t(en, "সর্বশেষ যুক্ত", "Newest first")}
+                            </option>
+                            <option value="urgent">
+                              {t(en, "জরুরী অগ্রাধিকার", "Urgency first")}
+                            </option>
+                            <option value="deadline">
+                              {t(en, "নিকটবর্তী সময়", "Nearest deadline")}
+                            </option>
+                          </select>
+                          <button
+                            type="button"
+                            className="volunteer-export-btn"
+                            onClick={exportCsv}
+                            title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
+                          >
+                            <Download size={14} />
+                            <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                          </button>
                         </div>
                       </>
                     )}
@@ -552,21 +796,47 @@ export function VolunteerDashboard({
                                     <UserRound size={13} />
                                     {r.representative}
                                   </span>
-                                  {r.contact && (
-                                    <a
-                                      href={`tel:${r.contact}`}
-                                      className="volunteer-call-link"
-                                      onClick={(e) => e.stopPropagation()}
-                                      title={t(
-                                        en,
-                                        "প্রতিনিধিকে ফোন করুন",
-                                        "Call requester",
-                                      )}
-                                    >
-                                      <Phone size={13} />
-                                      {r.contact}
-                                    </a>
-                                  )}
+                                  <div className="volunteer-requester-actions">
+                                    {r.contact && (
+                                      <>
+                                        <a
+                                          href={`tel:${r.contact}`}
+                                          className="volunteer-call-link"
+                                          onClick={(e) => e.stopPropagation()}
+                                          title={t(
+                                            en,
+                                            "প্রতিনিধিকে ফোন করুন",
+                                            "Call requester",
+                                          )}
+                                        >
+                                          <Phone size={13} />
+                                          {r.contact}
+                                        </a>
+                                        <a
+                                          href={getWhatsAppUrl(
+                                            r.contact,
+                                            t(
+                                              en,
+                                              `আসসালামু আলাইকুম, ${r.hospital}-এ ${r.bloodGroup} রক্তের প্রয়োজন নিয়ে মধুপুর রক্তদান প্ল্যাটফর্ম থেকে যোগাযোগ করছি।`,
+                                              `Hello, contacting regarding the ${r.bloodGroup} blood request at ${r.hospital}.`,
+                                            ),
+                                          )}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="volunteer-whatsapp-link"
+                                          onClick={(e) => e.stopPropagation()}
+                                          title={t(
+                                            en,
+                                            "হোয়াটসঅ্যাপে মেসেজ পাঠান",
+                                            "Send WhatsApp message",
+                                          )}
+                                        >
+                                          <MessageCircle size={13} />
+                                          <span>WhatsApp</span>
+                                        </a>
+                                      </>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                               <div className="volunteer-request-info">
@@ -612,6 +882,21 @@ export function VolunteerDashboard({
                                   {t(en, "অনুরোধ দেখুন", "View request")}
                                   <ArrowUpRight size={15} />
                                 </Link>
+                                <button
+                                  type="button"
+                                  className="volunteer-copy-post-btn"
+                                  onClick={() => copyPostText(r)}
+                                  title={t(
+                                    en,
+                                    "সোশ্যাল মিডিয়ায় শেয়ারের জন্য পোস্ট কপি করুন",
+                                    "Copy post text for Facebook or Messenger",
+                                  )}
+                                >
+                                  <Share2 size={13} />
+                                  <span>
+                                    {t(en, "পোস্ট কপি", "Share text")}
+                                  </span>
+                                </button>
                                 {manage &&
                                   [
                                     "active",
@@ -727,6 +1012,17 @@ export function VolunteerDashboard({
                           )}
                         </p>
                       </div>
+                      {manage && Boolean(q.data?.items?.length) && (
+                        <button
+                          type="button"
+                          className="volunteer-export-btn"
+                          onClick={exportCsv}
+                          title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
+                        >
+                          <Download size={14} />
+                          <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                        </button>
+                      )}
                     </div>
                     {!manage ? (
                       <div className="volunteer-empty">
@@ -754,13 +1050,32 @@ export function VolunteerDashboard({
                             </div>
                             <div className="volunteer-task-actions">
                               {task.phone && (
-                                <a
-                                  className="button secondary small"
-                                  href={`tel:${task.phone}`}
-                                >
-                                  <Phone size={14} />
-                                  {task.phone}
-                                </a>
+                                <>
+                                  <a
+                                    className="button secondary small"
+                                    href={`tel:${task.phone}`}
+                                  >
+                                    <Phone size={14} />
+                                    {task.phone}
+                                  </a>
+                                  <a
+                                    className="button secondary small volunteer-whatsapp-btn"
+                                    href={getWhatsAppUrl(
+                                      task.phone,
+                                      t(
+                                        en,
+                                        `আসসালামু আলাইকুম, ${task.hospital}-এ ${task.bloodGroup} রক্তদানের বিষয়ে মধুপুর রক্তদান প্ল্যাটফর্ম থেকে যোগাযোগ করছি।`,
+                                        `Hello, contacting regarding blood donation follow-up at ${task.hospital}.`,
+                                      ),
+                                    )}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="WhatsApp"
+                                  >
+                                    <MessageCircle size={14} />
+                                    WhatsApp
+                                  </a>
+                                </>
                               )}
                               <button
                                 className="button small"
@@ -814,6 +1129,17 @@ export function VolunteerDashboard({
                           )}
                         </p>
                       </div>
+                      {Boolean(q.data?.items?.length) && (
+                        <button
+                          type="button"
+                          className="volunteer-export-btn"
+                          onClick={exportCsv}
+                          title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
+                        >
+                          <Download size={14} />
+                          <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                        </button>
+                      )}
                     </div>
                     {q.data.items.length ? (
                       <ol className="volunteer-history">

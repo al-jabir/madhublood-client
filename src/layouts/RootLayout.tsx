@@ -13,6 +13,7 @@ import {
   Moon,
   Languages,
   Bell,
+  Wrench,
 } from "lucide-react";
 import { Toaster } from "sonner";
 import { usePrefs } from "@/store/preferences.store";
@@ -23,13 +24,34 @@ import { Loading } from "@/components/feedback/Loading";
 import { content } from "@/i18n/content";
 import { PlatformNotice } from "@/features/super-admin/components/PlatformNotice";
 import { canVolunteer } from "@/utils/volunteer-permissions";
+import { superAdminApi } from "@/features/super-admin/api/super-admin.api";
+import { MaintenanceView } from "@/features/home/components/MaintenanceView";
 
 export function RootLayout() {
   useDocumentPreferences();
   const { en, dark, toggleLang, toggleTheme } = usePrefs();
   const [open, setOpen] = useState(false);
   const { data: me } = useMe();
-  const adminPage = useLocation().pathname === "/admin";
+  const location = useLocation();
+  const pathname = location.pathname;
+  const adminPage = pathname === "/admin";
+  const isAuthRoute =
+    pathname === "/login" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname === "/verify-email";
+
+  const platformQuery = useQuery({
+    queryKey: ["platform"],
+    queryFn: superAdminApi.platform,
+    staleTime: 15000,
+    refetchInterval: 15000,
+  });
+
+  const isMaintenance = Boolean(platformQuery.data?.maintenance);
+  const isAdmin = Boolean(
+    me && (me.roles?.includes("admin") || me.roles?.includes("super-admin")),
+  );
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications", "badge"],
@@ -55,11 +77,32 @@ export function RootLayout() {
         <Toaster richColors position="top-center" />
       </>
     );
+
   return (
     <>
       <a href="#main" className="skip">
         Skip to content
       </a>
+      {isMaintenance && isAdmin && (
+        <div className="maintenance-admin-active-bar">
+          <div className="maintenance-admin-active-content">
+            <span>
+              ⚠️{" "}
+              {t(
+                en,
+                "সাইটে রক্ষণাবেক্ষণ মোড চালু আছে (সাধারণ দর্শকদের জন্য সম্পূর্ণ সাইট বন্ধ)। শুধুমাত্র অ্যাডমিন হিসেবে আপনার প্রবেশাধিকার রয়েছে।",
+                "Maintenance mode is active (Public site is offline). You have access as an administrator.",
+              )}
+            </span>
+            <Link to="/admin?section=settings" className="button small">
+              <Wrench size={14} />
+              <span>
+                {t(en, "রক্ষণাবেক্ষণ বন্ধ করুন", "Turn Off Maintenance")}
+              </span>
+            </Link>
+          </div>
+        </div>
+      )}
       <div className="topline">
         <span>
           <MapPin size={13} />{" "}
@@ -77,7 +120,9 @@ export function RootLayout() {
           )}
         </span>
       </div>
-      <header className="site-header">
+      <header
+        className={`site-header${isMaintenance && !isAdmin ? " maintenance-header" : ""}`}
+      >
         <Link to="/" className="brand">
           <span className="brand-icon">
             <Droplets fill="currentColor" />
@@ -93,60 +138,64 @@ export function RootLayout() {
             </small>
           </span>
         </Link>
-        <button
-          className="icon mobile"
-          aria-label="Toggle navigation"
-          aria-expanded={open}
-          aria-controls="primary-navigation"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X /> : <Menu />}
-        </button>
-        <nav
-          id="primary-navigation"
-          aria-label="Main navigation"
-          className={open ? "open" : ""}
-          onClick={() => setOpen(false)}
-        >
-          <NavLink to="/" end>
-            {t(en, "হোম", "Home")}
-          </NavLink>
-          <NavLink to="/donors">
-            {t(en, "রক্তদাতা খুঁজুন", "Find Donors")}
-          </NavLink>
-          <NavLink to="/requests">
-            {t(en, "রক্তের অনুরোধ", "Blood Requests")}
-          </NavLink>
-          <NavLink to="/how-it-works">
-            {t(en, "যেভাবে কাজ করে", "How It Works")}
-          </NavLink>
-          {me?.roles.some((r) => ["admin", "super-admin"].includes(r)) && (
-            <NavLink to="/admin">{t(en, "পরিচালনা", "Moderation")}</NavLink>
-          )}
-          {me &&
-            (me.roles.includes("volunteer") ||
-              canVolunteer(me, "submit-referrals") ||
-              canVolunteer(me, "coordinate-requests")) && (
-              <NavLink to="/volunteer">
-                {t(en, "স্বেচ্ছাসেবক", "Volunteer")}
+        {(!isMaintenance || isAdmin) && (
+          <>
+            <button
+              className="icon mobile"
+              aria-label="Toggle navigation"
+              aria-expanded={open}
+              aria-controls="primary-navigation"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <X /> : <Menu />}
+            </button>
+            <nav
+              id="primary-navigation"
+              aria-label="Main navigation"
+              className={open ? "open" : ""}
+              onClick={() => setOpen(false)}
+            >
+              <NavLink to="/" end>
+                {t(en, "হোম", "Home")}
               </NavLink>
-            )}
-          <div className="mobile-nav-tools">
-            <button className="icon" type="button" onClick={toggleLang}>
-              <Languages size={17} />
-              {en ? "বাংলা" : "English"}
-            </button>
-            <button className="icon" type="button" onClick={toggleTheme}>
-              {dark ? <Sun size={18} /> : <Moon size={18} />}
-              {t(en, "থিম পরিবর্তন", "Switch Theme")}
-            </button>
-            {!me && (
-              <Link to="/register">
-                {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
-              </Link>
-            )}
-          </div>
-        </nav>
+              <NavLink to="/donors">
+                {t(en, "রক্তদাতা খুঁজুন", "Find Donors")}
+              </NavLink>
+              <NavLink to="/requests">
+                {t(en, "রক্তের অনুরোধ", "Blood Requests")}
+              </NavLink>
+              <NavLink to="/how-it-works">
+                {t(en, "যেভাবে কাজ করে", "How It Works")}
+              </NavLink>
+              {me?.roles.some((r) => ["admin", "super-admin"].includes(r)) && (
+                <NavLink to="/admin">{t(en, "পরিচালনা", "Moderation")}</NavLink>
+              )}
+              {me &&
+                (me.roles.includes("volunteer") ||
+                  canVolunteer(me, "submit-referrals") ||
+                  canVolunteer(me, "coordinate-requests")) && (
+                  <NavLink to="/volunteer">
+                    {t(en, "স্বেচ্ছাসেবক", "Volunteer")}
+                  </NavLink>
+                )}
+              <div className="mobile-nav-tools">
+                <button className="icon" type="button" onClick={toggleLang}>
+                  <Languages size={17} />
+                  {en ? "বাংলা" : "English"}
+                </button>
+                <button className="icon" type="button" onClick={toggleTheme}>
+                  {dark ? <Sun size={18} /> : <Moon size={18} />}
+                  {t(en, "থিম পরিবর্তন", "Switch Theme")}
+                </button>
+                {!me && (
+                  <Link to="/register">
+                    {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
+                  </Link>
+                )}
+              </div>
+            </nav>
+          </>
+        )}
         <div className="header-actions">
           <button
             className="icon"
@@ -204,21 +253,37 @@ export function RootLayout() {
           )}
           {me ? (
             <AccountMenu />
-          ) : (
+          ) : !isMaintenance ? (
             <Link className="button small" to="/register">
-              {t(en, "রক্তদাতা হোন", "Become  Donor")}
+              {t(en, "রক্তদাতা হোন", "Become A Donor")}
               <ArrowUpRight size={16} />
             </Link>
-          )}
+          ) : null}
         </div>
       </header>
-      <PlatformNotice />
+      {(!isMaintenance || isAdmin) && <PlatformNotice />}
       <main id="main">
-        <Suspense fallback={<Loading />}>
-          <Outlet />
-        </Suspense>
+        {isMaintenance && !isAdmin ? (
+          isAuthRoute ? (
+            <Suspense fallback={<Loading />}>
+              <Outlet />
+            </Suspense>
+          ) : (
+            <MaintenanceView
+              supportMessage={platformQuery.data?.supportMessage}
+              isFetching={platformQuery.isFetching}
+              onRefresh={() => platformQuery.refetch()}
+              isAdmin={false}
+            />
+          )
+        ) : (
+          <Suspense fallback={<Loading />}>
+            <Outlet />
+          </Suspense>
+        )}
       </main>
-      <footer>
+      {(!isMaintenance || isAdmin) && (
+        <footer>
         <div className="footer-top">
           <Link to="/" className="brand">
             <Droplets className="red" />
@@ -258,6 +323,7 @@ export function RootLayout() {
           )}
         </p>
       </footer>
+      )}
       <Toaster richColors position="top-center" />
     </>
   );

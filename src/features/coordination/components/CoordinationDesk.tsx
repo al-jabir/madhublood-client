@@ -16,7 +16,9 @@ import {
   CheckCheck,
   ArrowRight,
   Clock3,
+  MessageCircle,
 } from "lucide-react";
+import { getWhatsAppUrl } from "@/utils/whatsapp";
 import { toast } from "sonner";
 import {
   coordinationApi,
@@ -134,10 +136,29 @@ function DonorContact({
           </small>
         </div>
         {donor.phone && (
-          <a className="button secondary small" href={`tel:${donor.phone}`}>
-            <Phone size={16} />
-            {donor.phone}
-          </a>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <a className="button secondary small" href={`tel:${donor.phone}`}>
+              <Phone size={15} />
+              {donor.phone}
+            </a>
+            <a
+              className="button secondary small coord-whatsapp-btn"
+              href={getWhatsAppUrl(
+                donor.phone,
+                t(
+                  en,
+                  "আসসালামু আলাইকুম, মধুপুর রক্তদান প্ল্যাটফর্ম থেকে রক্তদানের বিষয়ে যোগাযোগ করছি।",
+                  "Hello, contacting you regarding blood donation coordination via Madhupur Blood platform.",
+                ),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t(en, "হোয়াটসঅ্যাপে মেসেজ পাঠান", "Send WhatsApp message")}
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </a>
+          </div>
         )}
       </div>
       <label>
