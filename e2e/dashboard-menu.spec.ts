@@ -99,7 +99,10 @@ test("signed in header and dashboard use the selected language", async ({
   });
   await page.getByRole("button", { name: "Profile", exact: true }).click();
   await page.getByRole("button", { name: "Edit profile", exact: true }).click();
-  await page.getByRole("button", { name: "Change language" }).click();
+  if (test.info().project.name === "mobile") {
+    await page.getByRole("button", { name: "Toggle navigation" }).click();
+    await page.getByRole("button", { name: "বাংলা", exact: true }).click();
+  } else await page.getByRole("button", { name: "Change language" }).click();
   await expect(
     page.getByRole("heading", { name: "ব্যক্তিগত তথ্য", exact: true }),
   ).toBeVisible();

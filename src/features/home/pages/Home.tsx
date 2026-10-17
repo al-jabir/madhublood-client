@@ -183,7 +183,7 @@ export function Home() {
               <Link to="/donors" className="btn-primary-red">
                 <Search size={18} />
                 <span>
-                  {t(en, "রক্তদাতা খুঁজুন (Find Donors)", "Find Donors")}
+                  {t(en, "রক্তদাতা খুঁজুন", "Find Donors")}
                 </span>
               </Link>
               <Link to="/register" className="btn-outline-donor">
