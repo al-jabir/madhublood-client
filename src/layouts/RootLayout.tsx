@@ -34,9 +34,10 @@ export function RootLayout() {
   const { data: me } = useMe();
   const location = useLocation();
   const pathname = location.pathname;
-  const adminPage = pathname === "/admin";
+  const adminPage = pathname === "/admin" || pathname === "/admin/login";
   const isAuthRoute =
     pathname === "/login" ||
+    pathname === "/admin/login" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password" ||
     pathname === "/verify-email";
@@ -247,8 +248,13 @@ export function RootLayout() {
             </Link>
           )}
           {!me && (
-            <Link to="/login" className="header-signin">
-              {t(en, "লগ ইন", "Sign In")}
+            <Link
+              to={isMaintenance ? "/admin/login" : "/login"}
+              className="header-signin"
+            >
+              {isMaintenance
+                ? t(en, "অ্যাডমিন লগইন", "Admin Login")
+                : t(en, "লগ ইন", "Sign In")}
             </Link>
           )}
           {me ? (

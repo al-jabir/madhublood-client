@@ -1,0 +1,303 @@
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 10%, #1e1b2e 0%, #0f172a 60%, #020617 100%);
+  color: #f8fafc;
+  font-family: inherit;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.admin-login-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #dc2626 0%, #e11d48 50%, #f43f5e 100%);
+}
+
+.admin-login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.admin-brand-icon-box {
+  width: 40px;
+  height: 40px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f43f5e;
+}
+
+.admin-login-brand h1 {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.admin-login-brand h1 span {
+  color: #f43f5e;
+}
+
+.admin-login-brand small {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.admin-console-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: rgba(225, 29, 72, 0.2);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  padding: 3px 9px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.admin-login-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-tool-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.admin-login-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+.admin-login-title-box {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.admin-login-badge-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.25) 0%, rgba(190, 18, 60, 0.1) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f43f5e;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+}
+
+.admin-login-title-box h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.admin-login-title-box p {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.admin-security-notice {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-size: 12px;
+  color: #fde047;
+  line-height: 1.5;
+}
+
+.admin-security-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #eab308;
+}
+
+.admin-login-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  color: #fca5a5;
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.admin-form-group input {
+  width: 100%;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #ffffff;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.admin-form-group input:focus {
+  outline: none;
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2);
+  background: rgba(2, 6, 23, 0.9);
+}
+
+.admin-login-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #be123c 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.admin-login-btn:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
+.admin-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-login-footer-links {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.admin-login-footer-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.admin-login-footer-links a:hover {
+  color: #ffffff;
+}
+
+.admin-page-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 640px) {
+  .admin-login-header {
+    padding: 16px 20px;
+  }
+  .admin-login-card {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+  .admin-login-footer-links {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

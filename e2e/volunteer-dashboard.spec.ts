@@ -216,7 +216,7 @@ for (const en of [true, false])
     await expect(page.locator(".volunteer-task-list")).toContainText("Rahim");
     await page
       .getByRole("button", {
-        name: en ? "Call & update" : "ফোন ও আপডেট",
+        name: en ? "Update" : "আপডেট ও কাজ",
         exact: true,
       })
       .click();

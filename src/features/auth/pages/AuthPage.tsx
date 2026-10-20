@@ -250,6 +250,10 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
               <Link to="/forgot-password">
                 {t(en, "পাসওয়ার্ড ভুলে গেছেন?", "Forgot password?")}
               </Link>
+              <span className="dot-sep">·</span>
+              <Link to="/admin/login" style={{ opacity: 0.85, fontWeight: 600 }}>
+                {t(en, "অ্যাডমিন পোর্টাল", "Admin Portal")}
+              </Link>
             </>
           )}
         </p>

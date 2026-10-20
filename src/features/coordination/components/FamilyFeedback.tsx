@@ -69,9 +69,15 @@ export function FamilyFeedback({
           </p>
         </div>
       </div>
-      <label className="field">
-        <span>{t(en, "কী জানা গেল?", "What did the family say?")}</span>
-        <select value={outcome} onChange={(e) => setOutcome(e.target.value)}>
+      <div className="field">
+        <label htmlFor="family-feedback-outcome">
+          {t(en, "কী জানা গেল?", "What did the family say?")}
+        </label>
+        <select
+          id="family-feedback-outcome"
+          value={outcome}
+          onChange={(e) => setOutcome(e.target.value)}
+        >
           <option value="contacted">{t(en, "কথা হয়েছে", "Contacted")}</option>
           <option value="no-answer">{t(en, "ফোন ধরেননি", "No answer")}</option>
           <option value="received">
@@ -81,13 +87,14 @@ export function FamilyFeedback({
             {t(en, "সমস্যা জানিয়েছেন", "Problem reported")}
           </option>
         </select>
-      </label>
+      </div>
       {outcome === "received" && (
-        <label className="field">
-          <span>
+        <div className="field">
+          <label htmlFor="family-feedback-received">
             {t(en, "কত ব্যাগ পেয়েছেন?", "How many units were received?")}
-          </span>
+          </label>
           <input
+            id="family-feedback-received"
             type="number"
             min={1}
             max={units}
@@ -95,13 +102,14 @@ export function FamilyFeedback({
             value={received}
             onChange={(e) => setReceived(Number(e.target.value))}
           />
-        </label>
+        </div>
       )}
-      <label className="field">
-        <span>
+      <div className="field">
+        <label htmlFor="family-feedback-note">
           {t(en, "ব্যক্তিগত নোট (ঐচ্ছিক)", "Private note (optional)")}
-        </span>
+        </label>
         <textarea
+          id="family-feedback-note"
           maxLength={500}
           rows={3}
           value={note}
@@ -112,7 +120,7 @@ export function FamilyFeedback({
             "Brief follow-up only; no medical records or identity documents",
           )}
         />
-      </label>
+      </div>
       <div className="volunteer-feedback-footer">
         <small>
           {t(

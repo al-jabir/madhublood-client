@@ -1,4 +1,5 @@
 import { VolunteerDashboard } from "@/features/coordination/components/VolunteerDashboard";
+import { AdminDashboardHub } from "../components/AdminDashboardHub";
 import "../admin-workspace.css";
 import { requestLabel } from "@/features/blood-requests/request-labels";
 import { moderationLabel } from "../admin-labels";
@@ -180,7 +181,7 @@ export function Admin() {
     }
   }
   return (
-    <RequireUser>
+    <RequireUser adminOnly>
       {!allowed ? (
         <section className="page">
           <Info
@@ -306,6 +307,7 @@ export function Admin() {
                 )
               ) : selected.key === "overview" ? (
                 <>
+                  <AdminDashboardHub />
                   <Operations selected="analytics" />
                   <div className="admin-quick-actions">
                     <Link to="/admin?section=coordination">

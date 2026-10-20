@@ -7,7 +7,13 @@ import { Loading } from "@/components/feedback/Loading";
 import { Failure } from "@/components/feedback/Failure";
 import { Info } from "@/components/feedback/Info";
 
-export function RequireUser({ children }: { children: React.ReactNode }) {
+export function RequireUser({
+  children,
+  adminOnly,
+}: {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}) {
   const { en } = usePrefs();
   const q = useMe();
   const location = useLocation();
@@ -16,18 +22,28 @@ export function RequireUser({ children }: { children: React.ReactNode }) {
   ) : q.isError ? (
     <Failure error={q.error} />
   ) : !q.data ? (
-    <Info
-      title={t(en, "লগ ইন প্রয়োজন", "Sign in required")}
-      text={t(
-        en,
-        "এই কাজের জন্য আপনার অ্যাকাউন্টে লগ ইন করুন।",
-        "Sign in to your account to continue.",
-      )}
-      action
-      actionState={{
-        returnTo: { pathname: location.pathname, state: location.state },
-      }}
-    />
+    adminOnly ? (
+      <Navigate
+        to="/admin/login"
+        replace
+        state={{
+          returnTo: { pathname: location.pathname, state: location.state },
+        }}
+      />
+    ) : (
+      <Info
+        title={t(en, "লগ ইন প্রয়োজন", "Sign in required")}
+        text={t(
+          en,
+          "এই কাজের জন্য আপনার অ্যাকাউন্টে লগ ইন করুন।",
+          "Sign in to your account to continue.",
+        )}
+        action
+        actionState={{
+          returnTo: { pathname: location.pathname, state: location.state },
+        }}
+      />
+    )
   ) : q.data.verificationRequired ? (
     <Navigate
       to="/verify-email"

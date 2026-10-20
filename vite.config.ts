@@ -17,7 +17,14 @@ export default defineConfig(({ mode }) => {
       alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
     },
     plugins: [react(), tailwindcss()],
-    server: { proxy: { "/api": apiTarget } },
+    server: {
+      proxy: {
+        "/api": {
+          target: apiTarget,
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       rollupOptions: {
         output: {

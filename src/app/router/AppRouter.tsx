@@ -61,6 +61,11 @@ const Admin = lazy(() =>
     default: module.Admin,
   })),
 );
+const AdminLogin = lazy(() =>
+  import("@/features/admin/pages/AdminLogin").then((module) => ({
+    default: module.AdminLogin,
+  })),
+);
 const Article = lazy(() =>
   import("@/features/information/pages/Article").then((module) => ({
     default: module.Article,
@@ -105,6 +110,7 @@ export function AppRouter() {
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/volunteer" element={<VolunteerDashboard />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route
           path="/403"
           element={

@@ -524,7 +524,7 @@ html[lang="en"] .community-hero h1 {
   font-size: 10px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  color: var(--red);
+  color: #b91c1c;
 }
 .auth-symbol {
   position: relative;
