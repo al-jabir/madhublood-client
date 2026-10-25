@@ -26,6 +26,8 @@ export const adminApi = {
   cases: async (tab: "reports" | "tickets", after?: string) =>
     (await api.get<Items<CaseRecord>>("/admin/" + tab, { params: { after } }))
       .data,
+  replyTicket: (id: string, reply: string) =>
+    api.post(`/admin/tickets/${id}/reply`, { reply, status: "resolved" }),
   moderate: (path: string, data: unknown) => api.post(path, data),
   resolve: (tab: "reports" | "tickets", id: string) =>
     api.post(`/admin/${tab}/${id}/resolve`, {}),

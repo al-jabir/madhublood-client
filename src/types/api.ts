@@ -137,6 +137,9 @@ export interface AuditRecord {
   target: string;
 }
 export interface CaseRecord {
+  reply?: string;
+  repliedAt?: string;
+  createdAt?: string;
   _id: string;
   status: string;
   reason?: string;

@@ -66,6 +66,58 @@ export function CaseList({ tab }: { tab: "reports" | "tickets" }) {
                 <small>#{row._id.slice(-6)}</small>
               </div>
               <p>{tab === "reports" ? row.reason : row.message}</p>
+              {tab === "tickets" && (
+                <details className="ticket-reply-editor">
+                  <summary>
+                    {t(en, "সদস্যকে উত্তর দিন", "Reply to member")}
+                  </summary>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (busy) return;
+                      const reply = String(
+                        new FormData(e.currentTarget).get("reply") ?? "",
+                      ).trim();
+                      setBusy(row._id);
+                      try {
+                        await adminApi.replyTicket(row._id, reply);
+                        await client.invalidateQueries({
+                          queryKey: ["operations"],
+                        });
+                        toast.success(
+                          t(en, "উত্তর পাঠানো হয়েছে", "Reply sent"),
+                        );
+                      } catch (error) {
+                        toast.error(errorText(error));
+                      } finally {
+                        setBusy(null);
+                      }
+                    }}
+                  >
+                    <label>
+                      {t(
+                        en,
+                        "এই উত্তর সদস্য দেখতে পাবেন",
+                        "This reply is visible to the member",
+                      )}
+                      <textarea
+                        name="reply"
+                        defaultValue={row.reply ?? ""}
+                        required
+                        maxLength={2000}
+                        minLength={1}
+                        rows={3}
+                      />
+                    </label>
+                    <button
+                      className="button secondary small"
+                      disabled={busy !== null}
+                    >
+                      {t(en, "উত্তর দিয়ে নিষ্পত্তি করুন", "Reply & resolve")}
+                    </button>
+                  </form>
+                </details>
+              )}
             </div>
             {row.status !== "resolved" && (
               <button

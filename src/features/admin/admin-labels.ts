@@ -51,6 +51,8 @@ export function auditLabel(en: boolean, action: string) {
     "donor.verify": ["রক্তদাতা যাচাই", "Donor verified"],
     "location.create": ["এলাকা সংযোজন", "Location added"],
     "report.resolve": ["অভিযোগ নিষ্পত্তি", "Report resolved"],
+    "ticket.reply": ["সহায়তার অনুরোধে উত্তর", "Support ticket replied"],
+    "account.email-change": ["লগইন ইমেইল পরিবর্তন", "Login email changed"],
     "ticket.resolve": ["সহায়তার অনুরোধ নিষ্পত্তি", "Support ticket resolved"],
   };
   if (labels[action]) return labels[action][en ? 1 : 0];

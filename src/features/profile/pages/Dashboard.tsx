@@ -1,3 +1,6 @@
+import { AccountStatus } from "../components/AccountStatus";
+import { EmailChange } from "../components/EmailChange";
+import { SupportRequests } from "../components/SupportRequests";
 import { requestLabel } from "@/features/blood-requests/request-labels";
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { AvailabilityReminder } from "@/features/community-tools/components/MemberTools";
@@ -297,6 +300,9 @@ export function Dashboard() {
         {tab === "notifications" && <Notifications />}
         {tab === "settings" && (
           <div className="settings-layout">
+            <AccountStatus />
+            <EmailChange />
+            <SupportRequests />
             <AccountSecurity />
             <section className="panel settings-data">
               <AccountData />
