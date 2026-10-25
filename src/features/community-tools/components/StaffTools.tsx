@@ -231,6 +231,7 @@ export function CommunityOperations() {
     ),
     "member-report": t(en, "সদস্যের অভিযোগ রয়েছে", "Reported by a member"),
   };
+  if (announcement.isPending || review.isPending) return <Loading compact />;
   return (
     <div className="community-operations">
       {announcement.isPending ? (

@@ -259,107 +259,97 @@ export function Home() {
                 </span>
               </div>
 
-                <form
-                  onSubmit={handleQuickRequestSubmit}
-                  className="quick-form-grid"
-                >
-                  <div className="quick-field-group">
-                    <label htmlFor="quick-blood" className="quick-field-label">
-                      {t(
-                        en,
-                        "প্রয়োজনীয় রক্তের গ্রুপ",
-                        "Required Blood Group",
-                      )}
-                    </label>
-                    <select
-                      id="quick-blood"
-                      value={quickBlood}
-                      onChange={(e) => setQuickBlood(e.target.value)}
-                      className="quick-field-select"
-                      required
-                    >
-                      {groups.map((g) => (
-                        <option key={g} value={g}>
-                          {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              <form
+                onSubmit={handleQuickRequestSubmit}
+                className="quick-form-grid"
+              >
+                <div className="quick-field-group">
+                  <label htmlFor="quick-blood" className="quick-field-label">
+                    {t(en, "প্রয়োজনীয় রক্তের গ্রুপ", "Required Blood Group")}
+                  </label>
+                  <select
+                    id="quick-blood"
+                    value={quickBlood}
+                    onChange={(e) => setQuickBlood(e.target.value)}
+                    className="quick-field-select"
+                    required
+                  >
+                    {groups.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  <div className="quick-two-cols">
-                    <div className="quick-field-group">
-                      <label
-                        htmlFor="quick-contact"
-                        className="quick-field-label"
-                      >
-                        {t(en, "মোবাইল নম্বর", "Mobile Number")}
-                      </label>
-                      <input
-                        id="quick-contact"
-                        type="tel"
-                        value={quickPhone}
-                        onChange={(e) => setQuickPhone(e.target.value)}
-                        placeholder="01XXXXXXXXX"
-                        className="quick-field-input"
-                        pattern="01[3-9][0-9]{8}"
-                        maxLength={11}
-                        autoComplete="tel"
-                        required
-                      />
-                    </div>
-                    <div className="quick-field-group">
-                      <label
-                        htmlFor="quick-units"
-                        className="quick-field-label"
-                      >
-                        {t(en, "ব্যাগের সংখ্যা", "Units (Bags)")}
-                      </label>
-                      <input
-                        id="quick-units"
-                        type="number"
-                        min={1}
-                        max={20}
-                        value={quickUnits}
-                        onChange={(e) => setQuickUnits(Number(e.target.value))}
-                        className="quick-field-input"
-                        required
-                      />
-                    </div>
-                  </div>
-
+                <div className="quick-two-cols">
                   <div className="quick-field-group">
                     <label
-                      htmlFor="quick-hospital"
+                      htmlFor="quick-contact"
                       className="quick-field-label"
                     >
-                      {t(en, "হাসপাতালের নাম ও এলাকা", "Hospital & Area")}
+                      {t(en, "মোবাইল নম্বর", "Mobile Number")}
                     </label>
                     <input
-                      id="quick-hospital"
-                      type="text"
-                      value={quickHospital}
-                      onChange={(e) => setQuickHospital(e.target.value)}
-                      placeholder={t(
-                        en,
-                        "যেমন: মধুপুর উপজেলা স্বাস্থ্য কমপ্লেক্স",
-                        "e.g. Madhupur Upazila Health Complex",
-                      )}
+                      id="quick-contact"
+                      type="tel"
+                      value={quickPhone}
+                      onChange={(e) => setQuickPhone(e.target.value)}
+                      placeholder="01XXXXXXXXX"
+                      className="quick-field-input"
+                      pattern="01[3-9][0-9]{8}"
+                      maxLength={11}
+                      autoComplete="tel"
+                      required
+                    />
+                  </div>
+                  <div className="quick-field-group">
+                    <label htmlFor="quick-units" className="quick-field-label">
+                      {t(en, "ব্যাগের সংখ্যা", "Units (Bags)")}
+                    </label>
+                    <input
+                      id="quick-units"
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={quickUnits}
+                      onChange={(e) => setQuickUnits(Number(e.target.value))}
                       className="quick-field-input"
                       required
                     />
                   </div>
+                </div>
 
-                  <button type="submit" className="btn-post-emergency">
-                    <Send size={16} />
-                    <span>
-                      {t(
-                        en,
-                        "জরুরি রক্তের অনুরোধ পোস্ট করুন",
-                        "Post Emergency Blood Request",
-                      )}
-                    </span>
-                  </button>
-                </form>
+                <div className="quick-field-group">
+                  <label htmlFor="quick-hospital" className="quick-field-label">
+                    {t(en, "হাসপাতালের নাম ও এলাকা", "Hospital & Area")}
+                  </label>
+                  <input
+                    id="quick-hospital"
+                    type="text"
+                    value={quickHospital}
+                    onChange={(e) => setQuickHospital(e.target.value)}
+                    placeholder={t(
+                      en,
+                      "যেমন: মধুপুর উপজেলা স্বাস্থ্য কমপ্লেক্স",
+                      "e.g. Madhupur Upazila Health Complex",
+                    )}
+                    className="quick-field-input"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn-post-emergency">
+                  <Send size={16} />
+                  <span>
+                    {t(
+                      en,
+                      "জরুরি রক্তের অনুরোধ পোস্ট করুন",
+                      "Post Emergency Blood Request",
+                    )}
+                  </span>
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -570,7 +560,7 @@ export function Home() {
         </div>
 
         {urgentRequests.isPending ? (
-          <Loading />
+          <Loading compact />
         ) : urgentRequests.isError ? (
           <Failure error={urgentRequests.error} />
         ) : displayedRequests.length === 0 ? (
@@ -673,7 +663,7 @@ export function Home() {
         </div>
 
         {activeDonors.isPending ? (
-          <Loading />
+          <Loading compact />
         ) : activeDonors.isError ? (
           <Failure error={activeDonors.error} />
         ) : displayedDonors.length === 0 ? (

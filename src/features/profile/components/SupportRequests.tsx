@@ -88,37 +88,42 @@ export function SupportRequests() {
           {t(en, "হালনাগাদ করুন", "Refresh")}
         </button>
       </div>
-      {q.isPending ? (
-        <Loading compact />
-      ) : q.isError ? (
-        <Failure error={q.error} />
-      ) : q.data.items.length ? (
-        q.data.items.map((item) => (
-          <article key={item._id} className="support-history-card">
-            <div>
-              <small>#{item._id.slice(-6)}</small>
-              <span className="badge">
-                {item.status === "resolved"
-                  ? t(en, "সমাধান হয়েছে", "Resolved")
-                  : t(en, "উত্তরের অপেক্ষায়", "Awaiting reply")}
-              </span>
-            </div>
-            <p>{item.message}</p>
-            {item.reply && (
-              <div className="support-reply">
-                <strong>
-                  {t(en, "প্রশাসকের উত্তর", "Administrator reply")}
-                </strong>
-                <p>{item.reply}</p>
+      {open &&
+        (q.isPending ? (
+          <Loading compact />
+        ) : q.isError ? (
+          <Failure error={q.error} />
+        ) : q.data.items.length ? (
+          q.data.items.map((item) => (
+            <article key={item._id} className="support-history-card">
+              <div>
+                <small>#{item._id.slice(-6)}</small>
+                <span className="badge">
+                  {item.status === "resolved"
+                    ? t(en, "সমাধান হয়েছে", "Resolved")
+                    : t(en, "উত্তরের অপেক্ষায়", "Awaiting reply")}
+                </span>
               </div>
+              <p>{item.message}</p>
+              {item.reply && (
+                <div className="support-reply">
+                  <strong>
+                    {t(en, "প্রশাসকের উত্তর", "Administrator reply")}
+                  </strong>
+                  <p>{item.reply}</p>
+                </div>
+              )}
+            </article>
+          ))
+        ) : (
+          <p>
+            {t(
+              en,
+              "এখনও কোনো অনুরোধ নেই।",
+              "You have no support requests yet.",
             )}
-          </article>
-        ))
-      ) : (
-        <p>
-          {t(en, "এখনও কোনো অনুরোধ নেই।", "You have no support requests yet.")}
-        </p>
-      )}
+          </p>
+        ))}
       <CursorPager
         navigation={page}
         nextCursor={q.data?.nextCursor}

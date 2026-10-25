@@ -1,10 +1,12 @@
 .blood-loader {
+  box-sizing: border-box;
+  font-family: Manrope, system-ui, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 22px;
-  min-height: 240px;
+  min-height: clamp(240px, 60svh, 560px);
   padding: 32px 20px;
   color: var(--red, #aa263c);
   text-align: center;
@@ -45,11 +47,11 @@
   margin: 9px 0 0;
 }
 .blood-loader-compact {
-  min-height: 120px;
+  min-height: 80px;
   flex-direction: row;
   gap: 16px;
   text-align: left;
-  padding: 20px 12px;
+  padding: 16px 12px;
 }
 .blood-loader-compact .blood-loader-symbol {
   width: 46px;
@@ -97,10 +99,48 @@
   z-index: 9999;
 }
 @media (prefers-color-scheme: dark) {
-  .boot-preloader {
+  html:not([data-theme]) .boot-preloader {
     --bg: #111315;
     --ink: #f3f1ee;
     --muted: #9ca3af;
     --red: #ef4444;
   }
+}
+
+html[data-theme="dark"] .boot-preloader {
+  --bg: #111315;
+  --ink: #f3f1ee;
+  --muted: #9ca3af;
+  --red: #ef4444;
+}
+.blood-loader-fullscreen {
+  min-height: 100svh;
+  background: var(--bg, #fffefa);
+  box-sizing: border-box;
+}
+.loading-placeholder {
+  min-height: clamp(240px, 60svh, 560px);
+}
+.loading-placeholder.is-compact {
+  min-height: 80px;
+}
+.blood-loader-compact .blood-loader-copy p {
+  margin: 0;
+}
+.blood-loader-slow {
+  display: block;
+  max-width: 340px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted, #68685f);
+  line-height: 1.7;
+}
+.boot-copy-en {
+  display: none;
+}
+html[lang="en"] .boot-copy-bn {
+  display: none;
+}
+html[lang="en"] .boot-copy-en {
+  display: inline;
 }

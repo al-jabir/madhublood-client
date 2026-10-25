@@ -70,7 +70,7 @@ export function RootLayout() {
           Skip to content
         </a>
         <main id="main">
-          <Suspense fallback={<Loading />}>
+          <Suspense fallback={<Loading fullscreen />}>
             <Outlet />
           </Suspense>
         </main>
@@ -80,7 +80,7 @@ export function RootLayout() {
 
   if (!isAuthRoute && (platformQuery.isPending || platformQuery.isError))
     return platformQuery.isPending ? (
-      <Loading />
+      <Loading fullscreen />
     ) : (
       <main id="main" className="page">
         <Failure error={platformQuery.error} />
