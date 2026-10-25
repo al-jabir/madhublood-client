@@ -5,7 +5,6 @@ import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Droplets,
-  ArrowUpRight,
   MapPin,
   Menu,
   X,
@@ -20,10 +19,10 @@ import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { notificationsApi } from "@/features/notifications/api/notifications.api";
+import { Failure } from "@/components/feedback/Failure";
 import { Loading } from "@/components/feedback/Loading";
 import { content } from "@/i18n/content";
 import { PlatformNotice } from "@/features/super-admin/components/PlatformNotice";
-import { canVolunteer } from "@/utils/volunteer-permissions";
 import { superAdminApi } from "@/features/super-admin/api/super-admin.api";
 import { MaintenanceView } from "@/features/home/components/MaintenanceView";
 
@@ -31,7 +30,7 @@ export function RootLayout() {
   useDocumentPreferences();
   const { en, dark, toggleLang, toggleTheme } = usePrefs();
   const [open, setOpen] = useState(false);
-  const { data: me } = useMe();
+  const { data: me, isPending: accountPending } = useMe();
   const location = useLocation();
   const pathname = location.pathname;
   const adminPage = pathname === "/admin" || pathname === "/admin/login";
@@ -56,7 +55,7 @@ export function RootLayout() {
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications", "badge"],
-    enabled: !!me && !me.verificationRequired,
+    enabled: !!me && !me.verificationRequired && (!isMaintenance || isAdmin),
     queryFn: () => notificationsApi.list(),
     refetchInterval: 30000,
   });
@@ -79,6 +78,23 @@ export function RootLayout() {
       </>
     );
 
+  if (!isAuthRoute && (platformQuery.isPending || platformQuery.isError))
+    return platformQuery.isPending ? (
+      <Loading />
+    ) : (
+      <main id="main" className="page">
+        <Failure error={platformQuery.error} />
+        <button
+          type="button"
+          className="button"
+          onClick={() => platformQuery.refetch()}
+        >
+          {t(en, "আবার চেষ্টা করুন", "Try again")}
+        </button>
+        <Link to="/admin/login">{t(en, "অ্যাডমিন লগইন", "Admin sign in")}</Link>
+      </main>
+    );
+
   return (
     <>
       <a href="#main" className="skip">
@@ -95,11 +111,16 @@ export function RootLayout() {
                 "Maintenance mode is active (Public site is offline). You have access as an administrator.",
               )}
             </span>
-            <Link to="/admin?section=settings" className="button small">
+            <Link
+              to={
+                me?.roles.includes("super-admin")
+                  ? "/admin?section=settings"
+                  : "/admin"
+              }
+              className="button small"
+            >
               <Wrench size={14} />
-              <span>
-                {t(en, "রক্ষণাবেক্ষণ বন্ধ করুন", "Turn Off Maintenance")}
-              </span>
+              <span>{t(en, "অ্যাডমিন প্যানেল", "Admin workspace")}</span>
             </Link>
           </div>
         </div>
@@ -168,17 +189,6 @@ export function RootLayout() {
               <NavLink to="/how-it-works">
                 {t(en, "যেভাবে কাজ করে", "How It Works")}
               </NavLink>
-              {me?.roles.some((r) => ["admin", "super-admin"].includes(r)) && (
-                <NavLink to="/admin">{t(en, "পরিচালনা", "Moderation")}</NavLink>
-              )}
-              {me &&
-                (me.roles.includes("volunteer") ||
-                  canVolunteer(me, "submit-referrals") ||
-                  canVolunteer(me, "coordinate-requests")) && (
-                  <NavLink to="/volunteer">
-                    {t(en, "স্বেচ্ছাসেবক", "Volunteer")}
-                  </NavLink>
-                )}
               <div className="mobile-nav-tools">
                 <button className="icon" type="button" onClick={toggleLang}>
                   <Languages size={17} />
@@ -188,7 +198,7 @@ export function RootLayout() {
                   {dark ? <Sun size={18} /> : <Moon size={18} />}
                   {t(en, "থিম পরিবর্তন", "Switch Theme")}
                 </button>
-                {!me && (
+                {!me && !accountPending && (
                   <Link to="/register">
                     {t(en, "অ্যাকাউন্ট তৈরি করুন", "Create account")}
                   </Link>
@@ -247,7 +257,7 @@ export function RootLayout() {
               )}
             </Link>
           )}
-          {!me && (
+          {!me && !accountPending && (
             <Link
               to={isMaintenance ? "/admin/login" : "/login"}
               className="header-signin"
@@ -257,14 +267,7 @@ export function RootLayout() {
                 : t(en, "লগ ইন", "Sign In")}
             </Link>
           )}
-          {me ? (
-            <AccountMenu />
-          ) : !isMaintenance ? (
-            <Link className="button small" to="/register">
-              {t(en, "রক্তদাতা হোন", "Become A Donor")}
-              <ArrowUpRight size={16} />
-            </Link>
-          ) : null}
+          {me && <AccountMenu />}
         </div>
       </header>
       {(!isMaintenance || isAdmin) && <PlatformNotice />}
@@ -290,45 +293,45 @@ export function RootLayout() {
       </main>
       {(!isMaintenance || isAdmin) && (
         <footer>
-        <div className="footer-top">
-          <Link to="/" className="brand">
-            <Droplets className="red" />
-            MadhuBlood
-          </Link>
-          <p>
+          <div className="footer-top">
+            <Link to="/" className="brand">
+              <Droplets className="red" />
+              MadhuBlood
+            </Link>
+            <p>
+              {t(
+                en,
+                "একটি ছোট উদ্যোগ। জীবনের জন্য বড় আশ্বাস।",
+                "A small act. A meaningful difference.",
+              )}
+            </p>
+            <span className="location">
+              <MapPin size={15} /> Madhupur, Tangail, Bangladesh
+            </span>
+          </div>
+          <div className="footer-bottom">
+            <span>
+              © {new Date().getFullYear()} MadhuBlood ·{" "}
+              {t(en, "মানুষের জন্য, মানুষের পাশে", "Built around people.")}
+            </span>
+            <div>
+              {["about", "contact", "privacy", "terms", "accessibility"].map(
+                (p) => (
+                  <Link key={p} to={"/" + p}>
+                    {content[p][en ? 1 : 0]}
+                  </Link>
+                ),
+              )}
+            </div>
+          </div>
+          <p className="disclaimer">
             {t(
               en,
-              "একটি ছোট উদ্যোগ। জীবনের জন্য বড় আশ্বাস।",
-              "A small act. A meaningful difference.",
+              "এটি রক্তদাতা সমন্বয় সেবা। রক্তের প্রাপ্যতা বা চিকিৎসাগত উপযুক্ততার নিশ্চয়তা দেয় না। জরুরি চিকিৎসায় সরাসরি হাসপাতালের সহায়তা নিন।",
+              "A donor coordination service. Availability and clinical eligibility are not guaranteed. Contact your hospital directly for urgent medical care.",
             )}
           </p>
-          <span className="location">
-            <MapPin size={15} /> Madhupur, Tangail, Bangladesh
-          </span>
-        </div>
-        <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} MadhuBlood ·{" "}
-            {t(en, "মানুষের জন্য, মানুষের পাশে", "Built around people.")}
-          </span>
-          <div>
-            {["about", "contact", "privacy", "terms", "accessibility"].map(
-              (p) => (
-                <Link key={p} to={"/" + p}>
-                  {content[p][en ? 1 : 0]}
-                </Link>
-              ),
-            )}
-          </div>
-        </div>
-        <p className="disclaimer">
-          {t(
-            en,
-            "এটি রক্তদাতা সমন্বয় সেবা। রক্তের প্রাপ্যতা বা চিকিৎসাগত উপযুক্ততার নিশ্চয়তা দেয় না। জরুরি চিকিৎসায় সরাসরি হাসপাতালের সহায়তা নিন।",
-            "A donor coordination service. Availability and clinical eligibility are not guaranteed. Contact your hospital directly for urgent medical care.",
-          )}
-        </p>
-      </footer>
+        </footer>
       )}
       <Toaster richColors position="top-center" />
     </>

@@ -87,6 +87,21 @@ for (const staff of [true, false])
         await expect(toggle).toHaveCount(0);
         return;
       }
+      await page
+        .getByLabel("Review or paste the post text")
+        .fill(
+          "O+ রক্ত প্রয়োজন আজ\nরোগীর সমস্যা: সিজার\nপরিমাণ: একব্যাগ\nস্থান: Madhupur Hospital\n01712345678",
+        );
+      await expect(
+        page.getByRole("button", { name: "Apply draft to form" }),
+      ).toBeDisabled();
+      await page.getByLabel("I reviewed the extracted fields").check();
+      await page.getByRole("button", { name: "Apply draft to form" }).click();
+      await expect(toggle).toBeChecked();
+      await expect(page.locator('[name="patientReason"]')).toHaveValue("সিজার");
+      await expect(page.locator('[name="contact"]')).toHaveValue("01712345678");
+      await expect(page.locator('[name="contactConsent"]')).not.toBeChecked();
+      await page.locator('[name="representativeRelationship"]').fill("Brother");
       await toggle.check();
       await expect(
         page.getByRole("heading", { name: "No family account needed" }),
@@ -139,6 +154,8 @@ for (const staff of [true, false])
         .getByRole("button", { name: "Submit for review", exact: true })
         .click();
       await expect(page).toHaveURL(/requests\/444444/);
+      expect(submitted?.patientReason).toBe("সিজার");
+      expect(submitted?.representativeRelationship).toBe("Brother");
       expect(submitted?.referral).toEqual({
         source: "social-media",
         sourceUrl: "https://example.test/news",

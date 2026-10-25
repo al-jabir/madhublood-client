@@ -8,6 +8,9 @@ test("admin has a separate workspace and role-aware sidebar", async ({
       JSON.stringify({ state: { en: true, dark: true }, version: 0 }),
     ),
   );
+  await page.route("**/api/ready", (route) =>
+    route.fulfill({ json: { ready: true, database: "connected" } }),
+  );
   await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/auth/me"))

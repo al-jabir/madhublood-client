@@ -47,8 +47,18 @@ export function VolunteerDashboard({
   const me = useMe();
   const [params, setParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setDebouncedSearch(searchQuery.trim()),
+      250,
+    );
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
   const [groupFilter, setGroupFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<"newest" | "urgent" | "deadline">("newest");
+  const [sortBy, setSortBy] = useState<"newest" | "urgent" | "deadline">(
+    "newest",
+  );
   const tab = ["overview", "requests", "tasks", "history"].includes(
     params.get("tab") ?? "",
   )
@@ -72,57 +82,45 @@ export function VolunteerDashboard({
   const submit = canVolunteer(me.data, "submit-referrals"),
     manage = canVolunteer(me.data, "coordinate-requests");
   const q = useQuery({
-    queryKey: ["volunteer-dashboard", me.data?.id, tab, assigned, page, status],
+    queryKey: [
+      "volunteer-dashboard",
+      me.data?.id,
+      tab,
+      assigned,
+      page,
+      status,
+      debouncedSearch,
+      groupFilter,
+      sortBy,
+    ],
     enabled: !!me.data && (submit || manage),
     queryFn: () =>
       volunteerApi.dashboard(
         tab === "requests" && assigned ? "assignments" : tab,
         page,
         status,
+        tab === "requests"
+          ? { search: debouncedSearch, bloodGroup: groupFilter, sort: sortBy }
+          : undefined,
       ),
     refetchInterval: 30000,
     placeholderData: keepPreviousData,
   });
   const requestsList =
     (tab === "overview" || tab === "requests") && q.data
-      ? (q.data.items as VolunteerRequest[])
-          .filter((r) => {
-            if (tab !== "requests") return true;
-            if (groupFilter !== "all" && r.bloodGroup !== groupFilter)
-              return false;
-            if (searchQuery.trim()) {
-              const term = searchQuery.toLowerCase().trim();
-              const matchHospital = r.hospital?.toLowerCase().includes(term);
-              const matchArea = r.area?.toLowerCase().includes(term);
-              const matchBlood = r.bloodGroup?.toLowerCase().includes(term);
-              const matchRep = r.representative?.toLowerCase().includes(term);
-              return Boolean(
-                matchHospital || matchArea || matchBlood || matchRep,
-              );
-            }
-            return true;
-          })
-          .sort((a, b) => {
-            if (sortBy === "urgent") {
-              const urgencyRank = (u?: string) =>
-                u === "emergency" ? 2 : u === "urgent" ? 1 : 0;
-              const diff = urgencyRank(b.urgency) - urgencyRank(a.urgency);
-              if (diff !== 0) return diff;
-              return (
-                new Date(a.requiredAt).getTime() -
-                new Date(b.requiredAt).getTime()
-              );
-            }
-            if (sortBy === "deadline") {
-              return (
-                new Date(a.requiredAt).getTime() -
-                new Date(b.requiredAt).getTime()
-              );
-            }
-            return 0;
-          })
-          .slice(0, tab === "overview" ? 6 : 12)
+      ? (q.data.items as VolunteerRequest[]).slice(
+          0,
+          tab === "overview" ? 6 : 12,
+        )
       : [];
+  function resetPage() {
+    setSelected(undefined);
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("page");
+      return next;
+    });
+  }
   function navigate(values: Record<string, string>) {
     setSelected(undefined);
     setParams({ ...values });
@@ -170,32 +168,17 @@ export function VolunteerDashboard({
   };
 
   function copyPostText(r: VolunteerRequest) {
-    const isEmergency = r.urgency === "emergency";
-    const header = isEmergency
-      ? "🚨 জরুরী রক্তের প্রয়োজন 🚨"
-      : "🩸 রক্তের প্রয়োজন 🩸";
+    const header = t(
+      en,
+      r.urgency === "critical" ? "অতি জরুরি রক্তের প্রয়োজন" : "রক্তের প্রয়োজন",
+      r.urgency === "critical" ? "Critical blood request" : "Blood request",
+    );
     const reqDate = new Date(r.requiredAt).toLocaleString(
       en ? "en-GB" : "bn-BD",
-      {
-        dateStyle: "medium",
-        timeStyle: "short",
-      },
+      { dateStyle: "medium", timeStyle: "short" },
     );
     const url = `${window.location.origin}/requests/${r._id}`;
-    const bloodTag = `#${r.bloodGroup.replace("+", "Positive").replace("-", "Negative")}`;
-
-    const text = `${header}
-রক্তের গ্রুপ: ${r.bloodGroup}
-প্রয়োজন: ${r.units} ব্যাগ
-হাসপাতাল: ${r.hospital}
-এলাকা: ${r.area}
-প্রয়োজনের সময়: ${reqDate}
-${r.contact ? `যোগাযোগ: ${r.contact} ${r.representative ? `(${r.representative})` : ""}` : ""}
-
-বিস্তারিত ও রক্তদানে সম্মতি জানাতে ভিজিট করুন:
-${url}
-
-#BloodDonation #MadhupurBlood #SaveLives ${bloodTag}`;
+    const text = `${header}\n${t(en, "রক্তের গ্রুপ", "Blood group")}: ${r.bloodGroup}\n${t(en, "প্রয়োজন", "Units needed")}: ${r.units}\n${t(en, "হাসপাতাল", "Hospital")}: ${r.hospital}\n${t(en, "এলাকা", "Area")}: ${r.area}\n${t(en, "প্রয়োজনের সময়", "Required by")}: ${reqDate}\n${t(en, "বিস্তারিত ও সাড়া দিন", "View details and respond")}: ${url}`;
 
     const copyWithFallback = () => {
       const textarea = document.createElement("textarea");
@@ -203,7 +186,7 @@ ${url}
       document.body.appendChild(textarea);
       textarea.select();
       try {
-        document.execCommand("copy");
+        if (!document.execCommand("copy")) throw new Error("Copy failed");
         toast.success(
           t(en, "সোশ্যাল মিডিয়া পোস্ট কপি হয়েছে!", "Post copy ready to share!"),
         );
@@ -236,7 +219,11 @@ ${url}
     rows: (string | number)[][],
   ) {
     const escapeCsv = (str: string | number) => {
-      const val = String(str ?? "").replace(/"/g, '""');
+      const raw = String(str ?? "");
+      const val = (/^[=+@\-\t\r]/.test(raw) ? "'" + raw : raw).replace(
+        /"/g,
+        '""',
+      );
       return `"${val}"`;
     };
     const csvContent =
@@ -267,16 +254,16 @@ ${url}
         return;
       }
       const headers = [
-        "রক্তের গ্রুপ",
-        "হাসপাতাল",
-        "এলাকা",
-        "ব্যাগ",
-        "প্রয়োজনের সময়",
-        "অবস্থা",
-        "জরুরী",
-        "প্রতিনিধি",
-        "যোগাযোগ",
-        "অনুরোধ লিঙ্ক",
+        t(en, "রক্তের গ্রুপ", "Blood group"),
+        t(en, "হাসপাতাল", "Hospital"),
+        t(en, "এলাকা", "Area"),
+        t(en, "ব্যাগ", "Units"),
+        t(en, "প্রয়োজনের সময়", "Required by"),
+        t(en, "অবস্থা", "Status"),
+        t(en, "জরুরী", "Urgency"),
+        t(en, "প্রতিনিধি", "Representative"),
+        t(en, "যোগাযোগ", "Contact"),
+        t(en, "অনুরোধ লিঙ্ক", "Request link"),
       ];
       const rows = list.map((r) => [
         r.bloodGroup,
@@ -285,7 +272,7 @@ ${url}
         r.units,
         new Date(r.requiredAt).toLocaleString(en ? "en-GB" : "bn-BD"),
         requestLabel(en, r.status),
-        r.urgency === "emergency" ? "জরুরী" : "সাধারণ",
+        requestLabel(en, r.urgency ?? "routine"),
         r.representative || "",
         r.contact || "",
         `${window.location.origin}/requests/${r._id}`,
@@ -303,12 +290,12 @@ ${url}
         return;
       }
       const headers = [
-        "রক্তদাতার নাম",
-        "রক্তের গ্রুপ",
-        "হাসপাতাল",
-        "ফোন",
-        "যোগাযোগের সময়",
-        "অনুরোধ লিঙ্ক",
+        t(en, "রক্তদাতার নাম", "Donor name"),
+        t(en, "রক্তের গ্রুপ", "Blood group"),
+        t(en, "হাসপাতাল", "Hospital"),
+        t(en, "ফোন", "Phone"),
+        t(en, "যোগাযোগের সময়", "Callback time"),
+        t(en, "অনুরোধ লিঙ্ক", "Request link"),
       ];
       const rows = list.map((task) => [
         task.name,
@@ -331,11 +318,11 @@ ${url}
         return;
       }
       const headers = [
-        "তারিখ ও সময়",
-        "কাজের বিবরণ",
-        "রক্তের গ্রুপ",
-        "হাসপাতাল",
-        "অনুরোধ লিঙ্ক",
+        t(en, "তারিখ ও সময়", "Date and time"),
+        t(en, "কাজের বিবরণ", "Action"),
+        t(en, "রক্তের গ্রুপ", "Blood group"),
+        t(en, "হাসপাতাল", "Hospital"),
+        t(en, "অনুরোধ লিঙ্ক", "Request link"),
       ];
       const rows = list.map((item) => [
         new Date(item.createdAt).toLocaleString(en ? "en-GB" : "bn-BD"),
@@ -377,7 +364,14 @@ ${url}
               )}
             </p>
           </div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <button
               className="button secondary"
               disabled={q.isFetching}
@@ -681,21 +675,27 @@ ${url}
                             <input
                               type="search"
                               value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
+                              onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                resetPage();
+                              }}
                               placeholder={t(
                                 en,
-                                "হাসপাতাল, এলাকা বা রোগীর নাম দিয়ে খুঁজুন...",
-                                "Search by hospital, area or patient...",
+                                "হাসপাতাল, এলাকা বা রক্তের গ্রুপ দিয়ে খুঁজুন...",
+                                "Search by hospital, area or blood group...",
                               )}
                             />
                           </div>
                           <select
                             className="volunteer-group-select"
                             value={groupFilter}
-                            onChange={(e) => setGroupFilter(e.target.value)}
+                            onChange={(e) => {
+                              setGroupFilter(e.target.value);
+                              resetPage();
+                            }}
                             aria-label={t(
                               en,
-                              "রক্তের গ্রুপ",
+                              t(en, "রক্তের গ্রুপ", "Blood group"),
                               "Filter blood group",
                             )}
                           >
@@ -720,14 +720,13 @@ ${url}
                           <select
                             className="volunteer-sort-select"
                             value={sortBy}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setSortBy(
                                 e.target.value as
-                                  | "newest"
-                                  | "urgent"
-                                  | "deadline",
-                              )
-                            }
+                                  "newest" | "urgent" | "deadline",
+                              );
+                              resetPage();
+                            }}
                             aria-label={t(en, "বাছাই করুন", "Sort requests")}
                           >
                             <option value="newest">
@@ -743,11 +742,14 @@ ${url}
                           <button
                             type="button"
                             className="volunteer-export-btn"
+                            disabled={q.isFetching}
                             onClick={exportCsv}
                             title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
                           >
                             <Download size={14} />
-                            <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                            <span>
+                              {t(en, "এই পৃষ্ঠার CSV", "Export this page")}
+                            </span>
                           </button>
                         </div>
                       </>
@@ -755,167 +757,171 @@ ${url}
                     {requestsList.length ? (
                       <div className="volunteer-request-grid">
                         {requestsList.map((r) => (
-                            <article
-                              key={r._id}
-                              className="volunteer-request-card"
-                            >
-                              <div className="volunteer-card-top">
-                                <strong className="volunteer-blood">
-                                  {r.bloodGroup}
-                                </strong>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: "6px",
-                                    alignItems: "center",
-                                    flexWrap: "wrap",
-                                  }}
-                                >
-                                  {tab === "overview" && (
-                                    <span className="badge">
-                                      {r.owner === me.data?.id
-                                        ? t(en, "আমার যোগ করা", "My submission")
-                                        : t(en, "আমার দায়িত্বে", "Assigned")}
-                                    </span>
-                                  )}
-                                  {r.urgency === "emergency" && (
-                                    <span className="badge danger">
-                                      {t(en, "জরুরী", "Emergency")}
-                                    </span>
-                                  )}
+                          <article
+                            key={r._id}
+                            className="volunteer-request-card"
+                          >
+                            <div className="volunteer-card-top">
+                              <strong className="volunteer-blood">
+                                {r.bloodGroup}
+                              </strong>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "6px",
+                                  alignItems: "center",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                {tab === "overview" && (
                                   <span className="badge">
-                                    {requestLabel(en, r.status)}
+                                    {r.owner === me.data?.id
+                                      ? t(en, "আমার যোগ করা", "My submission")
+                                      : t(en, "আমার দায়িত্বে", "Assigned")}
                                   </span>
-                                </div>
-                              </div>
-                              <h3>{r.hospital}</h3>
-                              <p>{r.area}</p>
-                              {r.representative && (
-                                <div className="volunteer-requester-info">
-                                  <span>
-                                    <UserRound size={13} />
-                                    {r.representative}
+                                )}
+                                {r.urgency === "critical" && (
+                                  <span className="badge danger">
+                                    {t(en, "জরুরী", "Emergency")}
                                   </span>
-                                  <div className="volunteer-requester-actions">
-                                    {r.contact && (
-                                      <>
-                                        <a
-                                          href={`tel:${r.contact}`}
-                                          className="volunteer-call-link"
-                                          onClick={(e) => e.stopPropagation()}
-                                          title={t(
-                                            en,
-                                            "প্রতিনিধিকে ফোন করুন",
-                                            "Call requester",
-                                          )}
-                                        >
-                                          <Phone size={13} />
-                                          {r.contact}
-                                        </a>
-                                        <a
-                                          href={getWhatsAppUrl(
-                                            r.contact,
-                                            t(
-                                              en,
-                                              `আসসালামু আলাইকুম, ${r.hospital}-এ ${r.bloodGroup} রক্তের প্রয়োজন নিয়ে মধুপুর রক্তদান প্ল্যাটফর্ম থেকে যোগাযোগ করছি।`,
-                                              `Hello, contacting regarding the ${r.bloodGroup} blood request at ${r.hospital}.`,
-                                            ),
-                                          )}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="volunteer-whatsapp-link"
-                                          onClick={(e) => e.stopPropagation()}
-                                          title={t(
-                                            en,
-                                            "হোয়াটসঅ্যাপে মেসেজ পাঠান",
-                                            "Send WhatsApp message",
-                                          )}
-                                        >
-                                          <MessageCircle size={13} />
-                                          <span>WhatsApp</span>
-                                        </a>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              <div className="volunteer-request-info">
-                                <strong>
-                                  {n(r.units)}{" "}
-                                  {t(en, "ব্যাগ প্রয়োজন", "units needed")}
-                                </strong>
-                                <span>
-                                  <Clock3 size={14} />
-                                  {date(r.requiredAt)}
+                                )}
+                                <span className="badge">
+                                  {requestLabel(en, r.status)}
                                 </span>
                               </div>
-                              {r.familyFeedback && (
-                                <p className="volunteer-feedback-status">
-                                  <MessageSquare size={14} />
-                                  {r.familyFeedback.outcome === "received"
+                            </div>
+                            <h3>{r.hospital}</h3>
+                            <p>{r.area}</p>
+                            {r.representative && (
+                              <div className="volunteer-requester-info">
+                                <span>
+                                  <UserRound size={13} />
+                                  {r.representative}
+                                </span>
+                                <div className="volunteer-requester-actions">
+                                  {r.contact && (
+                                    <>
+                                      <a
+                                        href={`tel:${r.contact}`}
+                                        className="volunteer-call-link"
+                                        onClick={(e) => e.stopPropagation()}
+                                        title={t(
+                                          en,
+                                          "প্রতিনিধিকে ফোন করুন",
+                                          "Call requester",
+                                        )}
+                                      >
+                                        <Phone size={13} />
+                                        {r.contact}
+                                      </a>
+                                      <a
+                                        href={getWhatsAppUrl(
+                                          r.contact,
+                                          t(
+                                            en,
+                                            `আসসালামু আলাইকুম, ${r.hospital}-এ ${r.bloodGroup} রক্তের প্রয়োজন নিয়ে মধুপুর রক্তদান প্ল্যাটফর্ম থেকে যোগাযোগ করছি।`,
+                                            `Hello, contacting regarding the ${r.bloodGroup} blood request at ${r.hospital}.`,
+                                          ),
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="volunteer-whatsapp-link"
+                                        onClick={(e) => e.stopPropagation()}
+                                        title={t(
+                                          en,
+                                          "হোয়াটসঅ্যাপে মেসেজ পাঠান",
+                                          "Send WhatsApp message",
+                                        )}
+                                      >
+                                        <MessageCircle size={13} />
+                                        <span>WhatsApp</span>
+                                      </a>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            <div className="volunteer-request-info">
+                              <strong>
+                                {n(r.units)}{" "}
+                                {t(en, "ব্যাগ প্রয়োজন", "units needed")}
+                              </strong>
+                              <span>
+                                <Clock3 size={14} />
+                                {date(r.requiredAt)}
+                              </span>
+                            </div>
+                            {r.familyFeedback && (
+                              <p className="volunteer-feedback-status">
+                                <MessageSquare size={14} />
+                                {r.familyFeedback.outcome === "received"
+                                  ? t(
+                                      en,
+                                      `পরিবার জানিয়েছে ${n(r.familyFeedback.receivedUnits)} ব্যাগ পেয়েছে`,
+                                      `Family reported ${n(r.familyFeedback.receivedUnits)} units received`,
+                                    )
+                                  : r.familyFeedback.outcome === "problem"
                                     ? t(
                                         en,
-                                        `পরিবার জানিয়েছে ${n(r.familyFeedback.receivedUnits)} ব্যাগ পেয়েছে`,
-                                        `Family reported ${n(r.familyFeedback.receivedUnits)} units received`,
+                                        "পরিবার সমস্যা জানিয়েছে",
+                                        "Family reported a problem",
                                       )
-                                    : r.familyFeedback.outcome === "problem"
+                                    : r.familyFeedback.outcome === "no-answer"
                                       ? t(
                                           en,
-                                          "পরিবার সমস্যা জানিয়েছে",
-                                          "Family reported a problem",
+                                          "প্রতিনিধি ফোন ধরেননি",
+                                          "Representative did not answer",
                                         )
-                                      : r.familyFeedback.outcome === "no-answer"
-                                        ? t(
-                                            en,
-                                            "প্রতিনিধি ফোন ধরেননি",
-                                            "Representative did not answer",
-                                          )
-                                        : t(
-                                            en,
-                                            "পরিবারের সঙ্গে কথা হয়েছে",
-                                            "Family contacted",
-                                          )}
-                                </p>
-                              )}
-                              <div className="volunteer-card-actions">
-                                <Link to={`/requests/${r._id}`}>
-                                  {t(en, "অনুরোধ দেখুন", "View request")}
-                                  <ArrowUpRight size={15} />
-                                </Link>
-                                <button
-                                  type="button"
-                                  className="volunteer-copy-post-btn"
-                                  onClick={() => copyPostText(r)}
-                                  title={t(
-                                    en,
-                                    "সোশ্যাল মিডিয়ায় শেয়ারের জন্য পোস্ট কপি করুন",
-                                    "Copy post text for Facebook or Messenger",
-                                  )}
-                                >
-                                  <Share2 size={13} />
-                                  <span>
-                                    {t(en, "পোস্ট কপি", "Share text")}
-                                  </span>
-                                </button>
-                                {manage &&
-                                  [
-                                    "active",
-                                    "donors-contacted",
-                                    "arranged",
-                                  ].includes(r.status) && (
-                                    <button
-                                      onClick={() =>
-                                        setSelected({
-                                          id: r._id,
-                                          work: true,
-                                          units: r.units,
-                                        })
-                                      }
-                                    >
-                                      {t(en, "যোগাযোগ ও অগ্রগতি", "Follow up")}
-                                    </button>
-                                  )}
-                                {!["cancelled", "rejected", "expired"].includes(
+                                      : t(
+                                          en,
+                                          "পরিবারের সঙ্গে কথা হয়েছে",
+                                          "Family contacted",
+                                        )}
+                              </p>
+                            )}
+                            <div className="volunteer-card-actions">
+                              <Link to={`/requests/${r._id}`}>
+                                {t(en, "অনুরোধ দেখুন", "View request")}
+                                <ArrowUpRight size={15} />
+                              </Link>
+                              <button
+                                type="button"
+                                className="volunteer-copy-post-btn"
+                                disabled={
+                                  !["active", "donors-contacted"].includes(
+                                    r.status,
+                                  ) || Date.parse(r.requiredAt) <= Date.now()
+                                }
+                                onClick={() => copyPostText(r)}
+                                title={t(
+                                  en,
+                                  "সোশ্যাল মিডিয়ায় শেয়ারের জন্য পোস্ট কপি করুন",
+                                  "Copy post text for Facebook or Messenger",
+                                )}
+                              >
+                                <Share2 size={13} />
+                                <span>{t(en, "পোস্ট কপি", "Share text")}</span>
+                              </button>
+                              {r.canCoordinate &&
+                                [
+                                  "active",
+                                  "donors-contacted",
+                                  "arranged",
+                                ].includes(r.status) && (
+                                  <button
+                                    onClick={() =>
+                                      setSelected({
+                                        id: r._id,
+                                        work: true,
+                                        units: r.units,
+                                      })
+                                    }
+                                  >
+                                    {t(en, "যোগাযোগ ও অগ্রগতি", "Follow up")}
+                                  </button>
+                                )}
+                              {r.canRecordFeedback &&
+                                !["cancelled", "rejected", "expired"].includes(
                                   r.status,
                                 ) && (
                                   <button
@@ -928,31 +934,27 @@ ${url}
                                       })
                                     }
                                   >
-                                    {t(
-                                      en,
-                                      "পরিবারের মতামত",
-                                      "Family feedback",
-                                    )}
+                                    {t(en, "পরিবারের মতামত", "Family feedback")}
                                   </button>
                                 )}
-                                {r.owner === me.data?.id &&
-                                  submit &&
-                                  [
-                                    "submitted",
-                                    "verification",
-                                    "active",
-                                  ].includes(r.status) && (
-                                    <Link
-                                      to={`/requests/${r._id}/edit`}
-                                      className="volunteer-edit-link"
-                                    >
-                                      <Edit3 size={13} />
-                                      {t(en, "সম্পাদনা", "Edit")}
-                                    </Link>
-                                  )}
-                              </div>
-                            </article>
-                          ))}
+                              {r.owner === me.data?.id &&
+                                submit &&
+                                [
+                                  "submitted",
+                                  "verification",
+                                  "active",
+                                ].includes(r.status) && (
+                                  <Link
+                                    to={`/requests/${r._id}/edit`}
+                                    className="volunteer-edit-link"
+                                  >
+                                    <Edit3 size={13} />
+                                    {t(en, "সম্পাদনা", "Edit")}
+                                  </Link>
+                                )}
+                            </div>
+                          </article>
+                        ))}
                       </div>
                     ) : (
                       <div className="volunteer-empty">
@@ -1016,11 +1018,14 @@ ${url}
                         <button
                           type="button"
                           className="volunteer-export-btn"
+                          disabled={q.isFetching}
                           onClick={exportCsv}
                           title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
                         >
                           <Download size={14} />
-                          <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                          <span>
+                            {t(en, "এই পৃষ্ঠার CSV", "Export this page")}
+                          </span>
                         </button>
                       )}
                     </div>
@@ -1133,11 +1138,14 @@ ${url}
                         <button
                           type="button"
                           className="volunteer-export-btn"
+                          disabled={q.isFetching}
                           onClick={exportCsv}
                           title={t(en, "CSV এক্সপোর্ট করুন", "Export to CSV")}
                         >
                           <Download size={14} />
-                          <span>{t(en, "এক্সপোর্ট (CSV)", "Export CSV")}</span>
+                          <span>
+                            {t(en, "এই পৃষ্ঠার CSV", "Export this page")}
+                          </span>
                         </button>
                       )}
                     </div>

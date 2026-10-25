@@ -11,3 +11,6 @@ test-results/
 *.log
 
 test-results-*/
+
+# Generated from pinned OCR packages during dev/build
+/public/ocr/

@@ -1,5 +1,9 @@
 import { isAxiosError } from "axios";
-import { returnToFrom } from "../return-to";
+import {
+  returnToFrom,
+  authorizedReturnTo,
+  personalLoginPath,
+} from "../return-to";
 import { authApi } from "../api/auth.api";
 import { authSchema } from "../schemas/auth.schema";
 import type { z } from "zod";
@@ -61,15 +65,21 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
           replace: true,
           state: { email: data.user.email, returnTo, codeQueued: true },
         });
-      else if (returnTo && data.user.profileCompleted)
-        nav(returnTo.pathname, { state: returnTo.state });
-      else if (
-        data.user.roles.some((role) =>
-          ["admin", "super-admin", "volunteer"].includes(role),
-        )
-      )
-        nav("/admin");
-      else nav("/dashboard?tab=profile", { state: { returnTo } });
+      else {
+        const destination = authorizedReturnTo(location.state, data.user);
+        nav(
+          data.user.profileCompleted && destination
+            ? destination.pathname
+            : personalLoginPath(data.user.profileCompleted),
+          {
+            replace: true,
+            state:
+              data.user.profileCompleted && destination
+                ? destination.state
+                : { returnTo: destination },
+          },
+        );
+      }
     },
   });
   const loginError =
@@ -251,7 +261,10 @@ export function AuthPage({ mode }: { mode: "register" | "login" }) {
                 {t(en, "পাসওয়ার্ড ভুলে গেছেন?", "Forgot password?")}
               </Link>
               <span className="dot-sep">·</span>
-              <Link to="/admin/login" style={{ opacity: 0.85, fontWeight: 600 }}>
+              <Link
+                to="/admin/login"
+                style={{ opacity: 0.85, fontWeight: 600 }}
+              >
                 {t(en, "অ্যাডমিন পোর্টাল", "Admin Portal")}
               </Link>
             </>

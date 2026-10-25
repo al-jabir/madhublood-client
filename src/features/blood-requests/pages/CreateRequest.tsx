@@ -1,3 +1,5 @@
+import { PostDraftImport } from "../components/PostDraftImport";
+import { RequestContextFields } from "../components/RequestContextFields";
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { requestLabel } from "../request-labels";
@@ -196,6 +198,32 @@ export function CreateRequest() {
             "Requests are reviewed before they become public. Complete your personal profile first.",
           )}
         />
+        <PostDraftImport
+          onApply={(values) => {
+            const form = formRef.current;
+            if (!form) return;
+            for (const [key, value] of Object.entries(values)) {
+              const input = form.elements.namedItem(key);
+              if (
+                input instanceof HTMLInputElement ||
+                input instanceof HTMLSelectElement
+              )
+                input.value = value;
+            }
+            setOnBehalf(true);
+            setRequiredAt("");
+            for (const key of [
+              "contactConsent",
+              "shareContactWithMembers",
+              "verifiedByPhone",
+              "representativeConsent",
+            ]) {
+              const input = form.elements.namedItem(key);
+              if (input instanceof HTMLInputElement) input.checked = false;
+            }
+            form.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        />
         <DraftsPanel onLoad={loadDraft} />
         {draftId && (
           <p role="status">
@@ -298,6 +326,7 @@ export function CreateRequest() {
               maxLength={80}
             />
           </Field>
+          <RequestContextFields />
           <Field label={t(en, "যোগাযোগ", "Mobile")}>
             <input
               name="contact"

@@ -10,6 +10,9 @@ async function setup(page: Page) {
         JSON.stringify({ state: { en: true, dark: true }, version: 0 }),
       ),
   );
+  await page.route("**/api/ready", (route) =>
+    route.fulfill({ json: { ready: true, database: "connected" } }),
+  );
   await page.route("**/api/v1/**", (route) => {
     const p = new URL(route.request().url()).pathname;
     if (p.endsWith("/auth/me"))

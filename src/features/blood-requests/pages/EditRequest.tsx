@@ -1,3 +1,4 @@
+import { RequestContextFields } from "../components/RequestContextFields";
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { requestLabel } from "../request-labels";
@@ -108,6 +109,7 @@ export function EditRequest() {
           }
         }}
       >
+        <RequestContextFields value={d} />
         {d.referral && (
           <label className="checkbox span2">
             <input type="checkbox" required />

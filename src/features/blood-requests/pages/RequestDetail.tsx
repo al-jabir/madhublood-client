@@ -120,6 +120,29 @@ export function RequestDetail() {
           )}
         </p>
       )}
+      {(item.patientReason || item.representativeRelationship) && (
+        <div className="notice">
+          <strong>
+            {t(
+              en,
+              "পরিবারের দেওয়া তথ্য (private)",
+              "Family-provided information (private)",
+            )}
+          </strong>
+          {item.patientReason && (
+            <p>
+              {t(en, "কারণ: ", "Reason: ")}
+              {item.patientReason}
+            </p>
+          )}
+          {item.representativeRelationship && (
+            <p>
+              {t(en, "সম্পর্ক: ", "Relationship: ")}
+              {item.representativeRelationship}
+            </p>
+          )}
+        </div>
+      )}
       {item.referral && (
         <p className="notice">
           {t(

@@ -1,7 +1,14 @@
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  UserRound,
+  LayoutDashboard,
+  Globe,
+  UsersRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { authApi } from "@/features/auth/api/auth.api";
@@ -16,6 +23,7 @@ export function AccountMenu() {
   const { en } = usePrefs();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const location = useLocation();
@@ -34,6 +42,15 @@ export function AccountMenu() {
     if (open) {
       document.addEventListener("pointerdown", outside);
       document.addEventListener("keydown", escape);
+      const rect = trigger.current?.getBoundingClientRect();
+      if (rect)
+        setPosition({
+          top: rect.bottom + 8,
+          left: Math.max(
+            12,
+            Math.min(rect.right - 300, window.innerWidth - 312),
+          ),
+        });
     }
     return () => {
       document.removeEventListener("pointerdown", outside);
@@ -41,22 +58,29 @@ export function AccountMenu() {
     };
   }, [open]);
   if (!me) return null;
-  const links = [
-    ["profile", t(en, "আমার প্রোফাইল", "My profile")],
-    ["donor", t(en, "রক্তদাতা ফর্ম", "Donor form")],
-    ["donations", t(en, "রক্তদানের ইতিহাস", "Donation history")],
-    ["notifications", t(en, "বিজ্ঞপ্তি", "Notifications")],
-    ["settings", t(en, "অ্যাকাউন্ট ও নিরাপত্তা", "Account & security")],
-  ];
+  const admin = me.roles.some((r) => ["admin", "super-admin"].includes(r));
+  const inAdmin = location.pathname === "/admin";
   return (
     <div className="account-menu" ref={root}>
       <button
         ref={trigger}
+        type="button"
         className="account-trigger"
         aria-label={me.name || t(en, "আমার অ্যাকাউন্ট", "My account")}
         aria-expanded={open}
         aria-controls="account-links"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          const rect = trigger.current?.getBoundingClientRect();
+          if (rect)
+            setPosition({
+              top: rect.bottom + 8,
+              left: Math.max(
+                12,
+                Math.min(rect.right - 300, window.innerWidth - 312),
+              ),
+            });
+          setOpen(!open);
+        }}
       >
         <span className="account-avatar">
           <UserRound size={18} />
@@ -67,34 +91,67 @@ export function AccountMenu() {
         <ChevronDown size={15} />
       </button>
       {open && (
-        <div id="account-links" className="account-dropdown">
-          <strong>{me.name || t(en, "আমার অ্যাকাউন্ট", "My account")}</strong>
-          {links.map(([tab, label]) => (
-            <Link key={tab} to={`/dashboard?tab=${tab}`}>
-              {label}
-            </Link>
-          ))}
-          {canVolunteer(me, "submit-referrals") && (
-            <Link to="/requests/new">
-              {t(en, "রক্তের অনুরোধ করুন", "Create blood request")}
-            </Link>
-          )}
-          {me.roles.some((r) =>
-            ["admin", "super-admin", "volunteer"].includes(r),
-          ) && (
+        <div
+          id="account-links"
+          className="account-dropdown"
+          style={{
+            position: "fixed",
+            top: position.top,
+            left: position.left,
+            right: "auto",
+            maxHeight: `calc(100dvh - ${position.top + 12}px)`,
+          }}
+        >
+          <div className="account-identity">
+            <span className="account-avatar">
+              <UserRound size={20} />
+            </span>
+            <div>
+              <strong>
+                {me.name || t(en, "আমার অ্যাকাউন্ট", "My account")}
+              </strong>
+              <small>
+                {admin
+                  ? t(en, "অ্যাডমিন অ্যাকাউন্ট", "Administrator")
+                  : t(en, "কমিউনিটি সদস্য", "Community member")}
+              </small>
+            </div>
+          </div>
+          {admin && (
             <Link
-              to={
-                me.roles.some((r) => ["admin", "super-admin"].includes(r))
-                  ? "/admin?section=coordination"
-                  : "/volunteer"
-              }
+              className="account-workspace-link"
+              to={inAdmin ? "/" : "/admin"}
             >
-              {me.roles.some((r) => ["admin", "super-admin"].includes(r))
-                ? t(en, "রক্তের সমন্বয়", "Coordination desk")
-                : t(en, "স্বেচ্ছাসেবকের ড্যাশবোর্ড", "Volunteer dashboard")}
+              {inAdmin ? <Globe size={18} /> : <LayoutDashboard size={18} />}
+              <span>
+                {inAdmin
+                  ? t(en, "ওয়েবসাইট দেখুন", "View website")
+                  : t(en, "অ্যাডমিন ড্যাশবোর্ড", "Admin dashboard")}
+              </span>
             </Link>
           )}
+          <Link
+            to="/dashboard"
+            aria-current={
+              location.pathname === "/dashboard" ? "page" : undefined
+            }
+          >
+            <LayoutDashboard size={18} />
+            <span>{t(en, "আমার ড্যাশবোর্ড", "My dashboard")}</span>
+          </Link>
+          {!admin &&
+            (canVolunteer(me, "submit-referrals") ||
+              canVolunteer(me, "coordinate-requests")) && (
+              <Link to="/volunteer">
+                <UsersRound size={18} />
+                <span>
+                  {t(en, "স্বেচ্ছাসেবকের ড্যাশবোর্ড", "Volunteer dashboard")}
+                </span>
+              </Link>
+            )}
           <button
+            type="button"
+            className="account-signout"
             disabled={busy}
             onClick={async () => {
               setBusy(true);
@@ -112,7 +169,9 @@ export function AccountMenu() {
             }}
           >
             <LogOut size={16} />
-            {t(en, "লগ আউট", "Sign out")}
+            {busy
+              ? t(en, "বের হচ্ছে…", "Signing out…")
+              : t(en, "লগ আউট", "Sign out")}
           </button>
         </div>
       )}

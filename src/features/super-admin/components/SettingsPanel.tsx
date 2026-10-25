@@ -56,8 +56,8 @@ export function SettingsPanel() {
           <small>
             {t(
               en,
-              "চালু করলে সদস্যদের কিছু সুবিধা সাময়িক বন্ধ থাকবে। কর্মীরা প্রবেশ করে এটি বন্ধ করতে পারবেন।",
-              "Temporarily pause public features. Staff can still sign in and turn maintenance off.",
+              "চালু করলে সাধারণ ব্যবহারকারী ও Volunteer-এর সেবা বন্ধ থাকবে। অ্যাডমিন প্যানেল চালু থাকবে; Super-admin এটি বন্ধ করতে পারবেন।",
+              "Pause public and volunteer services. Administrators retain workspace access; a super admin can turn maintenance off.",
             )}
           </small>
         </span>

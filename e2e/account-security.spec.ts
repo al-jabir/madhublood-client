@@ -124,7 +124,7 @@ test("email registration requires verification before the personal profile", asy
   ).toHaveAttribute("readonly", "");
 });
 
-test("email sign-in opens profile and account recovery accepts a one-use key without sending messages", async ({
+test("email sign-in opens personal dashboard and account recovery accepts a one-use key without sending messages", async ({
   page,
 }) => {
   let signedIn = false;
@@ -182,7 +182,7 @@ test("email sign-in opens profile and account recovery accepts a one-use key wit
     .fill("member@example.test");
   await page.getByLabel("Password", { exact: true }).fill("original-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/dashboard\?tab=profile/);
+  await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/forgot-password");
   await page.getByRole("button", { name: "Recovery key", exact: true }).click();
   await page

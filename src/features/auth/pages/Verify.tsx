@@ -1,4 +1,4 @@
-import { returnToFrom } from "../return-to";
+import { authorizedReturnTo, personalLoginPath } from "../return-to";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -104,11 +104,11 @@ export function Verify({ reset = false }: { reset?: boolean }) {
         const identity = await authApi.me();
         setCsrf(identity.csrf);
         qc.setQueryData(["me"], identity.user);
-        const destination = returnToFrom(location.state);
+        const destination = authorizedReturnTo(location.state, identity.user);
         nav(
           identity.user.profileCompleted && destination
             ? destination.pathname
-            : "/dashboard?tab=profile",
+            : personalLoginPath(identity.user.profileCompleted),
           {
             replace: true,
             state:

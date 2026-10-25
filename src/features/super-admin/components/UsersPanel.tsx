@@ -1,3 +1,4 @@
+import { useMe } from "@/features/auth/hooks/useMe";
 import { ChevronDown, ShieldCheck, MapPin, Users } from "lucide-react";
 import "../users.css";
 import { Loading } from "@/components/feedback/Loading";
@@ -12,6 +13,7 @@ import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 export function UsersPanel() {
   const { en } = usePrefs();
+  const me = useMe();
   const [page, setPage] = useState(1);
   const client = useQueryClient();
   const q = useQuery({
@@ -97,35 +99,51 @@ export function UsersPanel() {
                     : t(en, "এলাকার দায়িত্ব দেওয়া নেই", "No area assigned")}
                 </span>
               </div>
-              <details className="user-access-editor">
-                <summary>
-                  {t(en, "অনুমতি সম্পাদনা", "Manage access")}
-                  <ChevronDown size={16} />
-                </summary>
-                <div className="user-access-editor-body">
-                  <RoleEditor
-                    row={row}
-                    save={async (roles, areas, permissions) => {
-                      try {
-                        await superAdminApi.updateRoles(
-                          row._id,
-                          roles,
-                          areas,
-                          permissions,
-                        );
-                        toast.success(t(en, "সংরক্ষণ হয়েছে", "Saved"));
-                        client.invalidateQueries({ queryKey: ["operations"] });
-                        client.invalidateQueries({
-                          queryKey: ["coordination-detail"],
-                        });
-                      } catch (error) {
-                        toast.error(errorText(error));
-                        throw error;
-                      }
-                    }}
-                  />
-                </div>
-              </details>
+              {row._id === me.data?.id ? (
+                <p className="user-self-access">
+                  {t(
+                    en,
+                    "নিজের ভূমিকা বা অনুমতি এখান থেকে পরিবর্তন করা যায় না।",
+                    "Your own role and permissions cannot be changed here.",
+                  )}
+                </p>
+              ) : (
+                <details className="user-access-editor">
+                  <summary>
+                    {t(en, "অনুমতি সম্পাদনা", "Manage access")}
+                    <ChevronDown size={16} />
+                  </summary>
+                  <div className="user-access-editor-body">
+                    <RoleEditor
+                      row={row}
+                      save={async (roles, areas, permissions, locationIds) => {
+                        try {
+                          await superAdminApi.updateRoles(
+                            row._id,
+                            roles,
+                            areas,
+                            permissions,
+                            locationIds,
+                          );
+                          toast.success(t(en, "সংরক্ষণ হয়েছে", "Saved"));
+                          client.invalidateQueries({
+                            queryKey: ["operations"],
+                          });
+                          client.invalidateQueries({
+                            queryKey: ["volunteer-dashboard"],
+                          });
+                          client.invalidateQueries({
+                            queryKey: ["coordination-detail"],
+                          });
+                        } catch (error) {
+                          toast.error(errorText(error));
+                          throw error;
+                        }
+                      }}
+                    />
+                  </div>
+                </details>
+              )}
             </article>
           ))
         )}

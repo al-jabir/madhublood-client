@@ -1,3 +1,5 @@
+import { useCursorNavigation } from "@/hooks/useCursorNavigation";
+import { CursorPager } from "@/components/common/CursorPager";
 import { VolunteerDashboard } from "@/features/coordination/components/VolunteerDashboard";
 import { AdminDashboardHub } from "../components/AdminDashboardHub";
 import "../admin-workspace.css";
@@ -163,10 +165,16 @@ export function Admin() {
     entries.find(
       (entry) => entry.key === (administrator ? "overview" : "coordination"),
     )!;
+  const pagination = useCursorNavigation(selected.key);
   const q = useQuery({
-    queryKey: ["moderation"],
+    queryKey: ["moderation", selected.key, pagination.after],
     enabled: !!administrator && ["requests", "donors"].includes(selected.key),
-    queryFn: adminApi.queue,
+    queryFn: () =>
+      adminApi.queue(
+        selected.key === "requests"
+          ? { requestsAfter: pagination.after }
+          : { donorsAfter: pagination.after },
+      ),
   });
   async function moderate(path: string, data: unknown) {
     setBusy(true);
@@ -263,6 +271,14 @@ export function Admin() {
                     : t(en, "সমন্বয়কারী", "Coordinator")}
               </span>
               <div className="admin-topbar-actions">
+                <Link
+                  to="/"
+                  className="icon"
+                  aria-label={t(en, "মূল সাইট খুলুন", "Open public site")}
+                  title={t(en, "মূল সাইট খুলুন", "Open public site")}
+                >
+                  <ArrowUpRight size={18} />
+                </Link>
                 <button
                   className="icon"
                   aria-label="Change language"
@@ -458,6 +474,17 @@ export function Admin() {
                         "যাচাইয়ের জন্য কোনো রক্তদাতা নেই।",
                         "No donors awaiting verification.",
                       )}
+                    />
+                  )}
+                  {q.data && !q.isError && (
+                    <CursorPager
+                      navigation={pagination}
+                      busy={q.isFetching || busy}
+                      nextCursor={
+                        selected.key === "requests"
+                          ? q.data.requestsNextCursor
+                          : q.data.donorsNextCursor
+                      }
                     />
                   )}
                 </section>

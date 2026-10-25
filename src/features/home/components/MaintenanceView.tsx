@@ -1,11 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  Wrench,
-  ShieldAlert,
-  Info,
-  Sparkles,
-  Eye,
-} from "lucide-react";
+import { Wrench, ShieldAlert, Info, Sparkles, Eye } from "lucide-react";
 import { usePrefs } from "@/store/preferences.store";
 import { t } from "@/i18n/translate";
 
@@ -19,6 +13,8 @@ interface MaintenanceViewProps {
 
 export function MaintenanceView({
   supportMessage,
+  isFetching,
+  onRefresh,
   isAdmin,
   onPreview,
 }: MaintenanceViewProps) {
@@ -73,11 +69,14 @@ export function MaintenanceView({
               "The platform is currently undergoing scheduled maintenance and system optimization. All features and data will be automatically restored as soon as maintenance is complete.",
             )}
           </p>
-          <p className="maintenance-status-sub" style={{ marginTop: "10px", fontSize: "13px", opacity: 0.85 }}>
+          <p
+            className="maintenance-status-sub"
+            style={{ marginTop: "10px", fontSize: "13px", opacity: 0.85 }}
+          >
             {t(
               en,
-              "সাইটের রক্ষণাবেক্ষণ চলছে। কিছু সুবিধা সাময়িক বন্ধ আছে।",
-              "Maintenance is in progress. Some services are temporarily unavailable.",
+              "সাইটের রক্ষণাবেক্ষণ চলছে। সাধারণ ব্যবহারকারীদের সেবা সাময়িক বন্ধ আছে।",
+              "Maintenance is in progress. Public services are temporarily unavailable.",
             )}
           </p>
         </div>
@@ -112,6 +111,25 @@ export function MaintenanceView({
           </div>
         </div>
 
+        <div className="maintenance-actions">
+          {onRefresh && (
+            <button
+              type="button"
+              className="button primary"
+              disabled={isFetching}
+              onClick={onRefresh}
+            >
+              {isFetching
+                ? t(en, "পরীক্ষা হচ্ছে…", "Checking…")
+                : t(en, "আবার পরীক্ষা করুন", "Check again")}
+            </button>
+          )}
+          {!isAdmin && (
+            <Link to="/admin/login" className="maintenance-staff-link">
+              {t(en, "অ্যাডমিন লগইন", "Admin sign in")}
+            </Link>
+          )}
+        </div>
         {/* Admin / Staff Controls (only if admin previews view) */}
         {isAdmin && (
           <div className="maintenance-admin-card">

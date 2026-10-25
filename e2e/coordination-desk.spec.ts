@@ -336,6 +336,24 @@ test("coordinator approval preserves a complete area name containing a comma", a
       saved = route.request().postDataJSON();
       return route.fulfill({ json: { ok: true } });
     }
+    if (path.endsWith("/locations"))
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              _id: "777777777777777777777777",
+              name: "Tangail",
+              kind: "district",
+            },
+            {
+              _id: "888888888888888888888888",
+              name: "Madhupur",
+              kind: "upazila",
+              parent: "777777777777777777777777",
+            },
+          ],
+        },
+      });
     if (path.endsWith("/super-admin/users"))
       return route.fulfill({
         json: {
@@ -376,8 +394,8 @@ test("coordinator approval preserves a complete area name containing a comma", a
     .getByRole("combobox", { name: "Role", exact: true })
     .selectOption("volunteer");
   await expect(
-    card.getByLabel("Assigned areas (one per line)", { exact: true }),
-  ).toHaveValue("Madhupur, Tangail");
+    card.getByLabel("Assigned service areas", { exact: true }),
+  ).toHaveValues(["888888888888888888888888"]);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -438,5 +456,6 @@ test("coordinator approval preserves a complete area name containing a comma", a
       roles: ["user", "volunteer"],
       areas: ["Madhupur, Tangail"],
       volunteerPermissions: ["submit-referrals"],
+      locationIds: ["888888888888888888888888"],
     });
 });

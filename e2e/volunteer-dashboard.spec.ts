@@ -13,10 +13,23 @@ for (const en of [true, false])
         ),
       en,
     );
+    await page.addInitScript(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => {
+            (window as unknown as { sharedText: string }).sharedText = text;
+          },
+        },
+      }),
+    );
     let feedback: Record<string, unknown> | undefined;
     const record = {
       _id: mine,
       hospital: "Madhupur Community Hospital",
+      canRecordFeedback: true,
+      contact: "01719998888",
+      representative: "Private family contact",
       bloodGroup: "B+",
       area: "Madhupur, Tangail",
       units: 2,
@@ -92,6 +105,7 @@ for (const en of [true, false])
                       {
                         ...record,
                         _id: view === "assignments" ? assigned : mine,
+                        canCoordinate: view === "assignments",
                         status: status === "pending" ? "submitted" : "active",
                         familyFeedback: feedback,
                       },
@@ -148,6 +162,13 @@ for (const en of [true, false])
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+    await page.locator(".volunteer-copy-post-btn").first().click();
+    const publicText = await page.evaluate(
+      () => (window as unknown as { sharedText: string }).sharedText,
+    );
+    expect(publicText).not.toContain("01719998888");
+    expect(publicText).not.toContain("Private family contact");
+    expect(publicText).toContain(en ? "Blood group" : "রক্তের গ্রুপ");
     await page.screenshot({
       path: `.runtime/volunteer-dashboard-${en ? "en" : "bn"}-${info.project.name}.png`,
       fullPage: true,

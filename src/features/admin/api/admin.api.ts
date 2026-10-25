@@ -6,7 +6,21 @@ import type {
   CaseRecord,
 } from "@/types/api";
 export const adminApi = {
-  queue: async () => (await api.get<ModerationQueue>("/admin/queue")).data,
+  readiness: async () =>
+    (
+      await api.get<{ ready: boolean; database: string }>("../ready", {
+        validateStatus: (status) => status === 200 || status === 503,
+      })
+    ).data,
+  queue: async (params?: { requestsAfter?: string; donorsAfter?: string }) =>
+    (
+      await api.get<ModerationQueue>("/admin/queue", {
+        params: {
+          requestsAfter: params?.requestsAfter,
+          donorsAfter: params?.donorsAfter,
+        },
+      })
+    ).data,
   analytics: async () =>
     (await api.get<OperationalMetrics>("/admin/analytics")).data,
   cases: async (tab: "reports" | "tickets", after?: string) =>

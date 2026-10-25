@@ -6,6 +6,8 @@ export interface FamilyFeedback {
   recordedAt?: string;
 }
 export interface VolunteerRequest {
+  canCoordinate?: boolean;
+  canRecordFeedback?: boolean;
   _id: string;
   hospital: string;
   bloodGroup: string;
@@ -57,10 +59,15 @@ export interface VolunteerData {
   canManage: boolean;
 }
 export const volunteerApi = {
-  dashboard: async (view: string, page: number, status: string) =>
+  dashboard: async (
+    view: string,
+    page: number,
+    status: string,
+    filters?: { search?: string; bloodGroup?: string; sort?: string },
+  ) =>
     (
       await api.get<VolunteerData>("/admin/volunteer-dashboard", {
-        params: { view, page, status },
+        params: { view, page, status, ...filters },
       })
     ).data,
   feedback: (

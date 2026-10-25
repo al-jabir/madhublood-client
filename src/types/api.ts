@@ -56,6 +56,8 @@ export interface DonorProfile {
   lastDonation?: string;
 }
 export interface BloodRequest {
+  patientReason?: string;
+  representativeRelationship?: string;
   familyFeedback?: import("@/features/coordination/api/volunteer.api").FamilyFeedback;
   coordinatorManaged?: boolean;
   canViewResponses?: boolean;
@@ -103,6 +105,10 @@ export interface InAppNotification {
   read: boolean;
 }
 export interface ModerationQueue {
+  requestsTotal?: number;
+  donorsTotal?: number;
+  requestsNextCursor?: string | null;
+  donorsNextCursor?: string | null;
   requests: BloodRequest[];
   donors: DonorProfile[];
 }

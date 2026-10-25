@@ -29,6 +29,17 @@ export const superAdminApi = {
         params: { after },
       })
     ).data,
-  updateRoles: (id: string, roles: string[], areas: string[], volunteerPermissions: string[] = []) =>
-    api.patch(`/super-admin/users/${id}/roles`, { roles, areas, volunteerPermissions }),
+  updateRoles: (
+    id: string,
+    roles: string[],
+    areas: string[],
+    volunteerPermissions: string[] = [],
+    locationIds: string[] = [],
+  ) =>
+    api.patch(`/super-admin/users/${id}/roles`, {
+      roles,
+      areas,
+      volunteerPermissions,
+      locationIds,
+    }),
 };

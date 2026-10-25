@@ -48,16 +48,26 @@ test("signed in header and dashboard use the selected language", async ({
   await expect(trigger).toContainText("Test Donor");
   await trigger.click();
   await expect(
-    page.locator(".account-dropdown").getByRole("link", { name: "My profile" }),
+    page
+      .locator(".account-dropdown")
+      .getByRole("link", { name: "My dashboard" }),
   ).toBeVisible();
+  await expect(page.locator(".account-dropdown a")).toHaveCount(1);
+  await expect(
+    page
+      .locator(".account-dropdown")
+      .getByRole("link", { name: "Donor form", exact: true }),
+  ).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await trigger.click();
   await page
     .locator(".account-dropdown")
-    .getByRole("link", { name: "My profile" })
+    .getByRole("link", { name: "My dashboard" })
     .click();
+  await expect(page.locator(".account-dropdown")).toHaveCount(0);
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
   await expect(page.locator(".profile-overview")).toContainText("Test Donor");
   await expect(page.locator(".donor-onboarding")).toHaveCount(0);
   await page.getByRole("button", { name: "Donor form", exact: true }).click();

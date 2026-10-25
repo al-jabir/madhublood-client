@@ -1,3 +1,4 @@
+import { requestLabel } from "@/features/blood-requests/request-labels";
 import { canVolunteer } from "@/utils/volunteer-permissions";
 import { AvailabilityReminder } from "@/features/community-tools/components/MemberTools";
 import { usePrefs } from "@/store/preferences.store";
@@ -13,7 +14,7 @@ import {
   useSearchParams,
   useLocation,
 } from "react-router-dom";
-import { returnToFrom } from "@/features/auth/return-to";
+import { authorizedReturnTo } from "@/features/auth/return-to";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -45,7 +46,7 @@ export function Dashboard() {
   const pagination = useCursorNavigation("");
   const { data: me } = useMe();
   const nav = useNavigate();
-  const returnTo = returnToFrom(useLocation().state);
+  const returnTo = authorizedReturnTo(useLocation().state, me);
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab") || "overview";
   const tab = [
@@ -102,23 +103,17 @@ export function Dashboard() {
                   overview: t(en, "সারসংক্ষেপ", "Overview"),
                   profile: t(en, "প্রোফাইল", "Profile"),
                   donor: t(en, "রক্তদাতা ফর্ম", "Donor form"),
-                  donations: t(en, "রক্তদান", "Donations"),
-                  notifications: t(en, "ইনবক্স ও বিজ্ঞপ্তি", "Inbox & Notifications"),
+                  donations: t(en, "রক্তদানের ইতিহাস", "Donation history"),
+                  notifications: t(
+                    en,
+                    "বিজ্ঞপ্তি",
+                    "Notifications",
+                  ),
                   settings: t(en, "সেটিংস", "Settings"),
                 }[s]
               }
             </button>
           ))}
-          {me?.roles.some((r: string) =>
-            ["admin", "super-admin"].includes(r),
-          ) && <Link to="/admin">{t(en, "পরিচালনা", "Moderation")}</Link>}
-          {(me?.roles.includes("volunteer") ||
-            canVolunteer(me, "submit-referrals") ||
-            canVolunteer(me, "coordinate-requests")) && (
-            <Link to="/volunteer">
-              {t(en, "স্বেচ্ছাসেবক ড্যাশবোর্ড", "Volunteer desk")}
-            </Link>
-          )}
         </div>
         {me?.profileCompleted && returnTo && (
           <div className="notice">
@@ -133,8 +128,11 @@ export function Dashboard() {
         )}
         {!me?.profileCompleted && (
           <div className="notice">
-            Complete your personal profile before registering as a donor or
-            submitting requests.{" "}
+            {t(
+              en,
+              "রক্তদাতা ফর্ম বা অনুমোদিত কাজের আগে ব্যক্তিগত প্রোফাইল পূরণ করুন।",
+              "Complete your personal profile before filling donor details or using authorized work features.",
+            )}{" "}
             <button className="text-link" onClick={() => setTab("profile")}>
               {t(en, "প্রোফাইল সম্পূর্ণ করুন →", "Complete profile →")}
             </button>
@@ -152,7 +150,11 @@ export function Dashboard() {
                 )}
               </strong>
               <p>
-                Verify ownership to help keep your account details up to date.
+                {t(
+                  en,
+                  "অ্যাকাউন্ট সুরক্ষিত রাখতে আপনার ইমেইল যাচাই করুন।",
+                  "Verify your email to help keep your account secure.",
+                )}
               </p>
             </div>
             <Link className="button secondary" to="/verify-email">
@@ -168,7 +170,10 @@ export function Dashboard() {
                 <Activity className="red" />
                 <h3>{t(en, "আমার রক্তের অনুরোধ", "My blood requests")}</h3>
                 <strong className="metric">
-                  {q.data?.total ?? q.data?.items.length ?? "—"}
+                  {q.isError || q.isPending
+                    ? "—"
+                    : (q.data?.total ??
+                      `${q.data?.items.length ?? 0}${q.data?.nextCursor ? "+" : ""}`)}
                 </strong>
               </div>
               <div className="panel">
@@ -202,11 +207,7 @@ export function Dashboard() {
                 <Link to="/volunteer" className="panel create-tile">
                   <HeartHandshake />
                   <h3>
-                    {t(
-                      en,
-                      "স্বেচ্ছাসেবকের ড্যাশবোর্ড",
-                      "Volunteer workspace",
-                    )}
+                    {t(en, "স্বেচ্ছাসেবকের ড্যাশবোর্ড", "Volunteer workspace")}
                   </h3>
                   <ArrowUpRight />
                 </Link>
@@ -270,7 +271,7 @@ export function Dashboard() {
                   <span className="blood-type small-type">{r.bloodGroup}</span>
                   <span>
                     {r.hospital}
-                    <small>{r.status}</small>
+                    <small>{requestLabel(en, r.status)}</small>
                   </span>
                   <ChevronRight />
                 </Link>
@@ -313,12 +314,24 @@ export function Dashboard() {
             <section className="panel settings-session">
               <h2>{t(en, "অ্যাকাউন্ট সেশন", "Account sessions")}</h2>
               <p>
-                Sign out of all your devices if you suspect unauthorized access.
+                {t(
+                  en,
+                  "অপরিচিত কেউ অ্যাকাউন্ট ব্যবহার করলে সব ডিভাইস থেকে লগ আউট করুন।",
+                  "Sign out of all your devices if you suspect unauthorized access.",
+                )}
               </p>
               <button
                 className="button secondary"
                 onClick={async () => {
-                  if (confirm("Sign out of all devices?")) {
+                  if (
+                    confirm(
+                      t(
+                        en,
+                        "সব ডিভাইস থেকে লগ আউট করবেন?",
+                        "Sign out of all devices?",
+                      ),
+                    )
+                  ) {
                     await authApi.logoutAll();
                     setCsrf("");
                     qc.clear();
@@ -331,7 +344,11 @@ export function Dashboard() {
               </button>
               <p>
                 <Link to="/forgot-password">
-                  Recover password with an email code or recovery key
+                  {t(
+                    en,
+                    "ইমেইল কোড দিয়ে পাসওয়ার্ড পুনরুদ্ধার করুন",
+                    "Recover password with an email code",
+                  )}
                 </Link>
               </p>
             </section>
