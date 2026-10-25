@@ -44,15 +44,6 @@ export const authApi = {
         data,
       )
     ).data,
-  resetPassword: async (data: unknown) =>
-    (await api.post<Acknowledgment>("/auth/reset-password", data)).data,
-  recoveryKey: async (password: string) =>
-    (
-      await api.post<{ recoveryKey: string; message: string }>(
-        "/auth/recovery-key",
-        { password },
-      )
-    ).data,
   logout: () => api.post("/auth/logout"),
   logoutAll: () => api.post("/auth/logout-all"),
 };

@@ -1,4 +1,4 @@
-> Email/password registration and sign-in, email verification, email-code password reset and a saved one-use recovery key are connected to the backend. Registration shows the private key once, then opens profile onboarding. Donor/contact details remain optional and consent-based. No SMS or MFA is used.
+> Email/password sign-in, email verification and email-code password reset are connected to the backend. New accounts verify their email before profile onboarding. Recovery keys are retired. Donor/contact details remain optional and consent-based. No SMS or MFA is used.
 
 # MadhuBlood client
 

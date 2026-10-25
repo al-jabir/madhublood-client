@@ -87,22 +87,12 @@ test("signed in header and dashboard use the selected language", async ({
   ).toBe(true);
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.locator(".session-current-badge")).toContainText("Current");
-  const spacing = await page
-    .locator(".account-data-content")
-    .evaluate((root) => {
-      const heading = root.querySelector("h3")!.getBoundingClientRect();
-      const button = root.querySelector("button")!.getBoundingClientRect();
-      const field = root.querySelector(".field")!.getBoundingClientRect();
-      const remove = root
-        .querySelector("form > button")!
-        .getBoundingClientRect();
-      return {
-        headingGap: button.top - heading.bottom,
-        deleteGap: remove.top - field.bottom,
-      };
-    });
-  expect(spacing.headingGap).toBeGreaterThanOrEqual(24);
-  expect(spacing.deleteGap).toBeGreaterThanOrEqual(24);
+  await expect(
+    page.getByRole("button", { name: "Export my data", exact: true }),
+  ).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Account recovery key", exact: true }),
+  ).toHaveCount(0);
   await page.screenshot({
     path: `.runtime/settings-spacing-${test.info().project.name}.png`,
     fullPage: true,

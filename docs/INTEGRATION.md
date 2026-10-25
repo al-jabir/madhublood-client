@@ -4,15 +4,15 @@
 
 | Client | Server API under /api/v1 |
 | --- | --- |
-| /register | POST /auth/register; private recovery key shown once, then profile onboarding |
+| /register | POST /auth/register; email code verification, then profile onboarding |
 | /login | POST /auth/login followed by GET /auth/me to confirm the retained session |
 | /verify-email | POST /auth/request-email-verification and /auth/verify-email |
-| /forgot-password, /reset-password | POST /auth/forgot-password then /auth/reset-password-email, or /auth/reset-password with the saved recovery key |
+| /forgot-password, /reset-password | POST /auth/forgot-password then /auth/reset-password-email |
 | /dashboard?tab=profile | GET/PUT /account/profile, GET/PUT /donors/me, verified location selection |
 | /donors | GET /donors with group, location and availability filters |
 | /requests and request detail | GET /blood-requests, owner/donor actions through the existing feature API |
 | /requests/new | Private drafts and POST /blood-requests; personal profile required by the API |
-| Dashboard settings | Session revocation, password/recovery-key changes, account export/deletion |
+| Dashboard settings | Session revocation, password changes and email recovery, account export/deletion |
 | /admin | Existing role-gated moderation, coordination, settings, audit and operations |
 
 The UI does not pretend an email was delivered when it was merely queued. Reset/verification forms handle invalid codes, show API errors and use a 60-second resend cooldown. The server enforces expiry, attempts, cooldowns and ownership independently. Sensitive reset code/password/recovery values stay in component/form memory, not URL parameters or persisted application storage. Only language/theme preferences are persisted. Password reset clears query/session state; verification refreshes the account status.
@@ -31,12 +31,12 @@ Homepage integration now uses real donor/request responses without demo people, 
 
 The decorative label class is now eyebrow-label, avoiding Tailwind's overline text-decoration utility. Auth/header and quick-request top decorations were removed; input borders and keyboard focus indicators remain. Desktop/mobile tests verify label decoration, viewport fit, empty API results and the sign-in continuation.
 
-Run `npm run check` for typecheck/lint/unit tests/build. `npm run test:e2e` covers desktop/mobile account registration/profile, sign-in and recovery-key reset, email-code reset (including rejected codes), email verification/status refresh, private drafts, moderation settings, language persistence, responsive overflow and accessibility. Email/reset tests mock the API and do not send real email. Existing live coordinator tests require E2E_ACCOUNTS_FILE and are skipped without disposable account fixtures.
+Run `npm run check` for typecheck/lint/unit tests/build. `npm run test:e2e` covers desktop/mobile account registration/profile, sign-in and email-only reset, email-code reset (including rejected codes), email verification/status refresh, private drafts, moderation settings, language persistence, responsive overflow and accessibility. Email/reset tests mock the API and do not send real email. Existing live coordinator tests require E2E_ACCOUNTS_FILE and are skipped without disposable account fixtures.
 
 The public homepage reads real API locations and requests; it does not invent donors, requests, donation counts or successful deliveries. Empty and failure states reflect returned data.
 
 ## Hosted acceptance after publishing
 
-Use an account you own: register and privately save the recovery key; verify the received email code; complete the profile and optional donor consent; reload to confirm the session; create a request and confirm moderation; sign out; recover the password by email; verify that the old password/session no longer works. Generate a new recovery key in settings after email reset. Do not create fake blood requests on the public service to test workflow; use an isolated staging environment for donation/moderation exercises.
+Use an account you own: register and verify the received email code; complete the profile and optional donor consent; reload to confirm the session; create a request and confirm moderation; sign out; recover the password by email; verify that the old password/session no longer works. Do not create fake blood requests on the public service to test workflow; use an isolated staging environment for donation/moderation exercises.
 
 The server's operational release gates (production email delivery, backup approval/restore, monitoring and data/clinical review) are separate from client implementation.

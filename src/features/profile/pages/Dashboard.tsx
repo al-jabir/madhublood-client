@@ -6,25 +6,17 @@ import { t } from "@/i18n/translate";
 import { ProfileOverview } from "@/features/profile/components/ProfileOverview";
 import { useCursorNavigation } from "@/hooks/useCursorNavigation";
 import { CursorPager } from "@/components/common/CursorPager";
-import { authApi } from "@/features/auth/api/auth.api";
 import { requestsApi } from "@/features/blood-requests/api/blood-requests.api";
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-  useLocation,
-} from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { authorizedReturnTo } from "@/features/auth/return-to";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   ShieldCheck,
   Activity,
-  LogOut,
   Plus,
   ChevronRight,
 } from "lucide-react";
-import { qc } from "@/lib/query-client";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { Loading } from "@/components/feedback/Loading";
 import { Failure } from "@/components/feedback/Failure";
@@ -36,7 +28,6 @@ import { AccountSecurity } from "@/features/auth/components/AccountSecurity";
 import { DonorProfile } from "@/features/donors/components/DonorProfile";
 import { Donations } from "@/features/donations/pages/Donations";
 import { Notifications } from "@/features/notifications/pages/Notifications";
-import { setCsrf } from "@/services/http";
 import { Mail, HeartHandshake } from "lucide-react";
 import { donorsApi } from "@/features/donors/api/donors.api";
 import { DonorEligibilityCard } from "@/features/donors/components/DonorEligibilityCard";
@@ -45,7 +36,6 @@ export function Dashboard() {
   const { en } = usePrefs();
   const pagination = useCursorNavigation("");
   const { data: me } = useMe();
-  const nav = useNavigate();
   const returnTo = authorizedReturnTo(useLocation().state, me);
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab") || "overview";
@@ -104,11 +94,7 @@ export function Dashboard() {
                   profile: t(en, "প্রোফাইল", "Profile"),
                   donor: t(en, "রক্তদাতা ফর্ম", "Donor form"),
                   donations: t(en, "রক্তদানের ইতিহাস", "Donation history"),
-                  notifications: t(
-                    en,
-                    "বিজ্ঞপ্তি",
-                    "Notifications",
-                  ),
+                  notifications: t(en, "বিজ্ঞপ্তি", "Notifications"),
                   settings: t(en, "সেটিংস", "Settings"),
                 }[s]
               }
@@ -311,50 +297,7 @@ export function Dashboard() {
         {tab === "notifications" && <Notifications />}
         {tab === "settings" && (
           <div className="settings-layout">
-            <section className="panel settings-session">
-              <h2>{t(en, "অ্যাকাউন্ট সেশন", "Account sessions")}</h2>
-              <p>
-                {t(
-                  en,
-                  "অপরিচিত কেউ অ্যাকাউন্ট ব্যবহার করলে সব ডিভাইস থেকে লগ আউট করুন।",
-                  "Sign out of all your devices if you suspect unauthorized access.",
-                )}
-              </p>
-              <button
-                className="button secondary"
-                onClick={async () => {
-                  if (
-                    confirm(
-                      t(
-                        en,
-                        "সব ডিভাইস থেকে লগ আউট করবেন?",
-                        "Sign out of all devices?",
-                      ),
-                    )
-                  ) {
-                    await authApi.logoutAll();
-                    setCsrf("");
-                    qc.clear();
-                    nav("/login");
-                  }
-                }}
-              >
-                <LogOut size={17} />
-                {t(en, "সব ডিভাইস থেকে লগ আউট", "Sign out everywhere")}
-              </button>
-              <p>
-                <Link to="/forgot-password">
-                  {t(
-                    en,
-                    "ইমেইল কোড দিয়ে পাসওয়ার্ড পুনরুদ্ধার করুন",
-                    "Recover password with an email code",
-                  )}
-                </Link>
-              </p>
-            </section>
-            <section className="panel settings-security">
-              <AccountSecurity />
-            </section>
+            <AccountSecurity />
             <section className="panel settings-data">
               <AccountData />
             </section>

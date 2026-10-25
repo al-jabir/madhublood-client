@@ -28,7 +28,7 @@ export function AccountMenu() {
   const trigger = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const nav = useNavigate();
-  useEffect(() => setOpen(false), [location]);
+  useEffect(() => setOpen(false), [location.pathname, location.search]);
   useEffect(() => {
     function outside(e: PointerEvent) {
       if (!root.current?.contains(e.target as Node)) setOpen(false);
@@ -94,6 +94,9 @@ export function AccountMenu() {
         <div
           id="account-links"
           className="account-dropdown"
+          onClick={(event) => {
+            if ((event.target as Element).closest("a")) setOpen(false);
+          }}
           style={{
             position: "fixed",
             top: position.top,

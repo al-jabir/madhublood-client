@@ -28,7 +28,6 @@ export function Verify({ reset = false }: { reset?: boolean }) {
       ? location.state.email
       : (me?.email ?? "");
   const [email, setEmail] = useState(suggested);
-  const [method, setMethod] = useState<"email" | "key">("email");
   const [sent, setSent] = useState(!reset);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -65,7 +64,7 @@ export function Verify({ reset = false }: { reset?: boolean }) {
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (reset && method === "email" && !sent) {
+    if (reset && !sent) {
       await requestCode();
       return;
     }
@@ -85,17 +84,11 @@ export function Verify({ reset = false }: { reset?: boolean }) {
             email: identity,
             code: String(data.get("code")),
           })
-        : method === "key"
-          ? await authApi.resetPassword({
-              email: identity,
-              recoveryKey: String(data.get("recoveryKey")),
-              password,
-            })
-          : await authApi.resetPasswordEmail({
-              email: identity,
-              code: String(data.get("code")),
-              password,
-            });
+        : await authApi.resetPasswordEmail({
+            email: identity,
+            code: String(data.get("code")),
+            password,
+          });
       if (reset) {
         setCsrf("");
         qc.clear();
@@ -141,8 +134,8 @@ export function Verify({ reset = false }: { reset?: boolean }) {
           {reset
             ? t(
                 en,
-                "ইমেইল কোড অথবা সংরক্ষিত recovery key দিয়ে নতুন পাসওয়ার্ড দিন।",
-                "Reset your password with an email code or your saved recovery key.",
+                "আপনার ইমেইলে পাঠানো কোড দিয়ে নতুন পাসওয়ার্ড দিন।",
+                "Reset your password with a code sent to your email.",
               )
             : t(
                 en,
@@ -151,34 +144,6 @@ export function Verify({ reset = false }: { reset?: boolean }) {
               )}
         </p>
       </div>
-      {reset && (
-        <div className="auth-methods" aria-label="Recovery method">
-          <button
-            type="button"
-            aria-pressed={method === "email"}
-            onClick={() => {
-              setMethod("email");
-              setError("");
-              setMessage("");
-            }}
-          >
-            <Mail size={16} />
-            {t(en, "ইমেইল কোড", "Email code")}
-          </button>
-          <button
-            type="button"
-            aria-pressed={method === "key"}
-            onClick={() => {
-              setMethod("key");
-              setError("");
-              setMessage("");
-            }}
-          >
-            <KeyRound size={16} />
-            Recovery key
-          </button>
-        </div>
-      )}
       <form className="auth-form" onSubmit={submit}>
         <Field label={t(en, "ইমেইল ঠিকানা", "Email address")}>
           <input
@@ -196,33 +161,21 @@ export function Verify({ reset = false }: { reset?: boolean }) {
             }}
           />
         </Field>
-        {(method === "key" || sent) && (
+        {sent && (
           <>
-            {method === "email" ? (
-              <Field label={t(en, "ছয় সংখ্যার কোড", "Verification code")}>
-                <input
-                  className="code-input"
-                  name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  required
-                  pattern="[0-9]{6}"
-                  minLength={6}
-                  maxLength={6}
-                  placeholder="000000"
-                />
-              </Field>
-            ) : (
-              <Field label="Recovery key">
-                <input
-                  name="recoveryKey"
-                  type="password"
-                  required
-                  pattern="[a-fA-F0-9]{64}"
-                  autoComplete="off"
-                />
-              </Field>
-            )}
+            <Field label={t(en, "ছয় সংখ্যার কোড", "Verification code")}>
+              <input
+                className="code-input"
+                name="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+                pattern="[0-9]{6}"
+                minLength={6}
+                maxLength={6}
+                placeholder="000000"
+              />
+            </Field>
             {reset && (
               <>
                 <Field label={t(en, "নতুন পাসওয়ার্ড", "New password")}>
@@ -252,8 +205,8 @@ export function Verify({ reset = false }: { reset?: boolean }) {
                 <p className="muted">
                   {t(
                     en,
-                    "অন্তত ৬ অক্ষর দিন। Reset করলে সব পুরোনো session ও recovery key বাতিল হবে।",
-                    "Use at least 6 characters. Resetting signs out all devices and invalidates the previous recovery key.",
+                    "অন্তত ৬ অক্ষর দিন। পাসওয়ার্ড বদলালে সব ডিভাইস থেকে লগ আউট হবে।",
+                    "Use at least 6 characters. Resetting signs out all devices.",
                   )}
                 </p>
               </>
@@ -275,12 +228,12 @@ export function Verify({ reset = false }: { reset?: boolean }) {
             ? t(en, "অপেক্ষা করুন…", "Please wait…")
             : !reset
               ? t(en, "ইমেইল যাচাই করুন", "Verify email")
-              : method === "email" && !sent
+              : !sent
                 ? t(en, "কোড পাঠান", "Send reset code")
                 : t(en, "পাসওয়ার্ড reset করুন", "Reset password")}
           <ArrowRight size={17} />
         </button>
-        {method === "email" && sent && (
+        {sent && (
           <button
             className="text-link resend-button"
             type="button"

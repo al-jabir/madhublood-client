@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 const id = "111111111111111111111111",
   locationId = "222222222222222222222222";
-const key = "a".repeat(64);
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem(
@@ -40,7 +39,6 @@ test("email registration requires verification before the personal profile", asy
         json: {
           user,
           csrf: "fixture-csrf",
-          recoveryKey: key,
           message: "Account created",
         },
       });
@@ -124,71 +122,43 @@ test("email registration requires verification before the personal profile", asy
   ).toHaveAttribute("readonly", "");
 });
 
-test("email sign-in opens personal dashboard and account recovery accepts a one-use key without sending messages", async ({
-  page,
-}) => {
-  let signedIn = false;
-  const user = {
-    id,
-    email: "member@example.test",
-    name: "Member",
-    profileCompleted: true,
-    emailVerified: false,
-    roles: ["user"],
-    notificationConsent: false,
-  };
-  await page.route("**/api/v1/**", async (route) => {
+test("password recovery uses only an email code", async ({ page }) => {
+  await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (path.endsWith("/auth/login")) {
-      expect(route.request().postDataJSON()).toEqual({
-        email: "member@example.test",
-        password: "original-password",
-      });
-      signedIn = true;
-      return route.fulfill({ json: { user, csrf: "fixture-csrf" } });
-    }
     if (path.endsWith("/auth/me"))
+      return route.fulfill({ status: 401, json: {} });
+    if (path.endsWith("/platform"))
       return route.fulfill({
-        status: signedIn ? 200 : 401,
-        json: signedIn
-          ? { user, csrf: "fixture-csrf" }
-          : { error: { message: "Please sign in" } },
+        json: { maintenance: false, registrationOpen: true },
       });
-    if (path.endsWith("/auth/reset-password")) {
+    if (path.endsWith("/auth/forgot-password"))
+      return route.fulfill({
+        status: 202,
+        json: { message: "Check your inbox" },
+      });
+    if (path.endsWith("/auth/reset-password-email")) {
       expect(route.request().postDataJSON()).toEqual({
         email: "member@example.test",
-        recoveryKey: key,
+        code: "123456",
         password: "replacement-password",
       });
-      signedIn = false;
       return route.fulfill({
         json: { message: "Password reset successfully" },
       });
     }
-    if (path.endsWith("/donors/me")) return route.fulfill({ json: null });
-    if (path.endsWith("/platform"))
-      return route.fulfill({
-        json: {
-          maintenance: false,
-          registrationOpen: true,
-          supportMessage: "",
-        },
-      });
     return route.fulfill({ json: { items: [] } });
   });
-  await page.goto("/login");
-  await page
-    .getByLabel("Email address", { exact: true })
-    .fill("member@example.test");
-  await page.getByLabel("Password", { exact: true }).fill("original-password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/forgot-password");
-  await page.getByRole("button", { name: "Recovery key", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Recovery key", exact: true }),
+  ).toHaveCount(0);
   await page
     .getByLabel("Email address", { exact: true })
     .fill("member@example.test");
-  await page.getByLabel("Recovery key", { exact: true }).fill(key);
+  await page
+    .getByRole("button", { name: "Send reset code", exact: true })
+    .click();
+  await page.getByLabel("Verification code", { exact: true }).fill("123456");
   await page
     .getByLabel("New password", { exact: true })
     .fill("replacement-password");
@@ -201,55 +171,108 @@ test("email sign-in opens personal dashboard and account recovery accepts a one-
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test("replacement recovery key stays visible after sessions are revoked", async ({
+test("clean settings hide advanced controls and confirm sensitive actions", async ({
   page,
-}) => {
-  let signedIn = true;
-  const user = {
-    id,
-    email: "member@example.test",
-    name: "Member",
-    profileCompleted: true,
-    emailVerified: false,
-    roles: ["user"],
-    notificationConsent: false,
-  };
-  await page.route("**/api/v1/**", async (route) => {
+}, info) => {
+  let logoutCalls = 0,
+    deleteCalls = 0,
+    deleted = false;
+  await page.route("**/api/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/auth/me") && deleted)
+      return route.fulfill({ status: 401, json: {} });
     if (path.endsWith("/auth/me"))
       return route.fulfill({
-        status: signedIn ? 200 : 401,
-        json: signedIn
-          ? { user, csrf: "fixture-csrf" }
-          : { error: { message: "Please sign in" } },
-      });
-    if (path.endsWith("/auth/recovery-key")) {
-      expect(route.request().postDataJSON()).toEqual({
-        password: "original-password",
-      });
-      signedIn = false;
-      return route.fulfill({
-        json: { recoveryKey: key, message: "Recovery key replaced" },
-      });
-    }
-    if (path.endsWith("/platform"))
-      return route.fulfill({
         json: {
-          maintenance: false,
-          registrationOpen: true,
-          supportMessage: "",
+          csrf: "fixture",
+          user: {
+            id: "111111111111111111111111",
+            name: "Member",
+            email: "member@example.test",
+            roles: ["user"],
+            profileCompleted: true,
+            emailVerified: true,
+          },
         },
       });
+    if (path.endsWith("/platform"))
+      return route.fulfill({
+        json: { maintenance: false, registrationOpen: true },
+      });
+    if (path.endsWith("/auth/logout-all")) {
+      logoutCalls++;
+      return route.fulfill({
+        status: 503,
+        json: { error: { message: "Please try again" } },
+      });
+    }
+    if (path.endsWith("/account") && route.request().method() === "DELETE") {
+      deleteCalls++;
+      expect(route.request().postDataJSON()).toEqual({ confirm: true });
+      expect(route.request().headers()["x-csrf-token"]).toBe("fixture");
+      if (deleteCalls === 1)
+        return route.fulfill({
+          status: 503,
+          json: { error: { message: "Deletion temporarily unavailable" } },
+        });
+      deleted = true;
+      return route.fulfill({ json: { ok: true } });
+    }
     return route.fulfill({ json: { items: [] } });
   });
   await page.goto("/dashboard?tab=settings");
+  await expect(
+    page.getByText("Account recovery key", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Export my data", exact: true }),
+  ).not.toBeVisible();
   await page
-    .getByLabel("Current password for recovery key", { exact: true })
-    .fill("original-password");
-  await page
-    .getByRole("button", { name: "Generate replacement recovery key" })
+    .getByRole("button", { name: "Sign out everywhere", exact: true })
     .click();
-  await expect(page.getByLabel("New recovery key")).toHaveValue(key);
-  await page.getByRole("button", { name: "I saved my key — sign in" }).click();
-  await expect(page).toHaveURL(/\/login$/);
+  let dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+  expect(logoutCalls).toBe(0);
+  await page
+    .getByRole("button", { name: "Sign out everywhere", exact: true })
+    .click();
+  await dialog
+    .getByRole("button", { name: "Sign out everywhere", exact: true })
+    .click();
+  await expect(dialog.getByRole("alert")).toContainText("Please try again");
+  expect(logoutCalls).toBe(1);
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Delete my account", exact: true })
+    .click();
+  dialog = page.getByRole("dialog");
+  await expect(dialog.locator('input[type="password"]')).toHaveCount(0);
+  await dialog.getByRole("button", { name: "No", exact: true }).click();
+  expect(deleteCalls).toBe(0);
+  await page
+    .getByRole("button", { name: "Delete my account", exact: true })
+    .click();
+  await dialog.getByRole("button", { name: "Yes", exact: true }).click();
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Deletion temporarily unavailable",
+  );
+  expect(deleteCalls).toBe(1);
+  await dialog.getByRole("button", { name: "No", exact: true }).click();
+  await page.screenshot({
+    path: `.runtime/settings-clean-${info.project.name}.png`,
+    fullPage: true,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page
+    .getByRole("button", { name: "Delete my account", exact: true })
+    .click();
+  await dialog.getByRole("button", { name: "Yes", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator(".account-trigger")).toHaveCount(0);
+  expect(deleteCalls).toBe(2);
 });

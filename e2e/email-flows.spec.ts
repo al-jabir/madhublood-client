@@ -147,7 +147,11 @@ test("profile verification uses account email and refreshes verification status"
   ).toBeDisabled();
   await page.getByLabel("Verification code", { exact: true }).fill("123456");
   await page.getByRole("button", { name: "Verify email", exact: true }).click();
-  await expect(page).toHaveURL(/dashboard\?tab=profile/);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page
+    .locator(".dashboard-tabs")
+    .getByRole("button", { name: "Profile", exact: true })
+    .click();
   await expect(page.getByText("Verified", { exact: true })).toBeVisible();
 });
 

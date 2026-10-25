@@ -3384,3 +3384,103 @@ html.dark,
   outline: 2px solid var(--red);
   outline-offset: -2px;
 }
+
+.settings-layout .panel > h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.settings-session {
+  display: grid;
+  gap: 20px;
+}
+.settings-session > .button {
+  justify-self: start;
+}
+.settings-recovery-note {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.action-confirmation {
+  width: min(440px, calc(100vw - 32px));
+  margin: auto;
+  padding: 28px;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  box-shadow: 0 24px 80px #0005;
+}
+.action-confirmation::backdrop {
+  background: #0009;
+  backdrop-filter: blur(4px);
+}
+.action-confirmation h2 {
+  font-size: 22px;
+  margin: 0 0 14px;
+}
+.action-confirmation > p {
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.action-confirmation-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .action-confirmation {
+    padding: 22px;
+  }
+  .action-confirmation-buttons > button {
+    flex: 1;
+  }
+}
+
+.settings-data > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  list-style-position: inside;
+}
+.settings-data[open] > summary {
+  margin-bottom: 20px;
+}
+.settings-data .account-data-content {
+  gap: 18px;
+}
+.settings-data .account-delete-trigger {
+  color: var(--red);
+  font-size: 14px;
+}
+.settings-recovery-link {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 14px;
+}
+.action-confirmation > .field {
+  margin-bottom: 24px;
+}
+
+.settings-session {
+  gap: 16px;
+}
+.settings-session > h3,
+.settings-session > p {
+  margin: 0;
+}
+.settings-session .session-cards {
+  margin: 0;
+}
+.settings-session .session-cards:empty {
+  display: none;
+}
+html[data-theme="light"] .auth-story .text-link {
+  color: #b91c1c;
+}
